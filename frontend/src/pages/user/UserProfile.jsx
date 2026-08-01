@@ -745,9 +745,9 @@ export default function UserProfile() {
                   <form onSubmit={addSkill} className="flex gap-2">
                     <input 
                       type="text" placeholder="Add skill (press Enter)..." value={newSkill} onChange={e => setNewSkill(e.target.value)}
-                      className="flex-1 px-3 py-1.5 border border-border rounded-lg text-xs bg-white outline-none"
+                      className="flex-1 px-3 py-1.5 border border-border rounded-lg text-xs bg-background text-foreground outline-none"
                     />
-                    <button type="submit" className="pill bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 text-xs font-semibold rounded-lg">
+                    <button type="submit" className="pill bg-muted hover:bg-muted/80 text-foreground px-4 text-xs font-semibold rounded-lg border border-border">
                       Add
                     </button>
                   </form>
@@ -756,9 +756,9 @@ export default function UserProfile() {
                       const name = getSkillName(s);
                       if (!name) return null;
                       return (
-                        <span key={idx} className="pill bg-slate-100 border border-slate-200 px-2.5 py-1 text-xs text-slate-700 flex items-center gap-1 rounded-lg">
+                        <span key={idx} className="pill bg-muted/80 dark:bg-zinc-800 border border-border px-2.5 py-1 text-xs text-foreground flex items-center gap-1 rounded-lg font-medium">
                           {name}
-                          <button type="button" onClick={() => removeSkill(s)} className="text-slate-400 hover:text-red-500">
+                          <button type="button" onClick={() => removeSkill(s)} className="text-muted-foreground hover:text-red-500">
                             <X className="h-3 w-3" />
                           </button>
                         </span>
@@ -775,7 +775,7 @@ export default function UserProfile() {
                       const name = getSkillName(s);
                       if (!name) return null;
                       return (
-                        <span key={idx} className="pill bg-[#f5f4ef] border border-border/60 px-3 py-1 rounded-lg text-xs font-medium text-slate-700">{name}</span>
+                        <span key={idx} className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-muted/70 dark:bg-zinc-800/90 border border-border/80 text-foreground dark:text-zinc-100 shadow-sm transition-colors">{name}</span>
                       );
                     })
                   )}
@@ -811,17 +811,17 @@ export default function UserProfile() {
             <div className="rounded-3xl border border-border bg-card p-6 shadow-sm">
               <div className="flex items-center gap-2">
                 <FileText className="h-5 w-5 text-muted-foreground" />
-                <div className="font-display font-semibold text-slate-800">Resume Status</div>
+                <div className="font-display font-semibold text-foreground">Resume Status</div>
               </div>
               
-              <div className="mt-3 text-xs text-slate-600 bg-slate-50 border border-slate-200/60 rounded-xl p-3 space-y-1.5">
+              <div className="mt-3 text-xs text-foreground bg-muted/60 dark:bg-zinc-800/80 border border-border rounded-xl p-3 space-y-1.5">
                 {replacing ? (
                   <div className="space-y-2 py-1">
-                    <div className="flex justify-between font-medium text-slate-700 text-[11px]">
+                    <div className="flex justify-between font-medium text-foreground text-[11px]">
                       <span className="truncate block max-w-[180px]">{parseStatusText}</span>
                       <span>{parseProgress}%</span>
                     </div>
-                    <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                    <div className="w-full bg-muted h-1.5 rounded-full overflow-hidden">
                       <div 
                         className="bg-primary h-full transition-all duration-500 ease-out" 
                         style={{ width: `${parseProgress}%` }}
@@ -830,19 +830,19 @@ export default function UserProfile() {
                   </div>
                 ) : seeker?.resume_file_path ? (
                   <>
-                    <div className="font-medium text-slate-800 truncate flex items-center gap-1.5" title={seeker.resume_file_name}>
-                      <FileText className="h-4 w-4 text-blue-600 shrink-0" />
-                      <span className="truncate">{seeker.resume_file_name || "resume.pdf"}</span>
+                    <div className="font-medium text-foreground truncate flex items-center gap-1.5" title={seeker.resume_file_name}>
+                      <FileText className="h-4 w-4 text-blue-500 shrink-0" />
+                      <span className="truncate text-foreground font-semibold">{seeker.resume_file_name || "resume.pdf"}</span>
                     </div>
-                    {seeker.resume_size && <div className="text-slate-500">Size: {seeker.resume_size} KB</div>}
-                    {seeker.resume_updated_at && <div className="text-slate-500">Updated: {new Date(seeker.resume_updated_at).toLocaleDateString()}</div>}
+                    {seeker.resume_size && <div className="text-muted-foreground">Size: {seeker.resume_size} KB</div>}
+                    {seeker.resume_updated_at && <div className="text-muted-foreground">Updated: {new Date(seeker.resume_updated_at).toLocaleDateString()}</div>}
                   </>
                 ) : (
-                  <div className="text-slate-400 italic">No resume uploaded yet.</div>
+                  <div className="text-muted-foreground italic">No resume uploaded yet.</div>
                 )}
               </div>
 
-              <label className="pill mt-4 inline-flex w-full cursor-pointer items-center justify-center gap-2 border border-border bg-background px-4 py-2 text-sm font-semibold hover:bg-slate-50 transition text-slate-700">
+              <label className="pill mt-4 inline-flex w-full cursor-pointer items-center justify-center gap-2 border border-border bg-background px-4 py-2 text-sm font-semibold hover:bg-muted transition text-foreground">
                 {replacing ? <Loader2 className="h-4 w-4 animate-spin text-primary" /> : <UploadCloud className="h-4 w-4 text-primary" />}
                 {seeker?.resume_file_path ? "Replace Resume" : "Upload now"}
                 <input 
@@ -853,13 +853,13 @@ export default function UserProfile() {
 
             {/* Open To preferences */}
             <div className="rounded-3xl border border-border bg-card p-6 shadow-sm">
-              <div className="font-display font-semibold text-slate-800">Hiring Preferences</div>
+              <div className="font-display font-semibold text-foreground">Hiring Preferences</div>
               
               {isEditing ? (
                 <div className="mt-4 space-y-4">
                   {/* Edit Work Types */}
                   <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Work types</label>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">Work types</label>
                     <div className="flex flex-wrap gap-1.5">
                       {WORK_TYPE_OPTIONS.map(wt => {
                         const checked = editOpenTo.workTypes.includes(wt);
@@ -867,7 +867,7 @@ export default function UserProfile() {
                           <button
                             key={wt} type="button" onClick={() => toggleWorkType(wt)}
                             className={`px-2.5 py-1 text-[11px] font-semibold border rounded-lg transition ${
-                              checked ? 'bg-primary/10 border-primary text-primary' : 'bg-white border-border text-slate-600'
+                              checked ? 'bg-primary/10 border-primary text-primary' : 'bg-background border-border text-foreground'
                             }`}
                           >
                             {wt}
@@ -879,7 +879,7 @@ export default function UserProfile() {
 
                   {/* Edit Role Areas */}
                   <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Preferred roles</label>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">Preferred roles</label>
                     <div className="grid grid-cols-2 gap-1.5">
                       {ROLE_OPTIONS.map(role => {
                         const checked = editOpenTo.roleTypes.includes(role);
@@ -887,7 +887,7 @@ export default function UserProfile() {
                           <button
                             key={role} type="button" onClick={() => toggleRoleType(role)}
                             className={`px-2 py-1 text-[10px] font-semibold border rounded-lg transition text-left truncate ${
-                              checked ? 'bg-primary/10 border-primary text-primary' : 'bg-white border-border text-slate-600'
+                              checked ? 'bg-primary/10 border-primary text-primary' : 'bg-background border-border text-foreground'
                             }`}
                           >
                             {role}
@@ -899,19 +899,19 @@ export default function UserProfile() {
 
                   {/* Edit Preferred Locations */}
                   <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Locations</label>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">Locations</label>
                     <form onSubmit={addPrefLocation} className="flex gap-1">
                       <input 
                         type="text" placeholder="Add location..." value={newPrefLocation} onChange={e => setNewPrefLocation(e.target.value)}
-                        className="flex-1 px-2.5 py-1 border border-border rounded-lg text-xs outline-none bg-white"
+                        className="flex-1 px-2.5 py-1 border border-border rounded-lg text-xs outline-none bg-background text-foreground"
                       />
-                      <button type="submit" className="pill bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 rounded-lg text-[11px] font-semibold">Add</button>
+                      <button type="submit" className="pill bg-muted hover:bg-muted/80 text-foreground px-2.5 rounded-lg text-[11px] font-semibold border border-border">Add</button>
                     </form>
                     <div className="flex flex-wrap gap-1.5 mt-2">
                       {editOpenTo.locations.map(loc => (
-                        <span key={loc} className="pill bg-slate-100 border border-slate-200 px-2 py-0.5 text-[10px] text-slate-600 flex items-center gap-1 rounded">
+                        <span key={loc} className="pill bg-muted border border-border px-2 py-0.5 text-[10px] text-foreground flex items-center gap-1 rounded">
                           {loc}
-                          <button type="button" onClick={() => removePrefLocation(loc)} className="text-slate-400 hover:text-red-500">
+                          <button type="button" onClick={() => removePrefLocation(loc)} className="text-muted-foreground hover:text-red-500">
                             <X className="h-2.5 w-2.5" />
                           </button>
                         </span>
@@ -921,31 +921,31 @@ export default function UserProfile() {
                 </div>
               ) : (
                 <ul className="mt-4 space-y-3.5 text-sm">
-                  <li className="flex items-start gap-2 text-slate-600">
+                  <li className="flex items-start gap-2 text-muted-foreground">
                     <span className="mt-1 flex h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
                     <div>
-                      <span className="font-semibold text-slate-700">Open to:</span> {prefWorkTypes.join(", ") || "Remote/Hybrid"}
+                      <span className="font-semibold text-foreground">Open to:</span> {prefWorkTypes.join(", ") || "Remote/Hybrid"}
                     </div>
                   </li>
-                  <li className="flex items-start gap-2 text-slate-600">
+                  <li className="flex items-start gap-2 text-muted-foreground">
                     <span className="mt-1 flex h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
                     <div>
-                      <span className="font-semibold text-slate-700">Areas:</span> {prefRoleTypes.join(", ") || "Engineering"}
+                      <span className="font-semibold text-foreground">Areas:</span> {prefRoleTypes.join(", ") || "Engineering"}
                     </div>
                   </li>
-                  <li className="flex items-start gap-2 text-slate-600">
+                  <li className="flex items-start gap-2 text-muted-foreground">
                     <span className="mt-1 flex h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
                     <div>
-                      <span className="font-semibold text-slate-700">Locations:</span> {prefLocations.join(", ") || "Anywhere (Remote)"}
+                      <span className="font-semibold text-foreground">Locations:</span> {prefLocations.join(", ") || "Anywhere (Remote)"}
                     </div>
                   </li>
                 </ul>
               )}
             </div>
 
-            <Link to="/jobs/dashboard" className="block rounded-3xl border border-border bg-foreground p-6 text-background transition hover:opacity-90 shadow-sm">
-              <div className="font-display font-semibold">Your dashboard</div>
-              <p className="mt-1 text-sm opacity-80 leading-relaxed">Track applications, interviews, and bookmarked jobs in one unified pipeline.</p>
+            <Link to="/jobs/dashboard" className="block rounded-3xl border border-border bg-card hover:bg-muted/50 p-6 text-card-foreground transition shadow-sm">
+              <div className="font-display font-semibold text-foreground">Your dashboard</div>
+              <p className="mt-1 text-sm text-muted-foreground leading-relaxed">Track applications, interviews, and bookmarked jobs in one unified pipeline.</p>
             </Link>
           </aside>
         </div>

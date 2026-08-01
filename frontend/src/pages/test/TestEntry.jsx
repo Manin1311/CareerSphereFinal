@@ -82,19 +82,7 @@ export default function TestEntry() {
     <div className="flex min-h-screen items-center justify-center bg-gray-50 p-5 font-sans">
       <div className="w-full max-w-2xl rounded-2xl border border-gray-200 bg-white p-8 shadow-xl">
         <div className="text-center">
-          <div className="w-12 h-12 mx-auto rounded-2xl bg-gray-900 p-2 flex items-center justify-center shadow-md">
-            <svg viewBox="0 0 100 100" className="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <linearGradient id="logo-grad-testentry" x1="0%" y1="100%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#38bdf8" />
-                  <stop offset="100%" stopColor="#2563eb" />
-                </linearGradient>
-              </defs>
-              <line x1="32" y1="68" x2="68" y2="32" stroke="url(#logo-grad-testentry)" strokeWidth="14" strokeLinecap="round" />
-              <circle cx="32" cy="68" r="16" fill="#38bdf8" />
-              <circle cx="68" cy="32" r="24" fill="#2563eb" />
-            </svg>
-          </div>
+          <img src="/logo.png" alt="CareerSphere" className="w-12 h-12 mx-auto object-contain shrink-0 rounded-2xl shadow-md" />
           <h1 className="mt-4 text-2xl font-bold tracking-tight text-gray-900">CareerSphere Assessment Portal</h1>
           <p className="mt-1 text-sm text-gray-500">Secure proctored testing environment</p>
         </div>

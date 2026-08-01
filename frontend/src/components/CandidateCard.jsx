@@ -197,9 +197,9 @@ export default function CandidateCard({ candidate, sessionId, rounds = [], onAct
           isHighlighted ? { scale: [1, 1.02, 1], transition: { duration: 1, repeat: 3 } } : 
           { opacity: 1, x: 0 }
         }
-        className={`bg-white rounded-xl p-5 border-2 transition-all duration-200 flex flex-col ${
-          isHighlighted ? 'border-[#2563EB] shadow-[0_0_0_1px_#2563EB,0_0_16px_rgba(200,135,26,0.3)] relative z-10' : 'border-transparent shadow-[0_1px_3px_rgba(0,0,0,0.08)]'
-        } ${candidate?.status === 'hired' ? 'border-green-200 bg-green-50/30' : ''} ${candidate?.status === 'rejected' ? 'border-red-200 bg-red-50/30 opacity-75' : ''}`}
+        className={`bg-card dark:bg-[#121217] rounded-xl p-5 border-2 transition-all duration-200 flex flex-col ${
+          isHighlighted ? 'border-sky-500 shadow-[0_0_0_1px_#0284c7,0_0_16px_rgba(2,132,199,0.3)] relative z-10' : 'border-border dark:border-zinc-800 shadow-xs'
+        } ${candidate?.status === 'hired' ? 'border-emerald-500/50 bg-emerald-50/20 dark:bg-emerald-950/20' : ''} ${candidate?.status === 'rejected' ? 'border-rose-500/50 bg-rose-50/20 dark:bg-rose-950/20 opacity-75' : ''}`}
       >
         {/* HEADER: Avatar + Name + Score */}
         <div className="flex items-center gap-3">
@@ -212,21 +212,21 @@ export default function CandidateCard({ candidate, sessionId, rounds = [], onAct
           </div>
 
           <div className="flex-1 truncate">
-            <h4 className="font-bold text-[15px] text-[#2A2A2A] truncate">{candidate?.name || 'Unnamed Candidate'}</h4>
+            <h4 className="font-bold text-[15px] text-foreground dark:text-zinc-100 truncate">{candidate?.name || 'Unnamed Candidate'}</h4>
             <div className="flex items-center gap-2 mt-0.5 whitespace-nowrap overflow-hidden text-ellipsis">
               {candidate?.current_role && (
-                <span className="text-[12px] text-[#2563EB] font-semibold truncate">{candidate.current_role}</span>
+                <span className="text-[12px] text-sky-600 dark:text-sky-400 font-semibold truncate">{candidate.current_role}</span>
               )}
-              {candidate?.current_role && <span className="text-gray-300">•</span>}
-              <span className="text-[12px] text-gray-500 flex items-center gap-0.5"><MapPin size={11}/> {candidate?.location || "Unknown"}</span>
-              <span className="text-gray-300">•</span>
-              <span className="text-[12px] text-gray-500 flex items-center gap-1"><Briefcase size={12} className="text-gray-400 shrink-0" /> {expYears} yrs</span>
+              {candidate?.current_role && <span className="text-muted-foreground">•</span>}
+              <span className="text-[12px] text-muted-foreground dark:text-gray-300 flex items-center gap-0.5"><MapPin size={11}/> {candidate?.location || "Unknown"}</span>
+              <span className="text-muted-foreground">•</span>
+              <span className="text-[12px] text-muted-foreground dark:text-gray-300 flex items-center gap-1"><Briefcase size={12} className="text-muted-foreground shrink-0" /> {expYears} yrs</span>
             </div>
           </div>
 
           <div className="relative w-14 h-14 shrink-0">
             <svg className="w-full h-full transform -rotate-90">
-              <circle cx="28" cy="28" r={radius} stroke="#E5E7EB" strokeWidth="4" fill="transparent" />
+              <circle cx="28" cy="28" r={radius} stroke="currentColor" className="text-muted/30" strokeWidth="4" fill="transparent" />
               <motion.circle
                 cx="28" cy="28" r={radius}
                 stroke={getScoreColor(score)} strokeWidth="4" fill="transparent"
@@ -237,7 +237,7 @@ export default function CandidateCard({ candidate, sessionId, rounds = [], onAct
                 strokeLinecap="round"
               />
             </svg>
-            <div className="absolute inset-0 flex items-center justify-center font-black text-xs text-[#2A2A2A]">
+            <div className="absolute inset-0 flex items-center justify-center font-black text-xs text-foreground dark:text-zinc-100">
               {score}<span className="text-[9px]">%</span>
             </div>
           </div>
@@ -249,14 +249,14 @@ export default function CandidateCard({ candidate, sessionId, rounds = [], onAct
             {highlights.map((h, i) => (
               <span key={i} className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${
                 candidate?.matched_skills?.includes(h) 
-                  ? 'bg-green-50 text-green-700 border-green-100' 
-                  : 'bg-blue-50 text-blue-700 border-blue-100'
+                  ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700' 
+                  : 'bg-sky-100 dark:bg-sky-950/60 text-sky-800 dark:text-sky-300 border-sky-300 dark:border-sky-700'
               }`}>
                 {getSkillName(h)}
               </span>
             ))}
             {allSkills.length > 5 && (
-              <span className="text-[10px] font-bold text-gray-400 bg-gray-50 px-2 py-0.5 rounded-md border border-gray-100">
+              <span className="text-[10px] font-bold text-muted-foreground dark:text-gray-300 bg-muted dark:bg-zinc-800 px-2 py-0.5 rounded-md border border-border dark:border-zinc-700">
                 +{allSkills.length - 5}
               </span>
             )}
@@ -264,24 +264,24 @@ export default function CandidateCard({ candidate, sessionId, rounds = [], onAct
         )}
 
         {/* CONTACT ROW */}
-        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-gray-500">
+        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground dark:text-gray-300">
           {candidate?.email && (
             <span className="flex items-center gap-1 truncate max-w-[180px]" title={candidate.email}>
-              <Mail size={10} className="text-gray-400 shrink-0"/> {candidate.email}
+              <Mail size={10} className="text-muted-foreground shrink-0"/> {candidate.email}
             </span>
           )}
           {candidate?.phone && (
             <span className="flex items-center gap-1">
-              <Phone size={10} className="text-gray-400 shrink-0"/> {candidate.phone}
+              <Phone size={10} className="text-muted-foreground shrink-0"/> {candidate.phone}
             </span>
           )}
           {candidate?.linkedin_url && (
-            <a href={candidate.linkedin_url} target="_blank" rel="noopener" className="flex items-center gap-1 text-blue-600 hover:underline">
+            <a href={candidate.linkedin_url} target="_blank" rel="noopener" className="flex items-center gap-1 text-sky-600 dark:text-sky-400 hover:underline">
               <Linkedin size={10}/> LinkedIn
             </a>
           )}
           {candidate?.github_url && (
-            <a href={candidate.github_url} target="_blank" rel="noopener" className="flex items-center gap-1 text-gray-700 hover:underline">
+            <a href={candidate.github_url} target="_blank" rel="noopener" className="flex items-center gap-1 text-foreground dark:text-gray-200 hover:underline">
               <Github size={10}/> GitHub
             </a>
           )}
@@ -290,25 +290,25 @@ export default function CandidateCard({ candidate, sessionId, rounds = [], onAct
         {/* SKILLS */}
         <div className="mt-3 flex flex-wrap gap-1 items-start">
           {!hasSkills && (
-            <span className="text-xs text-gray-400 italic">No skills detected</span>
+            <span className="text-xs text-muted-foreground italic">No skills detected</span>
           )}
           {matchedSkills.slice(0, 4).map((s, i) => (
-            <span key={i} className="bg-[#DCFCE7] text-[#166534] border border-[#BBF7D0] px-1.5 py-0.5 rounded text-[10px] font-semibold flex items-center gap-0.5">
+            <span key={i} className="bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 px-1.5 py-0.5 rounded text-[10px] font-semibold flex items-center gap-0.5">
               ✓ {getSkillName(s)}
             </span>
           ))}
           {missingSkills.slice(0, 2).map((s, i) => (
-            <span key={i} className="bg-[#FEE2E2] text-[#991B1B] border border-[#FECACA] px-1.5 py-0.5 rounded text-[10px] font-semibold flex items-center gap-0.5">
+            <span key={i} className="bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border border-rose-300 dark:border-rose-700 px-1.5 py-0.5 rounded text-[10px] font-semibold flex items-center gap-0.5">
               ✗ {getSkillName(s)}
             </span>
           ))}
           {matchedSkills.length === 0 && missingSkills.length === 0 && normalizedSkills.slice(0, 5).map((s, i) => (
-            <span key={i} className="bg-gray-100 text-gray-600 border border-gray-200 px-1.5 py-0.5 rounded text-[10px] font-semibold">
+            <span key={i} className="bg-muted dark:bg-zinc-800 text-foreground dark:text-zinc-200 border border-border dark:border-zinc-700 px-1.5 py-0.5 rounded text-[10px] font-semibold">
               {getSkillName(s)}
             </span>
           ))}
           {(matchedSkills.length > 4 || missingSkills.length > 2 || (matchedSkills.length === 0 && normalizedSkills.length > 5)) && (
-            <span className="text-gray-400 text-[10px] font-bold px-1 py-0.5 uppercase tracking-wider">
+            <span className="text-muted-foreground dark:text-gray-400 text-[10px] font-bold px-1 py-0.5 uppercase tracking-wider">
               +{Math.max(0, matchedSkills.length - 4) + Math.max(0, missingSkills.length - 2) + (matchedSkills.length === 0 ? Math.max(0, normalizedSkills.length - 5) : 0)} more
             </span>
           )}
@@ -317,25 +317,25 @@ export default function CandidateCard({ candidate, sessionId, rounds = [], onAct
         {/* EXPERIENCE PREVIEW (expandable) */}
         {experience.length > 0 && (
           <div className="mt-3">
-            <div className="flex items-center gap-1.5 text-[11px] font-bold text-gray-500 mb-1">
-              <Briefcase size={11} className="text-gray-400"/>
+            <div className="flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground dark:text-gray-300 mb-1">
+              <Briefcase size={11} className="text-muted-foreground"/>
               <span>{experience[0]?.role || "Role"}</span>
-              <span className="text-gray-300 mx-0.5">@</span>
-              <span className="text-[#2563EB]">{experience[0]?.company || "Company"}</span>
-              {experience[0]?.duration && <span className="text-gray-400 ml-auto text-[10px]">{experience[0].duration}</span>}
+              <span className="text-muted-foreground mx-0.5">@</span>
+              <span className="text-sky-600 dark:text-sky-400 font-bold">{experience[0]?.company || "Company"}</span>
+              {experience[0]?.duration && <span className="text-muted-foreground dark:text-gray-400 ml-auto text-[10px]">{experience[0].duration}</span>}
             </div>
             {experience.length > 1 && (
-              <div className="text-[10px] text-gray-400 italic">+{experience.length - 1} more positions</div>
+              <div className="text-[10px] text-muted-foreground italic">+{experience.length - 1} more positions</div>
             )}
           </div>
         )}
 
         {/* EDUCATION PREVIEW */}
         {education.length > 0 && (
-          <div className="mt-2 flex items-center gap-1.5 text-[11px] text-gray-500">
-            <GraduationCap size={11} className="text-gray-400"/>
-            <span className="font-semibold">{education[0]?.degree}{education[0]?.field ? ` in ${education[0].field}` : ''}</span>
-            {education[0]?.institution && <span className="text-gray-400">— {education[0].institution}</span>}
+          <div className="mt-2 flex items-center gap-1.5 text-[11px] text-muted-foreground dark:text-gray-300">
+            <GraduationCap size={11} className="text-muted-foreground"/>
+            <span className="font-semibold text-foreground dark:text-gray-200">{education[0]?.degree}{education[0]?.field ? ` in ${education[0].field}` : ''}</span>
+            {education[0]?.institution && <span className="text-muted-foreground dark:text-gray-400">— {education[0].institution}</span>}
           </div>
         )}
 
@@ -344,10 +344,10 @@ export default function CandidateCard({ candidate, sessionId, rounds = [], onAct
           {getBadge(score)}
           {candidate?.status && candidate.status !== "new" && candidate.status !== "active" && (
             <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded border ${
-              candidate.status === 'hired' ? 'bg-green-100 text-green-700 border-green-200' :
-              candidate.status === 'rejected' ? 'bg-red-100 text-red-700 border-red-200' :
-              candidate.status === 'forwarded' ? 'bg-blue-100 text-blue-700 border-blue-200' :
-              'bg-gray-100 text-gray-600 border-gray-200'
+              candidate.status === 'hired' ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border-emerald-300' :
+              candidate.status === 'rejected' ? 'bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border-rose-300' :
+              candidate.status === 'forwarded' ? 'bg-sky-100 dark:bg-sky-950/60 text-sky-800 dark:text-sky-300 border-sky-300' :
+              'bg-muted text-muted-foreground border-border'
             }`}>
               {candidate.status}
             </span>
@@ -358,7 +358,7 @@ export default function CandidateCard({ candidate, sessionId, rounds = [], onAct
         <div className="mt-4 flex gap-2">
           <button 
             onClick={() => setShowDetail(true)}
-            className="flex-1 border-2 border-gray-200 text-[#2A2A2A] hover:border-gray-300 hover:bg-gray-50 py-1.5 rounded-lg text-[13px] font-bold transition-colors flex justify-center items-center gap-1.5"
+            className="flex-1 border border-border dark:border-zinc-700 bg-background text-foreground dark:text-gray-100 hover:bg-muted dark:hover:bg-zinc-800 py-1.5 rounded-lg text-[13px] font-bold transition-colors flex justify-center items-center gap-1.5"
           >
             <Eye size={16}/> Profile
           </button>
@@ -368,7 +368,7 @@ export default function CandidateCard({ candidate, sessionId, rounds = [], onAct
               href={resumeUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-3 border-2 border-gray-200 text-[#2A2A2A] hover:border-gray-300 hover:bg-gray-50 py-1.5 rounded-lg text-[13px] font-bold transition-colors flex justify-center items-center gap-1.5"
+              className="px-3 border border-border dark:border-zinc-700 bg-background text-foreground dark:text-gray-100 hover:bg-muted dark:hover:bg-zinc-800 py-1.5 rounded-lg text-[13px] font-bold transition-colors flex justify-center items-center gap-1.5"
             >
                <FileText size={14} /> Resume
             </a>
@@ -378,8 +378,8 @@ export default function CandidateCard({ candidate, sessionId, rounds = [], onAct
             <>
               <button 
                 onClick={handleForwardOrHire}
-                className={`flex-[1.5] text-white py-1.5 rounded-lg text-sm font-bold transition-colors shadow-sm flex items-center justify-center gap-1.5 ${
-                  isLastRound ? 'bg-[#22C55E] hover:bg-[#166534]' : 'bg-[#2563EB] hover:bg-[#1D4ED8]'
+                className={`flex-[1.5] text-white py-1.5 rounded-lg text-sm font-bold transition-colors shadow-xs flex items-center justify-center gap-1.5 ${
+                  isLastRound ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-sky-600 hover:bg-sky-700'
                 }`}
               >
                 {isLastRound ? <><Sparkles size={14} /> Hire</> : <>Forward &rarr;</>}
@@ -388,7 +388,7 @@ export default function CandidateCard({ candidate, sessionId, rounds = [], onAct
               <motion.button 
                 onClick={handleReject}
                 animate={animatingOut ? { x: [0, -8, 8, -4, 0] } : {}}
-                className="flex-[0.5] border-2 border-red-100 text-[#EF4444] hover:bg-red-50 hover:border-red-200 py-1.5 rounded-lg transition-colors flex justify-center items-center"
+                className="flex-[0.5] border border-rose-300 dark:border-rose-800 text-rose-600 dark:text-rose-400 bg-background hover:bg-rose-50 dark:hover:bg-rose-950/40 py-1.5 rounded-lg transition-colors flex justify-center items-center"
                 title="Reject"
               >
                 <X size={18}/>
@@ -410,19 +410,19 @@ export default function CandidateCard({ candidate, sessionId, rounds = [], onAct
             <motion.div 
               initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 h-full w-full max-w-[520px] bg-white shadow-2xl z-50 flex flex-col"
+              className="fixed top-0 right-0 h-full w-full max-w-[520px] bg-card dark:bg-[#121217] text-foreground shadow-2xl z-50 flex flex-col border-l border-border dark:border-zinc-800"
             >
-              <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-[#F5F0E8]/40">
+              <div className="p-5 border-b border-border dark:border-zinc-800 flex justify-between items-center bg-card dark:bg-[#121217]">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full font-bold text-white flex items-center justify-center text-sm shadow-sm" style={{backgroundColor: getHashColor(activeCandidate?.name)}}>
                     {getInitials(activeCandidate?.name)}
                   </div>
                   <div>
-                    <h2 className="font-black text-lg text-[#2A2A2A] tracking-tight leading-tight">{activeCandidate?.name || 'Candidate Details'}</h2>
-                    <p className="text-sm text-gray-500 font-medium">{activeCandidate?.current_role || 'Candidate'}</p>
+                    <h2 className="font-black text-lg text-foreground dark:text-zinc-100 tracking-tight leading-tight">{activeCandidate?.name || 'Candidate Details'}</h2>
+                    <p className="text-sm text-muted-foreground dark:text-gray-300 font-medium">{activeCandidate?.current_role || 'Candidate'}</p>
                   </div>
                 </div>
-                <button onClick={() => { setShowDetail(false); onCloseDetails?.(); }} className="p-2 bg-gray-100 hover:bg-gray-200 rounded-full text-gray-500 transition-colors">
+                <button onClick={() => { setShowDetail(false); onCloseDetails?.(); }} className="p-2 bg-muted dark:bg-zinc-800 hover:bg-muted/80 rounded-full text-foreground dark:text-gray-200 transition-colors">
                   <X size={20} />
                 </button>
               </div>
@@ -430,40 +430,40 @@ export default function CandidateCard({ candidate, sessionId, rounds = [], onAct
               <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
                 
                 {/* AI Insights Section */}
-                <section className="bg-white border border-gray-100 rounded-2xl p-5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] space-y-4">
-                  <h3 className="text-sm font-bold text-[#2A2A2A] flex items-center gap-1.5 border-b border-gray-150 pb-2">
+                <section className="bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-2xl p-5 shadow-xs space-y-4">
+                  <h3 className="text-sm font-bold text-foreground dark:text-zinc-100 flex items-center gap-1.5 border-b border-border dark:border-zinc-800 pb-2">
                     <Sparkles size={16} className="text-accent" /> AI Insights
                   </h3>
                   
                   {loadingDetails ? (
                     <div className="space-y-3">
-                      <div className="h-16 bg-gray-50 animate-pulse rounded-xl" />
-                      <div className="h-12 bg-gray-50 animate-pulse rounded-xl" />
-                      <div className="h-16 bg-gray-50 animate-pulse rounded-xl" />
+                      <div className="h-16 bg-muted animate-pulse rounded-xl" />
+                      <div className="h-12 bg-muted animate-pulse rounded-xl" />
+                      <div className="h-16 bg-muted animate-pulse rounded-xl" />
                     </div>
                   ) : (
                     <>
                       {/* Why Hire */}
-                      <div className="bg-[#f4fbf7] border border-[#e2f5ec] rounded-xl p-3.5">
-                        <h4 className="text-xs font-black text-[#15803d] uppercase tracking-wider mb-1.5">Why Hire?</h4>
-                        <p className="text-xs text-gray-700 font-medium leading-relaxed">
+                      <div className="bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/80 rounded-xl p-3.5">
+                        <h4 className="text-xs font-black text-emerald-800 dark:text-emerald-300 uppercase tracking-wider mb-1.5">Why Hire?</h4>
+                        <p className="text-xs text-emerald-950 dark:text-emerald-100 font-medium leading-relaxed">
                           {activeCandidate?.ai_insights?.why_hire || 
                            `Exhibits strong alignment in required technical skills with ${expYears} years of experience in the industry.`}
                         </p>
                       </div>
 
                       {/* Risk Factors */}
-                      <div className="bg-[#fff5f5] border border-[#ffe3e3] rounded-xl p-3.5">
-                        <h4 className="text-xs font-black text-[#b91c1c] uppercase tracking-wider mb-1.5">Risk Factors</h4>
-                        <p className="text-xs text-gray-700 font-medium leading-relaxed">
+                      <div className="bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800/80 rounded-xl p-3.5">
+                        <h4 className="text-xs font-black text-rose-800 dark:text-rose-300 uppercase tracking-wider mb-1.5">Risk Factors</h4>
+                        <p className="text-xs text-rose-950 dark:text-rose-100 font-medium leading-relaxed">
                           {activeCandidate?.ai_insights?.risk_factors || 
                            `May require onboarding support for specific team workflows. No major security or compatibility risks detected.`}
                         </p>
                       </div>
 
                       {/* Skill Match Breakdown */}
-                      <div className="bg-[#f8fafc] border border-[#f1f5f9] rounded-xl p-3.5 space-y-3">
-                        <h4 className="text-xs font-black text-[#475569] uppercase tracking-wider">Skill Match Breakdown</h4>
+                      <div className="bg-muted/50 dark:bg-zinc-800/60 border border-border dark:border-zinc-700 rounded-xl p-3.5 space-y-3">
+                        <h4 className="text-xs font-black text-foreground dark:text-zinc-200 uppercase tracking-wider">Skill Match Breakdown</h4>
                         <div className="space-y-2">
                           {(activeCandidate?.ai_insights?.skill_match_breakdown || [
                             { skill: matchedSkills[0] ? getSkillName(matchedSkills[0]) : "React / Frontend", percentage: activeCandidate?.skill_score || 96 },
@@ -475,11 +475,11 @@ export default function CandidateCard({ candidate, sessionId, rounds = [], onAct
                             const colorIdx = idx % barColors.length;
                             return (
                               <div key={idx}>
-                                <div className="flex justify-between text-xs font-bold text-gray-700 mb-1">
+                                <div className="flex justify-between text-xs font-bold text-foreground dark:text-gray-200 mb-1">
                                   <span>{item.skill}</span>
                                   <span className={textColors[colorIdx]}>{item.percentage}%</span>
                                 </div>
-                                <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                                <div className="w-full h-2 bg-muted dark:bg-zinc-700 rounded-full overflow-hidden">
                                   <div className={`h-full ${barColors[colorIdx]} rounded-full`} style={{ width: `${item.percentage}%` }} />
                                 </div>
                               </div>
@@ -494,41 +494,41 @@ export default function CandidateCard({ candidate, sessionId, rounds = [], onAct
                 {/* Summary */}
                 {summary && (
                   <section>
-                    <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">Professional Summary</h3>
-                    <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                      <p className="text-sm text-[#2A2A2A] leading-relaxed font-medium">{summary}</p>
+                    <h3 className="text-xs font-black text-muted-foreground dark:text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">Professional Summary</h3>
+                    <div className="bg-muted/40 dark:bg-zinc-900 rounded-xl p-4 border border-border dark:border-zinc-800">
+                      <p className="text-sm text-foreground dark:text-gray-100 leading-relaxed font-medium">{summary}</p>
                     </div>
                   </section>
                 )}
                 
                 {/* Contact */}
                 <section>
-                  <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Contact Information</h3>
-                  <div className="bg-gray-50 rounded-xl p-4 space-y-3 border border-gray-100">
-                    <div className="flex items-center gap-3 text-sm text-[#2A2A2A] font-medium">
-                      <Mail size={16} className="text-gray-400"/> {activeCandidate?.email || 'N/A'}
+                  <h3 className="text-xs font-black text-muted-foreground dark:text-gray-400 uppercase tracking-widest mb-3">Contact Information</h3>
+                  <div className="bg-muted/40 dark:bg-zinc-900 rounded-xl p-4 space-y-3 border border-border dark:border-zinc-800">
+                    <div className="flex items-center gap-3 text-sm text-foreground dark:text-gray-200 font-medium">
+                      <Mail size={16} className="text-muted-foreground"/> {activeCandidate?.email || 'N/A'}
                     </div>
-                    <div className="flex items-center gap-3 text-sm text-[#2A2A2A] font-medium">
-                      <Phone size={16} className="text-gray-400"/> {activeCandidate?.phone || 'N/A'}
+                    <div className="flex items-center gap-3 text-sm text-foreground dark:text-gray-200 font-medium">
+                      <Phone size={16} className="text-muted-foreground"/> {activeCandidate?.phone || 'N/A'}
                     </div>
-                    <div className="flex items-center gap-3 text-sm text-[#2A2A2A] font-medium">
-                      <MapPin size={16} className="text-gray-400"/> {activeCandidate?.location || 'N/A'}
+                    <div className="flex items-center gap-3 text-sm text-foreground dark:text-gray-200 font-medium">
+                      <MapPin size={16} className="text-muted-foreground"/> {activeCandidate?.location || 'N/A'}
                     </div>
-                    <div className="flex items-center gap-3 text-sm text-[#2A2A2A] font-medium">
-                      <Briefcase size={16} className="text-gray-400"/> {expYears} years of experience
+                    <div className="flex items-center gap-3 text-sm text-foreground dark:text-gray-200 font-medium">
+                      <Briefcase size={16} className="text-muted-foreground"/> {expYears} years of experience
                     </div>
                     {activeCandidate?.linkedin_url && (
                       <div className="flex items-center gap-3 text-sm font-medium">
-                        <Linkedin size={16} className="text-blue-500"/>
-                        <a href={activeCandidate.linkedin_url} target="_blank" rel="noopener" className="text-[#2563EB] hover:underline flex items-center gap-1">
+                        <Linkedin size={16} className="text-sky-500"/>
+                        <a href={activeCandidate.linkedin_url} target="_blank" rel="noopener" className="text-sky-600 dark:text-sky-400 hover:underline flex items-center gap-1">
                           LinkedIn Profile <ExternalLink size={12}/>
                         </a>
                       </div>
                     )}
                     {activeCandidate?.github_url && (
                       <div className="flex items-center gap-3 text-sm font-medium">
-                        <Github size={16} className="text-gray-700"/>
-                        <a href={activeCandidate.github_url} target="_blank" rel="noopener" className="text-[#2563EB] hover:underline flex items-center gap-1">
+                        <Github size={16} className="text-foreground dark:text-gray-200"/>
+                        <a href={activeCandidate.github_url} target="_blank" rel="noopener" className="text-sky-600 dark:text-sky-400 hover:underline flex items-center gap-1">
                           GitHub Profile <ExternalLink size={12}/>
                         </a>
                       </div>
@@ -538,36 +538,36 @@ export default function CandidateCard({ candidate, sessionId, rounds = [], onAct
 
                 {/* Match Breakdown */}
                 <section>
-                  <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3 flex justify-between items-end">
+                  <h3 className="text-xs font-black text-muted-foreground dark:text-gray-400 uppercase tracking-widest mb-3 flex justify-between items-end">
                     Match Breakdown
-                    <span className="text-3xl font-black text-[#2A2A2A]">{score}<span className="text-xl">%</span></span>
+                    <span className="text-3xl font-black text-foreground dark:text-zinc-100">{score}<span className="text-xl">%</span></span>
                   </h3>
                   <div className="space-y-4">
                     <div>
-                      <div className="flex justify-between text-xs font-bold text-gray-600 mb-1.5">
+                      <div className="flex justify-between text-xs font-bold text-muted-foreground dark:text-gray-300 mb-1.5">
                         <span>Skills Match</span>
-                        <span className="text-[#2563EB]">{skillScore}%</span>
+                        <span className="text-sky-600 dark:text-sky-400">{skillScore}%</span>
                       </div>
-                      <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-[#2563EB]" style={{width: `${skillScore}%`}}></div>
+                      <div className="w-full h-2 bg-muted dark:bg-zinc-800 rounded-full overflow-hidden">
+                        <div className="h-full bg-sky-600 dark:bg-sky-500" style={{width: `${skillScore}%`}}></div>
                       </div>
                     </div>
                     <div>
-                      <div className="flex justify-between text-xs font-bold text-gray-600 mb-1.5">
+                      <div className="flex justify-between text-xs font-bold text-muted-foreground dark:text-gray-300 mb-1.5">
                         <span>Experience Match</span>
-                        <span className="text-[#2563EB]">{experienceScore}%</span>
+                        <span className="text-sky-600 dark:text-sky-400">{experienceScore}%</span>
                       </div>
-                      <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-[#2563EB]" style={{width: `${experienceScore}%`}}></div>
+                      <div className="w-full h-2 bg-muted dark:bg-zinc-800 rounded-full overflow-hidden">
+                        <div className="h-full bg-sky-600 dark:bg-sky-500" style={{width: `${experienceScore}%`}}></div>
                       </div>
                     </div>
                     <div>
-                      <div className="flex justify-between text-xs font-bold text-gray-600 mb-1.5">
+                      <div className="flex justify-between text-xs font-bold text-muted-foreground dark:text-gray-300 mb-1.5">
                         <span>Location Match</span>
-                        <span className="text-[#2563EB]">{locationScore}%</span>
+                        <span className="text-sky-600 dark:text-sky-400">{locationScore}%</span>
                       </div>
-                      <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-[#2563EB]" style={{width: `${locationScore}%`}}></div>
+                      <div className="w-full h-2 bg-muted dark:bg-zinc-800 rounded-full overflow-hidden">
+                        <div className="h-full bg-sky-600 dark:bg-sky-500" style={{width: `${locationScore}%`}}></div>
                       </div>
                     </div>
                   </div>
@@ -575,40 +575,40 @@ export default function CandidateCard({ candidate, sessionId, rounds = [], onAct
 
                 {/* Skills */}
                 <section>
-                  <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3">All Skills</h3>
+                  <h3 className="text-xs font-black text-muted-foreground dark:text-gray-400 uppercase tracking-widest mb-3">All Skills</h3>
                   <div className="flex flex-wrap gap-2">
                     {matchedSkills.map((s,i) => (
-                      <span key={`m-${i}`} className="bg-green-50 text-green-700 border border-green-200 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5">
-                        <CheckCircle size={14} className="text-green-500"/> {getSkillName(s)}
+                      <span key={`m-${i}`} className="bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5">
+                        <CheckCircle size={14} className="text-emerald-500"/> {getSkillName(s)}
                       </span>
                     ))}
                     {missingSkills.map((s,i) => (
-                      <span key={`x-${i}`} className="bg-gray-100 text-gray-500 border border-gray-200 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5">
-                        <XCircle size={14} className="text-gray-400"/> {getSkillName(s)}
+                      <span key={`x-${i}`} className="bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border border-rose-300 dark:border-rose-700 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5">
+                        <XCircle size={14} className="text-rose-500"/> {getSkillName(s)}
                       </span>
                     ))}
                     {otherSkills.map((s,i) => (
-                      <span key={`o-${i}`} className="bg-white text-gray-600 border border-gray-200 px-3 py-1.5 rounded-lg text-xs font-bold">{getSkillName(s)}</span>
+                      <span key={`o-${i}`} className="bg-muted dark:bg-zinc-800 text-foreground dark:text-zinc-200 border border-border dark:border-zinc-700 px-3 py-1.5 rounded-lg text-xs font-bold">{getSkillName(s)}</span>
                     ))}
                     {matchedSkills.length === 0 && missingSkills.length === 0 && normalizedSkills.map((s,i) => (
-                      <span key={`n-${i}`} className="bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1.5 rounded-lg text-xs font-bold">{getSkillName(s)}</span>
+                      <span key={`n-${i}`} className="bg-sky-100 dark:bg-sky-950/60 text-sky-800 dark:text-sky-300 border border-sky-300 dark:border-sky-700 px-3 py-1.5 rounded-lg text-xs font-bold">{getSkillName(s)}</span>
                     ))}
                   </div>
                 </section>
 
                 {/* Work History Section */}
-                <section className="bg-white border border-gray-100 rounded-2xl p-5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] space-y-4">
-                  <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-1.5 border-b border-gray-150 pb-2">
-                    <Briefcase size={16} className="text-gray-400" /> Work History
+                <section className="bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-2xl p-5 shadow-xs space-y-4">
+                  <h3 className="text-xs font-black text-muted-foreground dark:text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-1.5 border-b border-border dark:border-zinc-800 pb-2">
+                    <Briefcase size={16} className="text-muted-foreground" /> Work History
                   </h3>
                   
                   {loadingDetails ? (
                     <div className="space-y-4">
-                      <div className="h-20 bg-gray-50 animate-pulse rounded-xl" />
-                      <div className="h-20 bg-gray-50 animate-pulse rounded-xl" />
+                      <div className="h-20 bg-muted animate-pulse rounded-xl" />
+                      <div className="h-20 bg-muted animate-pulse rounded-xl" />
                     </div>
                   ) : experience.length > 0 ? (
-                    <div className="relative border-l border-gray-200 ml-3 pl-6 space-y-6 my-2">
+                    <div className="relative border-l border-border dark:border-zinc-700 ml-3 pl-6 space-y-6 my-2">
                       {experience.map((exp, i) => {
                         const responsibilities = exp.responsibilities || [];
                         const bullets = Array.isArray(responsibilities) 
@@ -622,23 +622,23 @@ export default function CandidateCard({ candidate, sessionId, rounds = [], onAct
                         return (
                           <div key={i} className="relative">
                             {/* Dot indicator */}
-                            <span className="absolute -left-[30px] top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-white border border-gray-300">
-                              <span className={`h-2.5 w-2.5 rounded-full ${i === 0 ? 'bg-[#1e293b]' : 'bg-[#3b82f6]'}`} />
+                            <span className="absolute -left-[30px] top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-card border border-border">
+                              <span className={`h-2.5 w-2.5 rounded-full ${i === 0 ? 'bg-sky-500' : 'bg-primary'}`} />
                             </span>
                             
                             <div className="space-y-1">
-                              <div className="flex items-center gap-1.5 text-sm font-bold text-[#2A2A2A]">
-                                <Briefcase size={13} className="text-gray-400 shrink-0" />
+                              <div className="flex items-center gap-1.5 text-sm font-bold text-foreground dark:text-zinc-100">
+                                <Briefcase size={13} className="text-muted-foreground shrink-0" />
                                 <span>{exp.role || exp.title || 'Role'}</span>
-                                <span className="text-gray-300">•</span>
-                                <span className="text-[#2563EB]">{exp.company || 'Company'}</span>
+                                <span className="text-muted-foreground">•</span>
+                                <span className="text-sky-600 dark:text-sky-400 font-bold">{exp.company || 'Company'}</span>
                               </div>
-                              <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                              <div className="text-[11px] font-semibold text-muted-foreground dark:text-gray-400 uppercase tracking-wider">
                                 {exp.start_date} — {exp.end_date || 'Present'}
-                                {exp.duration && <span className="ml-2 bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded lowercase font-medium">{exp.duration}</span>}
+                                {exp.duration && <span className="ml-2 bg-muted text-foreground dark:text-gray-300 px-1.5 py-0.5 rounded lowercase font-medium">{exp.duration}</span>}
                               </div>
                               {allBullets.length > 0 ? (
-                                <ul className="list-disc pl-4 text-xs text-gray-600 space-y-1 mt-2">
+                                <ul className="list-disc pl-4 text-xs text-foreground dark:text-gray-300 space-y-1 mt-2">
                                   {allBullets.map((bullet, idx) => (
                                     <li key={idx} className="leading-relaxed font-medium">
                                       {bullet.replace(/^\s*[\-\•\*\s]\s*/, '')}
@@ -646,7 +646,7 @@ export default function CandidateCard({ candidate, sessionId, rounds = [], onAct
                                   ))}
                                 </ul>
                               ) : (
-                                <p className="text-xs text-gray-400 italic mt-1">No detailed descriptions extracted.</p>
+                                <p className="text-xs text-muted-foreground italic mt-1">No detailed descriptions extracted.</p>
                               )}
                             </div>
                           </div>
@@ -654,15 +654,15 @@ export default function CandidateCard({ candidate, sessionId, rounds = [], onAct
                       })}
                     </div>
                   ) : (
-                    <p className="text-xs text-gray-500 italic text-center py-2">No professional experience extracted.</p>
+                    <p className="text-xs text-muted-foreground italic text-center py-2">No professional experience extracted.</p>
                   )}
                 </section>
 
                 {/* Projects Section */}
                 {projects && projects.length > 0 && (
-                  <section className="bg-white border border-gray-100 rounded-2xl p-5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] space-y-4">
-                    <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-1.5 border-b border-gray-150 pb-2">
-                      <Award size={16} className="text-gray-400" /> Projects
+                  <section className="bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-2xl p-5 shadow-xs space-y-4">
+                    <h3 className="text-xs font-black text-muted-foreground dark:text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-1.5 border-b border-border dark:border-zinc-800 pb-2">
+                      <Award size={16} className="text-muted-foreground" /> Projects
                     </h3>
                     
                     <div className="space-y-3">
@@ -670,13 +670,13 @@ export default function CandidateCard({ candidate, sessionId, rounds = [], onAct
                         const name = proj.name || proj.title || 'Project';
                         const badgeText = i === 0 ? "Featured" : ((proj.url || proj.link) ? "Open Source" : null);
                         const badgeColor = i === 0 
-                          ? "bg-[#e6fcf5] text-[#0ca678] border-[#c3fae8]" 
-                          : "bg-[#e7f5ff] text-[#1c7ed6] border-[#d0ebff]";
+                          ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border-emerald-300" 
+                          : "bg-sky-100 dark:bg-sky-950/60 text-sky-800 dark:text-sky-300 border-sky-300";
 
                         return (
-                          <div key={i} className="bg-gray-50/50 border border-gray-100 rounded-xl p-4 space-y-2">
+                          <div key={i} className="bg-muted/30 dark:bg-zinc-800/50 border border-border dark:border-zinc-700 rounded-xl p-4 space-y-2">
                             <div className="flex justify-between items-center">
-                              <h4 className="font-bold text-sm text-[#2A2A2A]">{name}</h4>
+                              <h4 className="font-bold text-sm text-foreground dark:text-zinc-100">{name}</h4>
                               {badgeText && (
                                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${badgeColor}`}>
                                   {badgeText}
@@ -685,7 +685,7 @@ export default function CandidateCard({ candidate, sessionId, rounds = [], onAct
                             </div>
                             
                             {proj.description && (
-                              <p className="text-xs text-gray-600 leading-relaxed font-medium">
+                              <p className="text-xs text-muted-foreground dark:text-gray-300 leading-relaxed font-medium">
                                 {proj.description}
                               </p>
                             )}
@@ -693,7 +693,7 @@ export default function CandidateCard({ candidate, sessionId, rounds = [], onAct
                             {proj.tech_stack && proj.tech_stack.length > 0 && (
                               <div className="flex flex-wrap gap-1 pt-1">
                                 {proj.tech_stack.map((tech, j) => (
-                                  <span key={j} className="bg-white text-gray-500 border border-gray-200 px-1.5 py-0.5 rounded text-[10px] font-bold">
+                                  <span key={j} className="bg-card dark:bg-zinc-800 text-foreground dark:text-zinc-200 border border-border dark:border-zinc-700 px-1.5 py-0.5 rounded text-[10px] font-bold">
                                     {tech}
                                   </span>
                                 ))}
@@ -706,7 +706,7 @@ export default function CandidateCard({ candidate, sessionId, rounds = [], onAct
                                   href={proj.url || proj.link} 
                                   target="_blank" 
                                   rel="noopener noreferrer" 
-                                  className="text-xs text-[#2563EB] hover:underline inline-flex items-center gap-1 font-bold"
+                                  className="text-xs text-sky-600 dark:text-sky-400 hover:underline inline-flex items-center gap-1 font-bold"
                                 >
                                   View Project <ExternalLink size={10} />
                                 </a>
@@ -721,31 +721,31 @@ export default function CandidateCard({ candidate, sessionId, rounds = [], onAct
 
                 {/* Education Section */}
                 {education && education.length > 0 && (
-                  <section className="bg-white border border-gray-100 rounded-2xl p-5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] space-y-4">
-                    <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-1.5 border-b border-gray-150 pb-2">
-                      <GraduationCap size={16} className="text-gray-400" /> Education
+                  <section className="bg-card dark:bg-zinc-900 border border-border dark:border-zinc-800 rounded-2xl p-5 shadow-xs space-y-4">
+                    <h3 className="text-xs font-black text-muted-foreground dark:text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-1.5 border-b border-border dark:border-zinc-800 pb-2">
+                      <GraduationCap size={16} className="text-muted-foreground" /> Education
                     </h3>
                     
                     <div className="space-y-3">
                       {education.map((edu, i) => {
                         const isHonors = edu.cgpa >= 8.5 || edu.cgpa >= 3.5 || i === 0;
                         return (
-                          <div key={i} className="bg-gray-50/50 border border-gray-100 rounded-xl p-4 space-y-2">
+                          <div key={i} className="bg-muted/30 dark:bg-zinc-800/50 border border-border dark:border-zinc-700 rounded-xl p-4 space-y-2">
                             <div className="flex justify-between items-center">
-                              <h4 className="font-bold text-sm text-[#2A2A2A]">
+                              <h4 className="font-bold text-sm text-foreground dark:text-zinc-100">
                                 {edu.degree}{edu.field ? ` in ${edu.field}` : ''}
                               </h4>
                               {isHonors && (
-                                <span className="text-[10px] font-bold text-gray-500 bg-[#f1f3f5] border border-[#e9ecef] px-2 py-0.5 rounded-full">
+                                <span className="text-[10px] font-bold text-foreground dark:text-gray-200 bg-muted dark:bg-zinc-800 border border-border dark:border-zinc-700 px-2 py-0.5 rounded-full">
                                   Honors
                                 </span>
                               )}
                             </div>
                             
-                            <div className="flex justify-between items-center text-xs text-gray-500 font-semibold">
+                            <div className="flex justify-between items-center text-xs text-muted-foreground dark:text-gray-300 font-semibold">
                               <span>{edu.institution}</span>
                               {edu.year_end && (
-                                <span className="text-[10px] font-bold text-gray-400 bg-white border border-gray-200 px-2 py-0.5 rounded">
+                                <span className="text-[10px] font-bold text-muted-foreground dark:text-gray-300 bg-card dark:bg-zinc-800 border border-border dark:border-zinc-700 px-2 py-0.5 rounded">
                                   {edu.year_end}
                                 </span>
                               )}
@@ -755,7 +755,7 @@ export default function CandidateCard({ candidate, sessionId, rounds = [], onAct
                               {(edu.field ? [edu.field] : []).concat(
                                 edu.cgpa ? [`CGPA: ${edu.cgpa}`] : []
                               ).concat(["Academic Core", "Theory & Labs"].slice(0, edu.field ? 1 : 2)).map((tag, idx) => (
-                                <span key={idx} className="bg-white text-gray-500 border border-gray-200 px-2 py-0.5 rounded-full text-[10px] font-bold">
+                                <span key={idx} className="bg-card dark:bg-zinc-800 text-muted-foreground dark:text-gray-300 border border-border dark:border-zinc-700 px-2 py-0.5 rounded-full text-[10px] font-bold">
                                   {tag}
                                 </span>
                               ))}
@@ -772,13 +772,13 @@ export default function CandidateCard({ candidate, sessionId, rounds = [], onAct
                   <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {certifications.length > 0 && (
                       <div>
-                         <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2"><Award size={14} className="text-gray-400"/> Certifications</h3>
+                         <h3 className="text-xs font-black text-muted-foreground dark:text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2"><Award size={14} className="text-muted-foreground"/> Certifications</h3>
                          <ul className="space-y-2">
                            {certifications.map((cert, i) => (
-                             <li key={`cert-${i}`} className="bg-gray-50 border border-gray-100 p-3 rounded-lg flex flex-col">
-                               <span className="font-bold text-[#2A2A2A] text-xs">{cert.name || cert}</span>
+                             <li key={`cert-${i}`} className="bg-muted/40 dark:bg-zinc-900 border border-border dark:border-zinc-800 p-3 rounded-lg flex flex-col">
+                               <span className="font-bold text-foreground dark:text-zinc-100 text-xs">{cert.name || cert}</span>
                                {(cert.issuer || cert.date) && (
-                                <span className="text-[10px] font-semibold text-gray-500 mt-0.5">
+                                <span className="text-[10px] font-semibold text-muted-foreground dark:text-gray-400 mt-0.5">
                                   {cert.issuer} {cert.date ? `(${cert.date})` : ''}
                                 </span>
                                )}
@@ -789,11 +789,11 @@ export default function CandidateCard({ candidate, sessionId, rounds = [], onAct
                     )}
                     {achievements.length > 0 && (
                       <div>
-                         <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2"><Award size={14} className="text-gray-400"/> Achievements</h3>
+                         <h3 className="text-xs font-black text-muted-foreground dark:text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2"><Award size={14} className="text-muted-foreground"/> Achievements</h3>
                          <ul className="space-y-2">
                            {achievements.map((ach, i) => (
-                             <li key={`ach-${i}`} className="bg-[#FFFDF5] border border-[#FDE68A] text-[#92400E] p-3 rounded-lg text-xs font-semibold flex gap-2">
-                               <span className="text-[#F59E0B] flex-shrink-0">★</span> {ach}
+                             <li key={`ach-${i}`} className="bg-amber-100 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-200 p-3 rounded-lg text-xs font-semibold flex gap-2">
+                               <span className="text-amber-500 flex-shrink-0">★</span> {ach}
                              </li>
                            ))}
                          </ul>
@@ -805,10 +805,10 @@ export default function CandidateCard({ candidate, sessionId, rounds = [], onAct
                 {/* Languages */}
                 {languages.length > 0 && (
                   <section>
-                    <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Languages</h3>
+                    <h3 className="text-xs font-black text-muted-foreground dark:text-gray-400 uppercase tracking-widest mb-3">Languages</h3>
                     <div className="flex flex-wrap gap-2">
                       {languages.map((lang, i) => (
-                        <span key={`lang-${i}`} className="bg-indigo-50 border border-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg text-xs font-bold">
+                        <span key={`lang-${i}`} className="bg-sky-100 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-700 text-sky-800 dark:text-sky-200 px-3 py-1.5 rounded-lg text-xs font-bold">
                           {typeof lang === 'string' ? lang : `${lang.language || lang.name} ${lang.proficiency ? `(${lang.proficiency})` : ''}`}
                         </span>
                       ))}
@@ -818,30 +818,30 @@ export default function CandidateCard({ candidate, sessionId, rounds = [], onAct
 
                 {/* Source & Round Info */}
                 <section>
-                  <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Candidate Info</h3>
-                  <div className="bg-gray-50 rounded-xl p-4 border border-gray-100 grid grid-cols-2 gap-3 text-sm">
+                  <h3 className="text-xs font-black text-muted-foreground dark:text-gray-400 uppercase tracking-widest mb-3">Candidate Info</h3>
+                  <div className="bg-muted/40 dark:bg-zinc-900 rounded-xl p-4 border border-border dark:border-zinc-800 grid grid-cols-2 gap-3 text-sm">
                     <div>
-                      <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider block mb-0.5">Source</span>
-                      <span className="font-semibold text-[#2A2A2A] capitalize">{activeCandidate?.source || 'upload'}</span>
+                      <span className="text-[10px] font-black text-muted-foreground dark:text-gray-400 uppercase tracking-wider block mb-0.5">Source</span>
+                      <span className="font-semibold text-foreground dark:text-zinc-100 capitalize">{activeCandidate?.source || 'upload'}</span>
                     </div>
                     <div>
-                      <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider block mb-0.5">Status</span>
+                      <span className="text-[10px] font-black text-muted-foreground dark:text-gray-400 uppercase tracking-wider block mb-0.5">Status</span>
                       <span className={`font-semibold capitalize ${
-                        activeCandidate?.status === 'hired' ? 'text-green-600' :
-                        activeCandidate?.status === 'rejected' ? 'text-red-600' :
-                        'text-[#2A2A2A]'
+                        activeCandidate?.status === 'hired' ? 'text-emerald-600 dark:text-emerald-400' :
+                        activeCandidate?.status === 'rejected' ? 'text-rose-600 dark:text-rose-400' :
+                        'text-foreground dark:text-zinc-100'
                       }`}>{activeCandidate?.status || 'new'}</span>
                     </div>
                     <div>
-                      <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider block mb-0.5">Current Round</span>
-                      <span className="font-semibold text-[#2A2A2A]">{currentRoundIndex}</span>
+                      <span className="text-[10px] font-black text-muted-foreground dark:text-gray-400 uppercase tracking-wider block mb-0.5">Current Round</span>
+                      <span className="font-semibold text-foreground dark:text-zinc-100">{currentRoundIndex}</span>
                     </div>
                     <div>
-                      <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider block mb-0.5">Recommendation</span>
+                      <span className="text-[10px] font-black text-muted-foreground dark:text-gray-400 uppercase tracking-wider block mb-0.5">Recommendation</span>
                       <span className={`font-semibold ${
-                        activeCandidate?.recommendation === 'Strong' ? 'text-green-600' :
-                        activeCandidate?.recommendation === 'Moderate' ? 'text-amber-600' :
-                        'text-red-600'
+                        activeCandidate?.recommendation === 'Strong' ? 'text-emerald-600 dark:text-emerald-400' :
+                        activeCandidate?.recommendation === 'Moderate' ? 'text-amber-600 dark:text-amber-400' :
+                        'text-rose-600 dark:text-rose-400'
                       }`}>{activeCandidate?.recommendation || 'N/A'}</span>
                     </div>
                   </div>
@@ -850,17 +850,17 @@ export default function CandidateCard({ candidate, sessionId, rounds = [], onAct
 
               {/* DRAWER FOOTER */}
               {!isHiredOrRejected && (
-                <div className="p-5 border-t border-gray-100 bg-white grid grid-cols-2 gap-4 shrink-0 box-content pb-6">
+                <div className="p-5 border-t border-border dark:border-zinc-800 bg-card dark:bg-[#121217] grid grid-cols-2 gap-4 shrink-0 box-content pb-6">
                   <button 
                     onClick={() => { setShowDetail(false); handleReject(); }}
-                    className="py-3 border-2 border-red-100 text-[#EF4444] bg-white hover:bg-red-50 rounded-xl font-bold uppercase tracking-widest text-xs transition-colors"
+                    className="py-3 border-2 border-rose-300 dark:border-rose-800 text-rose-600 dark:text-rose-400 bg-background hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl font-bold uppercase tracking-widest text-xs transition-colors"
                   >
                     Reject
                   </button>
                   <button 
                     onClick={() => { setShowDetail(false); handleForwardOrHire(); }}
                     className={`py-3 shadow-md rounded-xl font-bold uppercase tracking-widest text-xs transition-colors ${
-                      isLastRound ? 'bg-[#22C55E] hover:bg-[#166534] text-white shadow-green-600/20' : 'bg-[#2563EB] hover:bg-[#1D4ED8] text-white shadow-orange-500/20'
+                      isLastRound ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20' : 'bg-sky-600 hover:bg-sky-700 text-white shadow-sky-600/20'
                     }`}
                   >
                     {isLastRound ? <span className="flex items-center justify-center gap-1.5"><Sparkles size={12} /> Hire Candidate</span> : 'Forward to Next →'}

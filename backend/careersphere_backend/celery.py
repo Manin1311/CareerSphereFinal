@@ -1,7 +1,7 @@
 import os
 from celery import Celery
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'vishleshan_backend.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'careersphere_backend.settings')
 
 app = Celery('careersphere')
 

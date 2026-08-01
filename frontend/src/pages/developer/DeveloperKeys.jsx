@@ -292,6 +292,9 @@ export default function DeveloperKeys({ defaultTab }) {
   
   // Passwords state
   const [passwords, setPasswords] = useState({ current: "", newPass: "", confirm: "" });
+  const [showCurrentPass, setShowCurrentPass] = useState(false);
+  const [showNewPass, setShowNewPass] = useState(false);
+  const [showConfirmPass, setShowConfirmPass] = useState(false);
   
   // CORS Domains state
   const [domains, setDomains] = useState(developer?.allowed_domains || ["hrms.yourcompany.com"]);
@@ -314,17 +317,14 @@ export default function DeveloperKeys({ defaultTab }) {
   const handleAvatarUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      return toast.error("File size must be under 5 MB");
-    }
     setUploadingAvatar(true);
     try {
       const data = await portalAuth.uploadAvatar(file);
-      setProfile((prev) => ({ ...prev, avatarPath: data.avatar_path }));
+      setProfile(prev => ({ ...prev, avatarPath: data.avatar_path }));
       setAuth({ avatar_path: data.avatar_path });
-      toast.success("Profile photo updated!");
+      toast.success("Avatar updated!");
     } catch (err) {
-      toast.error(err.message || "Failed to upload profile photo");
+      toast.error("Failed to upload avatar");
     } finally {
       setUploadingAvatar(false);
     }
@@ -374,11 +374,30 @@ export default function DeveloperKeys({ defaultTab }) {
     }
   };
 
-  const handlePasswordSave = (e) => {
+  const handlePasswordSave = async (e) => {
     e.preventDefault();
-    if(passwords.newPass !== passwords.confirm) return toast.error("Passwords do not match");
-    toast.success("Password secured");
-    setPasswords({ current: "", newPass: "", confirm: "" });
+    if (!passwords.current) {
+      return toast.error("Please enter your current password");
+    }
+    if (passwords.newPass.length < 8) {
+      return toast.error("New password must be at least 8 characters long");
+    }
+    if (!/[A-Z]/.test(passwords.newPass) || !/[0-9]/.test(passwords.newPass)) {
+      return toast.error("New password must contain at least 1 uppercase letter and 1 number");
+    }
+    if (passwords.newPass !== passwords.confirm) {
+      return toast.error("New passwords do not match");
+    }
+    try {
+      await portalAuth.updateProfile({
+        current_password: passwords.current,
+        new_password: passwords.newPass
+      });
+      toast.success("Password updated successfully!");
+      setPasswords({ current: "", newPass: "", confirm: "" });
+    } catch (err) {
+      toast.error(err.message || "Failed to update password");
+    }
   };
 
   const updateDomains = async (newDomainsList) => {
@@ -681,43 +700,82 @@ const data = await response.json();`
           )}
 
           {activeTab === 'security' && (
-            <div className="bg-white rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.03)] border border-gray-100 p-8 space-y-6">
-              <h2 className="text-md font-bold text-charcoal flex items-center gap-2 pb-4 border-b border-gray-100">
+            <div className="bg-card rounded-2xl shadow-sm border border-border p-8 space-y-6">
+              <h2 className="text-md font-bold text-foreground flex items-center gap-2 pb-4 border-b border-border">
                 <Lock className="w-5 h-5 text-accent" /> Security Settings
               </h2>
               <form onSubmit={handlePasswordSave} className="flex flex-col gap-5 max-w-lg">
                 <div>
-                   <label className="text-[10px] font-black text-gray-900 uppercase tracking-widest mb-1.5 block pl-0.5">Current Password</label>
-                   <input 
-                     type="password" 
-                     required 
-                     value={passwords.current} 
-                     onChange={e=>setPasswords({...passwords, current:e.target.value})} 
-                     className="w-full p-3 bg-white border border-gray-200 focus:border-accent rounded-xl text-sm font-bold text-charcoal focus:outline-none transition-colors font-mono" 
-                   />
+                   <label className="text-[10px] font-black text-foreground dark:text-gray-200 uppercase tracking-widest mb-1.5 block pl-0.5">Current Password</label>
+                   <div className="relative flex items-center">
+                     <input 
+                       type={showCurrentPass ? "text" : "password"} 
+                       required 
+                       value={passwords.current} 
+                       onChange={e=>setPasswords({...passwords, current:e.target.value})} 
+                       className="w-full p-3 pr-10 bg-background border border-border focus:border-accent rounded-xl text-sm font-bold text-foreground focus:outline-none transition-colors font-mono" 
+                       placeholder="Enter current password"
+                     />
+                     <button 
+                       type="button"
+                       onClick={() => setShowCurrentPass(!showCurrentPass)}
+                       className="absolute right-3 text-muted-foreground hover:text-foreground transition-colors p-1"
+                       title={showCurrentPass ? "Hide password" : "Show password"}
+                     >
+                       {showCurrentPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                     </button>
+                   </div>
                 </div>
+
                 <div>
-                   <label className="text-[10px] font-black text-gray-900 uppercase tracking-widest mb-1.5 block pl-0.5">New Password</label>
-                   <input 
-                     type="password" 
-                     required 
-                     value={passwords.newPass} 
-                     onChange={e=>setPasswords({...passwords, newPass:e.target.value})} 
-                     className="w-full p-3 bg-white border border-gray-200 focus:border-accent rounded-xl text-sm font-bold text-charcoal focus:outline-none transition-colors font-mono" 
-                   />
+                   <label className="text-[10px] font-black text-foreground dark:text-gray-200 uppercase tracking-widest mb-1.5 block pl-0.5">New Password</label>
+                   <div className="relative flex items-center">
+                     <input 
+                       type={showNewPass ? "text" : "password"} 
+                       required 
+                       value={passwords.newPass} 
+                       onChange={e=>setPasswords({...passwords, newPass:e.target.value})} 
+                       className="w-full p-3 pr-10 bg-background border border-border focus:border-accent rounded-xl text-sm font-bold text-foreground focus:outline-none transition-colors font-mono" 
+                       placeholder="Min. 8 chars (1 uppercase, 1 number)"
+                     />
+                     <button 
+                       type="button"
+                       onClick={() => setShowNewPass(!showNewPass)}
+                       className="absolute right-3 text-muted-foreground hover:text-foreground transition-colors p-1"
+                       title={showNewPass ? "Hide password" : "Show password"}
+                     >
+                       {showNewPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                     </button>
+                   </div>
+                   <p className="text-[11px] text-muted-foreground dark:text-gray-400 mt-1 pl-0.5">
+                     Must be at least 8 characters long with 1 uppercase letter & 1 number.
+                   </p>
                 </div>
+
                 <div>
-                   <label className="text-[10px] font-black text-gray-900 uppercase tracking-widest mb-1.5 block pl-0.5">Confirm New Password</label>
-                   <input 
-                     type="password" 
-                     required 
-                     value={passwords.confirm} 
-                     onChange={e=>setPasswords({...passwords, confirm:e.target.value})} 
-                     className="w-full p-3 bg-white border border-gray-200 focus:border-accent rounded-xl text-sm font-bold text-charcoal focus:outline-none transition-colors font-mono" 
-                   />
+                   <label className="text-[10px] font-black text-foreground dark:text-gray-200 uppercase tracking-widest mb-1.5 block pl-0.5">Confirm New Password</label>
+                   <div className="relative flex items-center">
+                     <input 
+                       type={showConfirmPass ? "text" : "password"} 
+                       required 
+                       value={passwords.confirm} 
+                       onChange={e=>setPasswords({...passwords, confirm:e.target.value})} 
+                       className="w-full p-3 pr-10 bg-background border border-border focus:border-accent rounded-xl text-sm font-bold text-foreground focus:outline-none transition-colors font-mono" 
+                       placeholder="Re-enter new password"
+                     />
+                     <button 
+                       type="button"
+                       onClick={() => setShowConfirmPass(!showConfirmPass)}
+                       className="absolute right-3 text-muted-foreground hover:text-foreground transition-colors p-1"
+                       title={showConfirmPass ? "Hide password" : "Show password"}
+                     >
+                       {showConfirmPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                     </button>
+                   </div>
                 </div>
+
                 <div className="pt-2">
-                  <button type="submit" className="bg-[#2A2A2A] hover:bg-black text-white px-6 py-3 rounded-xl text-xs font-bold shadow-md transition-colors w-full sm:w-auto">
+                  <button type="submit" className="bg-[#2A2A2A] hover:bg-black dark:bg-sky-600 dark:hover:bg-sky-700 text-white px-6 py-3 rounded-xl text-xs font-bold shadow-md transition-colors w-full sm:w-auto">
                     Update Password
                   </button>
                 </div>

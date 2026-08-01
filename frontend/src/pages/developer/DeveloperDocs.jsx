@@ -358,29 +358,29 @@ export default function DeveloperDocs() {
               </div>
               <p className="text-gray-600 font-medium text-sm mb-6">Extracts structured data from a raw resume file synchronously.</p>
               
-              <h4 className="font-bold text-charcoal text-sm uppercase mb-3 text-gray-400">Parameters</h4>
-              <div className="overflow-x-auto mb-6">
+              <h4 className="font-bold text-foreground dark:text-gray-200 text-sm uppercase mb-3">Parameters</h4>
+              <div className="overflow-x-auto mb-6 border border-border/80 dark:border-zinc-800 rounded-xl bg-card">
                 <table className="w-full text-left text-sm whitespace-nowrap">
                   <thead>
-                    <tr className="border-b-2 border-gray-100 text-charcoal font-bold bg-gray-50">
+                    <tr className="border-b-2 border-border/80 dark:border-zinc-800 text-foreground dark:text-gray-100 font-bold bg-muted/50 dark:bg-zinc-900/90">
                       <th className="p-3 rounded-tl-xl">Name</th>
                       <th className="p-3">Type</th>
                       <th className="p-3">Required</th>
                       <th className="p-3 w-full rounded-tr-xl">Description</th>
                     </tr>
                   </thead>
-                  <tbody className="text-gray-500 font-medium">
-                    <tr className="border-b border-gray-50">
-                      <td className="p-3 font-mono text-charcoal">file</td>
-                      <td className="p-3 text-blue-500">binary</td>
+                  <tbody className="text-foreground dark:text-gray-200 font-medium">
+                    <tr className="border-b border-border/40 dark:border-zinc-800/60">
+                      <td className="p-3 font-mono text-foreground dark:text-gray-100 font-bold">file</td>
+                      <td className="p-3 text-sky-600 dark:text-sky-300 font-bold">binary</td>
                       <td className="p-3 text-red-500 font-bold">Yes</td>
-                      <td className="p-3">The resume file. Supported: pdf, docx, txt.</td>
+                      <td className="p-3 text-foreground dark:text-gray-200">The resume file. Supported: pdf, docx, txt.</td>
                     </tr>
-                    <tr className="border-b border-gray-50">
-                      <td className="p-3 font-mono text-charcoal">webhook_url</td>
-                      <td className="p-3 text-blue-500">string</td>
-                      <td className="p-3 text-gray-400">No</td>
-                      <td className="p-3">URL to receive "resume.parsed" event.</td>
+                    <tr className="border-b border-border/40 dark:border-zinc-800/60">
+                      <td className="p-3 font-mono text-foreground dark:text-gray-100 font-bold">webhook_url</td>
+                      <td className="p-3 text-sky-600 dark:text-sky-300 font-bold">string</td>
+                      <td className="p-3 text-muted-foreground dark:text-gray-400">No</td>
+                      <td className="p-3 text-foreground dark:text-gray-200">URL to receive "resume.parsed" event.</td>
                     </tr>
                   </tbody>
                 </table>
@@ -613,23 +613,23 @@ export default function DeveloperDocs() {
             <p className="text-gray-600 font-medium mb-6 leading-relaxed">
               CareerSphere sends webhook events to notify your application when async tasks complete. Register your endpoint URL in the developer portal or pass <code className="bg-gray-100 rounded px-1">webhook_url</code> inline with any request.
             </p>
-            <h4 className="font-bold text-charcoal text-sm uppercase mb-3 text-gray-400">Event Types</h4>
-            <div className="overflow-x-auto mb-6 border border-gray-200 rounded-xl">
+            <h4 className="font-bold text-foreground dark:text-gray-200 text-sm uppercase mb-3">Event Types</h4>
+            <div className="overflow-x-auto mb-6 border border-border/80 dark:border-zinc-800 rounded-xl bg-card">
               <table className="w-full text-left text-sm whitespace-nowrap">
                 <thead>
-                  <tr className="border-b border-gray-200 bg-gray-50 text-charcoal font-bold">
+                  <tr className="border-b border-border/80 dark:border-zinc-800 bg-muted/50 dark:bg-zinc-900/90 text-foreground dark:text-gray-100 font-bold">
                     <th className="p-3">Event</th>
                     <th className="p-3 w-full">Description</th>
                   </tr>
                 </thead>
-                <tbody className="text-gray-500 font-medium">
-                  <tr className="border-b border-gray-50"><td className="p-3 font-mono text-charcoal">resume.parsed</td><td className="p-3">A resume has been fully parsed and structured data is ready.</td></tr>
-                  <tr className="border-b border-gray-50"><td className="p-3 font-mono text-charcoal">resume.failed</td><td className="p-3">Resume parsing failed. Includes error details.</td></tr>
-                  <tr className="border-b border-gray-50"><td className="p-3 font-mono text-charcoal">ingest.batch_done</td><td className="p-3">All files in a batch ingestion have been processed.</td></tr>
+                <tbody className="text-foreground dark:text-gray-200 font-medium">
+                  <tr className="border-b border-border/40 dark:border-zinc-800/60"><td className="p-3 font-mono text-sky-600 dark:text-sky-300 font-bold">resume.parsed</td><td className="p-3 text-foreground dark:text-gray-200">A resume has been fully parsed and structured data is ready.</td></tr>
+                  <tr className="border-b border-border/40 dark:border-zinc-800/60"><td className="p-3 font-mono text-sky-600 dark:text-sky-300 font-bold">resume.failed</td><td className="p-3 text-foreground dark:text-gray-200">Resume parsing failed. Includes error details.</td></tr>
+                  <tr className="border-b border-border/40 dark:border-zinc-800/60"><td className="p-3 font-mono text-sky-600 dark:text-sky-300 font-bold">ingest.batch_done</td><td className="p-3 text-foreground dark:text-gray-200">All files in a batch ingestion have been processed.</td></tr>
                 </tbody>
               </table>
             </div>
-            <h4 className="font-bold text-charcoal text-sm uppercase mb-3 text-gray-400">Webhook Payload</h4>
+            <h4 className="font-bold text-foreground dark:text-gray-200 text-sm uppercase mb-3">Webhook Payload</h4>
             <SyntaxHighlighter language="json" style={vs2015} customStyle={{ borderRadius: "12px", padding: "16px", fontSize: "12px", marginBottom: "16px" }}>
 {`{
   "event": "resume.parsed",
@@ -643,60 +643,61 @@ export default function DeveloperDocs() {
   "signature": "sha256=abc123..."
 }`}
             </SyntaxHighlighter>
-            <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl text-sm text-blue-800 font-semibold">
-              <strong>Signature Verification:</strong> Each webhook includes a <code>X-CareerSphere-Signature</code> header. Verify it using your webhook secret to ensure authenticity.
+            <div className="p-4 bg-sky-100 dark:bg-sky-950/80 border border-sky-300 dark:border-sky-700 rounded-xl text-sm text-sky-900 dark:text-sky-200 font-semibold shadow-xs">
+              <strong className="text-sky-950 dark:text-sky-100">Signature Verification:</strong> Each webhook includes a <code className="bg-sky-200/60 dark:bg-sky-900 px-1.5 py-0.5 rounded text-sky-950 dark:text-sky-100 font-mono">X-CareerSphere-Signature</code> header. Verify it using your webhook secret to ensure authenticity.
             </div>
           </section>
-<section id="rate-limits" className="mb-16 pt-8 border-t border-gray-200">
-            <h2 className="text-3xl font-black text-charcoal mb-4">Rate Limits & Errors</h2>
-            <p className="text-gray-600 font-medium mb-6 leading-relaxed">
+
+          <section id="rate-limits" className="mb-16 pt-8 border-t border-gray-200">
+            <h2 className="text-3xl font-black text-foreground dark:text-white mb-4">Rate Limits & Errors</h2>
+            <p className="text-muted-foreground dark:text-gray-300 font-medium mb-6 leading-relaxed">
               CareerSphere uses standard HTTP response codes to indicate the success or failure of an API request.
             </p>
             
-            <h4 className="font-bold text-charcoal text-sm uppercase mb-3 text-gray-400">Plan Quotas</h4>
-            <div className="overflow-x-auto mb-8 border border-gray-200 rounded-xl">
+            <h4 className="font-bold text-foreground dark:text-gray-200 text-sm uppercase mb-3">Plan Quotas</h4>
+            <div className="overflow-x-auto mb-8 border border-border/80 dark:border-zinc-800 rounded-xl bg-card">
               <table className="w-full text-left text-sm whitespace-nowrap">
                 <thead>
-                  <tr className="border-b border-gray-200 bg-gray-50 text-charcoal font-bold">
+                  <tr className="border-b border-border/80 dark:border-zinc-800 bg-muted/50 dark:bg-zinc-900/90 text-foreground dark:text-gray-100 font-bold">
                     <th className="p-3">Tier</th>
                     <th className="p-3">Parses/mo</th>
                     <th className="p-3">Match Ops/mo</th>
                     <th className="p-3">Chat Queries/mo</th>
                   </tr>
                 </thead>
-                <tbody className="text-gray-600 font-medium">
-                  <tr className="border-b border-gray-50"><td className="p-3 font-bold text-charcoal">Free</td><td className="p-3">100</td><td className="p-3">500</td><td className="p-3">100</td></tr>
-                  <tr className="border-b border-gray-50"><td className="p-3 font-bold text-accent">Starter</td><td className="p-3">1,000</td><td className="p-3">10,000</td><td className="p-3">2,000</td></tr>
-                  <tr className="border-b border-gray-0"><td className="p-3 font-bold text-blue-600">Business</td><td className="p-3">10,000</td><td className="p-3">Unlimited</td><td className="p-3">Unlimited</td></tr>
+                <tbody className="text-foreground dark:text-gray-200 font-medium">
+                  <tr className="border-b border-border/40 dark:border-zinc-800/60"><td className="p-3 font-bold text-foreground dark:text-gray-100">Free</td><td className="p-3 text-foreground dark:text-gray-200 font-semibold">100</td><td className="p-3 text-foreground dark:text-gray-200 font-semibold">500</td><td className="p-3 text-foreground dark:text-gray-200 font-semibold">100</td></tr>
+                  <tr className="border-b border-border/40 dark:border-zinc-800/60"><td className="p-3 font-bold text-sky-600 dark:text-sky-400">Starter</td><td className="p-3 text-foreground dark:text-gray-200 font-semibold">1,000</td><td className="p-3 text-foreground dark:text-gray-200 font-semibold">10,000</td><td className="p-3 text-foreground dark:text-gray-200 font-semibold">2,000</td></tr>
+                  <tr className="border-b-0"><td className="p-3 font-bold text-blue-600 dark:text-blue-400">Business</td><td className="p-3 text-foreground dark:text-gray-200 font-semibold">10,000</td><td className="p-3 text-foreground dark:text-gray-200 font-semibold">Unlimited</td><td className="p-3 text-foreground dark:text-gray-200 font-semibold">Unlimited</td></tr>
                 </tbody>
               </table>
             </div>
 
-            <h4 className="font-bold text-charcoal text-sm uppercase mb-3 text-gray-400">HTTP Status Codes</h4>
+            <h4 className="font-bold text-foreground dark:text-gray-200 text-sm uppercase mb-3">HTTP Status Codes</h4>
             <div className="overflow-x-auto mb-6">
                <table className="w-full text-left text-sm whitespace-nowrap">
                  <thead>
-                   <tr className="border-b-2 border-gray-100 text-charcoal font-bold">
+                   <tr className="border-b-2 border-border/80 dark:border-zinc-800 text-foreground dark:text-gray-100 font-bold">
                      <th className="pb-2 pr-4">Code</th>
                      <th className="pb-2 px-4">Status</th>
                      <th className="pb-2 pl-4 w-full">Meaning</th>
                    </tr>
                  </thead>
-                 <tbody className="text-gray-500 font-medium">
-                   <tr className="border-b border-gray-50">
-                     <td className="py-2 pr-4 font-mono font-bold text-amber-600">400</td>
-                     <td className="py-2 px-4">Bad Request</td>
-                     <td className="py-2 pl-4">The request was unacceptable, often due to missing a required parameter.</td>
+                 <tbody className="text-foreground dark:text-gray-300 font-medium">
+                   <tr className="border-b border-border/40 dark:border-zinc-800/60">
+                     <td className="py-2 pr-4 font-mono font-bold text-amber-600 dark:text-amber-400">400</td>
+                     <td className="py-2 px-4 text-foreground dark:text-gray-200 font-semibold">Bad Request</td>
+                     <td className="py-2 pl-4 text-muted-foreground dark:text-gray-300">The request was unacceptable, often due to missing a required parameter.</td>
                    </tr>
-                   <tr className="border-b border-gray-50">
-                     <td className="py-2 pr-4 font-mono font-bold text-red-600">401</td>
-                     <td className="py-2 px-4">Unauthorized</td>
-                     <td className="py-2 pl-4">No valid API key provided.</td>
+                   <tr className="border-b border-border/40 dark:border-zinc-800/60">
+                     <td className="py-2 pr-4 font-mono font-bold text-red-600 dark:text-red-400">401</td>
+                     <td className="py-2 px-4 text-foreground dark:text-gray-200 font-semibold">Unauthorized</td>
+                     <td className="py-2 pl-4 text-muted-foreground dark:text-gray-300">No valid API key provided.</td>
                    </tr>
-                   <tr className="border-b border-gray-50">
-                     <td className="py-2 pr-4 font-mono font-bold text-red-600">429</td>
-                     <td className="py-2 px-4">Rate Limited</td>
-                     <td className="py-2 pl-4">Too many requests hit the API or monthly quota exceeded.</td>
+                   <tr className="border-b border-border/40 dark:border-zinc-800/60">
+                     <td className="py-2 pr-4 font-mono font-bold text-red-600 dark:text-red-400">429</td>
+                     <td className="py-2 px-4 text-foreground dark:text-gray-200 font-semibold">Rate Limited</td>
+                     <td className="py-2 pl-4 text-muted-foreground dark:text-gray-300">Too many requests hit the API or monthly quota exceeded.</td>
                    </tr>
                  </tbody>
                </table>

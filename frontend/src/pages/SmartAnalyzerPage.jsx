@@ -394,27 +394,27 @@ export default function SmartAnalyzerPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* JD INPUT */}
               <motion.div
-                className={`p-7 rounded-2xl bg-white border-2 transition-all shadow-[0_4px_20px_rgba(0,0,0,0.04)] ${jdText.length > 30 ? 'border-green-400 shadow-green-500/10' : 'border-gray-100'}`}
+                className={`p-7 rounded-2xl bg-card border-2 transition-all shadow-sm ${jdText.length > 30 ? 'border-green-500/50 shadow-green-500/10' : 'border-border'}`}
                 whileHover={{ y: -3 }}
                 transition={{ duration: 0.2 }}
               >
                 <div className="flex items-center justify-between mb-5">
-                  <h2 className="text-lg font-black text-[#2A2A2A] flex items-center gap-2.5">
+                  <h2 className="text-lg font-black text-foreground flex items-center gap-2.5">
                     <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center"><FileText size={16} className="text-accent" /></div>
                     Job Description
                   </h2>
-                  {jdText.length > 30 && <div className="bg-green-100 text-green-700 p-1.5 rounded-full"><Check size={14} strokeWidth={3} /></div>}
+                  {jdText.length > 30 && <div className="bg-green-500/20 text-green-500 dark:text-green-400 p-1.5 rounded-full"><Check size={14} strokeWidth={3} /></div>}
                 </div>
 
                 <textarea
-                  className="w-full h-56 p-4 rounded-xl bg-[#FAFAFA] border-2 border-gray-100 focus:border-accent focus:ring-0 focus:outline-none resize-none text-sm font-medium text-[#2A2A2A] placeholder:text-gray-400 transition-colors"
+                  className="w-full h-56 p-4 rounded-xl bg-background border-2 border-border focus:border-accent focus:ring-0 focus:outline-none resize-none text-sm font-medium text-foreground placeholder:text-muted-foreground dark:placeholder:text-gray-400 transition-colors"
                   placeholder="Paste the full job description here... Include required skills, experience level, and responsibilities to get the most accurate analysis."
                   value={jdText}
                   onChange={(e) => setJdText(e.target.value)}
                 />
 
                 <div className="mt-3 flex items-center justify-between">
-                  <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+                  <span className="text-[10px] text-muted-foreground dark:text-gray-400 font-bold uppercase tracking-wider">
                     {jdText.length > 30 ? `✓ ${jdText.split(/\s+/).length} words detected` : 'Minimum 30 characters required'}
                   </span>
                 </div>
@@ -422,11 +422,11 @@ export default function SmartAnalyzerPage() {
 
               {/* RESUME UPLOAD */}
               <motion.div
-                className={`p-7 rounded-2xl bg-white border-2 transition-all shadow-[0_4px_20px_rgba(0,0,0,0.04)] ${resumes.length > 0 ? 'border-accent/50' : 'border-gray-100'}`}
+                className={`p-7 rounded-2xl bg-card border-2 transition-all shadow-sm ${resumes.length > 0 ? 'border-accent/50' : 'border-border'}`}
                 whileHover={{ y: -3 }}
                 transition={{ duration: 0.2 }}
               >
-                <h2 className="text-lg font-black text-[#2A2A2A] flex items-center gap-2.5 mb-5">
+                <h2 className="text-lg font-black text-foreground flex items-center gap-2.5 mb-5">
                   <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center"><Brain size={16} className="text-accent" /></div>
                   Candidate Resumes
                 </h2>
@@ -434,17 +434,17 @@ export default function SmartAnalyzerPage() {
                 <div
                   {...getRootProps()}
                   className={`border-2 border-dashed rounded-xl h-56 flex flex-col items-center justify-center transition-all cursor-pointer group ${
-                    isDragActive ? 'border-accent bg-accent/5 scale-[1.02]' : 'border-gray-200 bg-[#FAFAFA] hover:bg-blue-50/30 hover:border-accent/40'
+                    isDragActive ? 'border-accent bg-accent/5 scale-[1.02]' : 'border-border bg-background hover:bg-muted/50 hover:border-accent/40'
                   }`}
                 >
                   <input {...getInputProps()} />
-                  <div className="w-16 h-16 rounded-2xl bg-white shadow-md flex items-center justify-center mb-4 group-hover:scale-110 group-hover:shadow-lg transition-all">
+                  <div className="w-16 h-16 rounded-2xl bg-card border border-border shadow-md flex items-center justify-center mb-4 group-hover:scale-110 group-hover:shadow-lg transition-all">
                     <Upload className="text-accent" size={28} />
                   </div>
-                  <p className="font-bold text-gray-600 group-hover:text-accent transition-colors">
+                  <p className="font-bold text-foreground group-hover:text-accent transition-colors">
                     {isDragActive ? 'Drop files here...' : 'Drag & Drop Resumes'}
                   </p>
-                  <p className="text-xs text-gray-400 mt-1 font-medium">PDF, DOCX, and TXT supported • No limit</p>
+                  <p className="text-xs text-muted-foreground dark:text-gray-400 mt-1 font-medium">PDF, DOCX, and TXT supported • No limit</p>
                 </div>
 
                 <AnimatePresence>
@@ -455,7 +455,7 @@ export default function SmartAnalyzerPage() {
                       exit={{ opacity: 0, height: 0 }}
                       className="mt-4"
                     >
-                      <div className="p-3.5 bg-accent/5 border border-accent/15 rounded-xl flex items-center justify-between">
+                      <div className="p-3.5 bg-accent/10 border border-accent/20 rounded-xl flex items-center justify-between">
                         <div className="flex items-center gap-3 text-accent font-bold text-sm">
                           <div className="w-8 h-8 rounded-lg bg-accent text-white flex items-center justify-center text-xs font-black">
                             {resumes.length}
@@ -469,9 +469,9 @@ export default function SmartAnalyzerPage() {
 
                       <div className="mt-2 max-h-24 overflow-y-auto space-y-1 custom-scrollbar">
                         {resumes.map((f, i) => (
-                          <div key={i} className="flex items-center justify-between text-xs text-gray-500 px-2 py-1 bg-white rounded-lg border border-gray-100">
+                          <div key={i} className="flex items-center justify-between text-xs text-foreground dark:text-gray-200 px-2 py-1 bg-background rounded-lg border border-border">
                             <span className="truncate font-medium">{f.name}</span>
-                            <button onClick={(e) => { e.stopPropagation(); setResumes(prev => prev.filter((_, idx) => idx !== i)); }} className="text-gray-400 hover:text-red-500 ml-2 shrink-0">
+                            <button onClick={(e) => { e.stopPropagation(); setResumes(prev => prev.filter((_, idx) => idx !== i)); }} className="text-muted-foreground hover:text-red-500 ml-2 shrink-0">
                               <X size={12} />
                             </button>
                           </div>

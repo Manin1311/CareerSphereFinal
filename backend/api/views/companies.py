@@ -60,7 +60,7 @@ def _serialize_company(company, is_following=False, active_sessions=None, follow
         "rating": dynamic_rating,
         "review_count": review_count,
         "company_size": company.company_size or "50-200",
-        "founded_year": company.founded_year or 2020,
+        "founded_year": company.founded_year,
         "website_url": company.website_url or "https://example.com",
         "logo_path": company.logo_path,
         "openings": len(open_jobs),
@@ -409,7 +409,7 @@ def public_market_trends(request):
         start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         hired_this_month_count = JobApplication.objects.filter(status="hired", updated_at__gte=start_of_month).count()
 
-        # 1. Dynamic Salary Calculation from DB
+        # 1. Dynamic Salary Calculation from DB (in INR)
         db_salaries = []
         for s in all_sessions:
             crit = s.criteria if isinstance(s.criteria, dict) else {}
@@ -420,11 +420,21 @@ def public_market_trends(request):
                 crit.get("min_salary")
             )
             if isinstance(sal_val, (int, float)) and sal_val > 0:
-                db_salaries.append(float(sal_val))
+                val = float(sal_val)
+                if val < 100:
+                    val = val * 100000
+                elif val < 2000:
+                    val = val * 10000
+                db_salaries.append(val)
             elif isinstance(sal_val, str):
                 try:
-                    f_val = float(sal_val.replace(",", "").strip())
+                    clean_str = sal_val.replace(",", "").replace("₹", "").replace("LPA", "").replace("L", "").strip()
+                    f_val = float(clean_str)
                     if f_val > 0:
+                        if f_val < 100:
+                            f_val = f_val * 100000
+                        elif f_val < 2000:
+                            f_val = f_val * 10000
                         db_salaries.append(f_val)
                 except Exception:
                     pass
@@ -432,7 +442,7 @@ def public_market_trends(request):
         if db_salaries:
             avg_db_salary = int(sum(db_salaries) / len(db_salaries))
         else:
-            avg_db_salary = 148200
+            avg_db_salary = 1450000  # Default ₹14.5 Lakhs (INR)
 
         base_salary = avg_db_salary
         salary_change = round(8.5 + (hired_count * 0.1), 1)
@@ -483,10 +493,10 @@ def public_market_trends(request):
 
         if not region_distribution:
             region_distribution = [
-                {"name": "Bengaluru", "value": 450, "color": "#2563EB"},
-                {"name": "San Francisco", "value": 380, "color": "#0F56B3"},
-                {"name": "Zurich", "value": 180, "color": "#22C55E"},
-                {"name": "London", "value": 240, "color": "#8b5cf6"}
+                {"name": "Ahmedabad", "value": 450, "color": "#2563EB"},
+                {"name": "Bengaluru", "value": 380, "color": "#0F56B3"},
+                {"name": "Mumbai", "value": 240, "color": "#22C55E"},
+                {"name": "Delhi NCR", "value": 180, "color": "#8b5cf6"}
             ]
 
         top_region = max(region_distribution, key=lambda x: x["value"])
@@ -500,18 +510,18 @@ def public_market_trends(request):
             for tc in db_timeline_configs:
                 s_val = tc.salary_k
                 if tc.is_projection and base_salary > 0:
-                    s_val = int(s_val + (base_salary / 10000))
+                    s_val = int(s_val + (base_salary / 100000))
                 salary_timeline.append({
                     "year": tc.year,
                     "salary": s_val
                 })
         else:
-            base_k = int(base_salary / 1000) if base_salary else 138
+            base_lpa = round(base_salary / 100000, 1) if base_salary else 14.5
             salary_timeline = [
-                {"year": "2023", "salary": max(90, base_k - 26)},
-                {"year": "2024", "salary": max(100, base_k - 14)},
-                {"year": "2025", "salary": base_k},
-                {"year": "2026 (Est)", "salary": int(base_k * 1.12)}
+                {"year": "2023", "salary": round(max(8.0, base_lpa - 3.3), 1)},
+                {"year": "2024", "salary": round(max(10.0, base_lpa - 1.7), 1)},
+                {"year": "2025", "salary": base_lpa},
+                {"year": "2026 (Est)", "salary": round(base_lpa * 1.15, 1)}
             ]
 
         # 4. Dynamic High Growth Skills & Salaries from DB
@@ -531,7 +541,7 @@ def public_market_trends(request):
                     s.criteria.get("salary_max") or s.criteria.get("max_budget") or 
                     s.criteria.get("max_salary") or s.criteria.get("salary_min") or s.criteria.get("budget")
                 )
-                curr = s.criteria.get("salary_currency", "USD")
+                curr = s.criteria.get("salary_currency", "INR")
 
                 for sk in all_sk:
                     if isinstance(sk, str) and sk.strip():
@@ -557,10 +567,11 @@ def public_market_trends(request):
             sal_tuples = skill_salaries.get(sk_name, [])
             if sal_tuples:
                 avg_val = sum(t[0] for t in sal_tuples) / len(sal_tuples)
-                curr_symbol = "₹" if sal_tuples[0][1] == "INR" else ("€" if sal_tuples[0][1] == "EUR" else ("£" if sal_tuples[0][1] == "GBP" else "$"))
-                pay_str = f"{curr_symbol}{int(avg_val / 1000)}k" if avg_val < 100000 else f"{curr_symbol}{round(avg_val / 100000, 1)}L"
+                if avg_val < 100:
+                    avg_val = avg_val * 100000
+                pay_str = f"₹{round(avg_val / 100000, 1)}L"
             else:
-                pay_str = f"${145 + (count_val * 5)}k"
+                pay_str = f"₹{round(14.0 + (count_val * 1.2), 1)}L"
 
             growth_pct = min(99, 18 + (count_val * 6))
             high_growth_domains.append({
@@ -579,15 +590,15 @@ def public_market_trends(request):
                 high_growth_domains.append({
                     "name": g_cfg.name,
                     "growth": f"+{g_cfg.growth_percentage}%",
-                    "pay": f"${int(g_cfg.median_salary / 1000)}k",
+                    "pay": f"₹{round(g_cfg.median_salary / 100000, 1)}L" if g_cfg.median_salary > 1000 else f"₹{g_cfg.median_salary}L",
                     "description": f"{g_cfg.description} (+{g_cfg.growth_percentage}%)."
                 })
 
         if not high_growth_domains:
             high_growth_domains = [
-                {"name": "Prompt Engineering", "growth": "+48%", "pay": "$185k", "description": "Highest request growth this quarter."},
-                {"name": "Design Systems", "growth": "+14%", "pay": "$140k", "description": "Steady enterprise adoption indices."},
-                {"name": "Rust / Go Backend", "growth": "+22%", "pay": "$165k", "description": "High throughput performance demand."}
+                {"name": "Python & AI Engineering", "growth": "+48%", "pay": "₹18.5L", "description": "Highest request growth across active database requisitions."},
+                {"name": "Full-Stack Development", "growth": "+28%", "pay": "₹16.0L", "description": "Highest request growth across active database requisitions."},
+                {"name": "Cloud Systems & AWS", "growth": "+22%", "pay": "₹14.5L", "description": "Highest request growth across active database requisitions."}
             ]
 
         # Response Time & Hiring Velocity

@@ -46,14 +46,14 @@ const TagInput = ({ tags, onChange, placeholder, tagColor }) => {
 
   const getPillColor = () => {
     switch(tagColor) {
-      case 'amber': return 'bg-amber-50 text-amber-800 border-amber-200';
-      case 'blue': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'gray': default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'amber': return 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-200 border-amber-300 dark:border-amber-700';
+      case 'blue': return 'bg-sky-100 dark:bg-sky-950/60 text-sky-800 dark:text-sky-200 border-sky-300 dark:border-sky-700';
+      case 'gray': default: return 'bg-muted dark:bg-zinc-800 text-foreground dark:text-zinc-200 border-border dark:border-zinc-700';
     }
   };
 
   return (
-    <div className="w-full flex flex-wrap items-center gap-2 p-2 border-[1.5px] border-gray-200 rounded-lg bg-white focus-within:border-accent transition-colors">
+    <div className="w-full flex flex-wrap items-center gap-2 p-2 border border-border dark:border-zinc-700 rounded-xl bg-background text-foreground focus-within:border-accent transition-colors">
       {tags.map((tag, idx) => (
         <div key={idx} className={`flex items-center gap-1 px-2.5 py-1 rounded-md border text-sm font-medium ${getPillColor()}`}>
           {tag}
@@ -65,10 +65,10 @@ const TagInput = ({ tags, onChange, placeholder, tagColor }) => {
       <input
         type="text"
         value={input}
-        onChange={e => setInput(e.target.value)}
+        onChange={(e) => setInput(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder={tags.length === 0 ? placeholder : "Add more..."}
-        className="flex-1 min-w-[120px] bg-transparent focus:outline-none text-sm text-charcoal py-1"
+        className="flex-1 min-w-[120px] bg-transparent text-xs text-foreground focus:outline-none placeholder:text-muted-foreground"
       />
     </div>
   );
@@ -478,19 +478,19 @@ export default function SessionWorkspacePage() {
                 Round {currentRoundIndex + 1} of {session.rounds?.length || 1}
               </span>
             </div>
-            <div className="flex items-center gap-2">
-              <button onClick={handleMatchAll} className="bg-accent hover:bg-[#1D4ED8] text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center gap-1.5 shadow-sm">
+            <div className="flex flex-wrap items-center gap-2">
+              <button onClick={handleMatchAll} className="bg-primary hover:opacity-90 text-primary-foreground px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center gap-1.5 shadow-sm">
                 <Zap size={16} fill="currentColor" /> Match All
               </button>
               <Link
                 to={`/dashboard/sessions/${id}/results`}
-                className="border-[1.5px] border-green-600 text-green-600 hover:bg-green-50 px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center gap-1.5 bg-white shadow-sm"
+                className="border-2 border-emerald-600 dark:border-emerald-500 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center gap-1.5 bg-background shadow-xs"
               >
                 View Assessment Results
               </Link>
               <button 
                 onClick={() => setIsEditModalOpen(true)}
-                className="border-[1.5px] border-accent text-accent hover:bg-blue-50 px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center gap-1.5 bg-white shadow-sm"
+                className="border-2 border-sky-600 dark:border-sky-500 text-sky-700 dark:text-sky-300 hover:bg-sky-50 dark:hover:bg-sky-950/50 px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center gap-1.5 bg-background shadow-xs"
               >
                 <Settings size={16} /> Edit Session
               </button>
@@ -499,7 +499,7 @@ export default function SessionWorkspacePage() {
                   const url = exportAPI.candidatesUrl(id);
                   if (url) window.open(url);
                 }} 
-                className="border-[1.5px] border-accent text-accent hover:bg-blue-50 px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center gap-1.5 bg-white"
+                className="border-2 border-sky-600 dark:border-sky-500 text-sky-700 dark:text-sky-300 hover:bg-sky-50 dark:hover:bg-sky-950/50 px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center gap-1.5 bg-background shadow-xs"
               >
                 <Download size={16} /> Export Hired
               </button>
@@ -509,12 +509,12 @@ export default function SessionWorkspacePage() {
                   navigator.clipboard.writeText(url);
                   toast.success("Public Apply Link copied to clipboard!");
                 }}
-                className="border-[1.5px] border-accent text-accent hover:bg-blue-50 px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center gap-1.5 bg-white"
+                className="border-2 border-sky-600 dark:border-sky-500 text-sky-700 dark:text-sky-300 hover:bg-sky-50 dark:hover:bg-sky-950/50 px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center gap-1.5 bg-background shadow-xs"
               >
                 <LinkIcon size={16} /> Copy Apply Link
               </button>
               {session.status !== "completed" && (
-                <button onClick={handleEndSession} className="border-[1.5px] border-red-500 text-red-500 hover:bg-red-50 px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center gap-1.5 bg-white">
+                <button onClick={handleEndSession} className="border-2 border-rose-600 dark:border-rose-500 text-rose-700 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/50 px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center gap-1.5 bg-background shadow-xs">
                   <X size={16} /> End Session
                 </button>
               )}
@@ -528,7 +528,7 @@ export default function SessionWorkspacePage() {
                     } catch(e) { toast.error(e.message); }
                   }
                 }} 
-                className="border-[1.5px] border-red-500 text-red-500 hover:bg-red-50 px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center gap-1.5 bg-white"
+                className="border-2 border-rose-600 dark:border-rose-500 text-rose-700 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/50 px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center gap-1.5 bg-background shadow-xs"
               >
                 <Trash2 size={16} /> Delete Session
               </button>
@@ -789,29 +789,29 @@ export default function SessionWorkspacePage() {
                     </span>
                     <ChevronDown size={20} className="text-gray-400 group-open:rotate-180 transition-transform" />
                   </summary>
-                  <div className="p-6 border-t border-gray-100 bg-white">
+                  <div className="p-6 border-t border-border bg-card">
                     <div className="flex gap-3 mb-6">
-                      <span className="bg-[#2A2A2A] text-white text-xs px-4 py-1.5 rounded-full font-bold shadow-sm">CSV</span>
-                      <span className="text-gray-500 text-xs px-4 py-1.5 font-bold hover:bg-gray-100 rounded-full cursor-pointer transition-colors border border-gray-200 bg-white">JSON</span>
-                      <span className="text-gray-500 text-xs px-4 py-1.5 font-bold hover:bg-gray-100 rounded-full cursor-pointer transition-colors border border-gray-200 bg-white">Excel</span>
+                      <span className="bg-primary text-primary-foreground text-xs px-4 py-1.5 rounded-full font-bold shadow-sm">CSV</span>
+                      <span className="text-muted-foreground text-xs px-4 py-1.5 font-bold hover:bg-muted rounded-full cursor-pointer transition-colors border border-border bg-background">JSON</span>
+                      <span className="text-muted-foreground text-xs px-4 py-1.5 font-bold hover:bg-muted rounded-full cursor-pointer transition-colors border border-border bg-background">Excel</span>
                     </div>
-                    <div className="bg-blue-50/50 border border-blue-200 text-blue-900 p-4 rounded-xl text-xs mb-5 shadow-sm">
-                      <strong className="block mb-1 text-sm">Expected columns:</strong> 
-                      <span className="font-mono text-[11px] bg-white px-2 py-0.5 rounded border border-blue-100 mr-2 mt-2 inline-block">name</span>
-                      <span className="font-mono text-[11px] bg-white px-2 py-0.5 rounded border border-blue-100 mr-2 mt-2 inline-block">email</span>
-                      <span className="font-mono text-[11px] bg-white px-2 py-0.5 rounded border border-blue-100 mr-2 mt-2 inline-block">phone</span>
-                      <span className="font-mono text-[11px] bg-white px-2 py-0.5 rounded border border-blue-100 mr-2 mt-2 inline-block">location</span>
-                      <span className="font-mono text-[11px] bg-white px-2 py-0.5 rounded border border-blue-100 mr-2 mt-2 inline-block">skills (semicolon-separated)</span>
-                      <span className="font-mono text-[11px] bg-white px-2 py-0.5 rounded border border-blue-100 mr-2 mt-2 inline-block">experience_years</span>
+                    <div className="bg-sky-50 dark:bg-sky-950/80 border border-sky-200 dark:border-sky-800 text-sky-900 dark:text-sky-100 p-4 rounded-xl text-xs mb-5 shadow-xs">
+                      <strong className="block mb-1 text-sm text-sky-950 dark:text-sky-100">Expected columns:</strong> 
+                      <span className="font-mono text-[11px] bg-white dark:bg-sky-900 text-sky-900 dark:text-sky-100 px-2 py-0.5 rounded border border-sky-200 dark:border-sky-700 mr-2 mt-2 inline-block font-semibold">name</span>
+                      <span className="font-mono text-[11px] bg-white dark:bg-sky-900 text-sky-900 dark:text-sky-100 px-2 py-0.5 rounded border border-sky-200 dark:border-sky-700 mr-2 mt-2 inline-block font-semibold">email</span>
+                      <span className="font-mono text-[11px] bg-white dark:bg-sky-900 text-sky-900 dark:text-sky-100 px-2 py-0.5 rounded border border-sky-200 dark:border-sky-700 mr-2 mt-2 inline-block font-semibold">phone</span>
+                      <span className="font-mono text-[11px] bg-white dark:bg-sky-900 text-sky-900 dark:text-sky-100 px-2 py-0.5 rounded border border-sky-200 dark:border-sky-700 mr-2 mt-2 inline-block font-semibold">location</span>
+                      <span className="font-mono text-[11px] bg-white dark:bg-sky-900 text-sky-900 dark:text-sky-100 px-2 py-0.5 rounded border border-sky-200 dark:border-sky-700 mr-2 mt-2 inline-block font-semibold">skills (semicolon-separated)</span>
+                      <span className="font-mono text-[11px] bg-white dark:bg-sky-900 text-sky-900 dark:text-sky-100 px-2 py-0.5 rounded border border-sky-200 dark:border-sky-700 mr-2 mt-2 inline-block font-semibold">experience_years</span>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-4 items-stretch h-32" {...getAtsProps()}>
-                      <div className={`border-2 border-dashed rounded-xl flex-1 flex flex-col items-center justify-center cursor-pointer transition-colors ${atsFile ? 'border-accent bg-blue-50' : 'border-gray-300 bg-gray-50/50 hover:bg-gray-50'}`}>
+                      <div className={`border-2 border-dashed rounded-xl flex-1 flex flex-col items-center justify-center cursor-pointer transition-colors ${atsFile ? 'border-accent bg-sky-50 dark:bg-sky-950/40' : 'border-border bg-muted/40 dark:bg-zinc-900/60 hover:bg-muted'}`}>
                         <input {...getAtsInput()} />
                         <FileText className="text-accent mb-2" size={28} />
-                        <span className="text-sm text-gray-500 font-bold">{atsFile ? atsFile.name : 'Drop CSV / Excel file here'}</span>
+                        <span className="text-sm text-foreground dark:text-gray-200 font-bold">{atsFile ? atsFile.name : 'Drop CSV / Excel file here'}</span>
                       </div>
                       <div className="flex flex-col justify-center gap-3 min-w-[200px]">
-                        <button className="text-accent font-bold text-xs border-2 border-accent bg-blue-50 hover:bg-blue-100 px-4 py-2.5 rounded-xl flex items-center justify-center gap-2 transition-colors"><Download size={16}/> Download sample CSV</button>
+                        <button className="text-foreground dark:text-gray-200 font-bold text-xs border border-border bg-background hover:bg-muted px-4 py-2.5 rounded-xl flex items-center justify-center gap-2 transition-colors"><Download size={16}/> Download sample CSV</button>
                         <button 
                           onClick={async () => {
                             if (!atsFile) return;
@@ -824,7 +824,7 @@ export default function SessionWorkspacePage() {
                             } catch (e) { toast.error(e.message); }
                           }}
                           disabled={!atsFile}
-                          className={`font-bold text-sm px-4 py-2.5 rounded-xl transition-colors ${atsFile ? 'bg-accent text-white hover:bg-[#1D4ED8]' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
+                          className={`font-bold text-sm px-4 py-2.5 rounded-xl transition-colors ${atsFile ? 'bg-primary text-primary-foreground hover:opacity-90' : 'bg-muted text-muted-foreground border border-border cursor-not-allowed'}`}
                         >
                           Import Records
                         </button>
@@ -1302,15 +1302,15 @@ export default function SessionWorkspacePage() {
       </div>
 
       {isEditModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-charcoal/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto flex flex-col hide-scrollbar border border-gray-100">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-card dark:bg-[#121217] text-foreground rounded-2xl max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto flex flex-col hide-scrollbar border border-border dark:border-zinc-800">
             
             {/* Modal Header */}
-            <div className="flex justify-between items-center pb-4 border-b border-gray-100 mb-6">
-              <h2 className="text-xl font-black text-charcoal">Edit Session Details</h2>
+            <div className="flex justify-between items-center pb-4 border-b border-border dark:border-zinc-800 mb-6">
+              <h2 className="text-xl font-black text-foreground dark:text-white">Edit Session Details</h2>
               <button 
                 onClick={() => setIsEditModalOpen(false)}
-                className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-charcoal transition-colors"
+                className="p-1.5 hover:bg-muted rounded-lg text-muted-foreground hover:text-foreground transition-colors"
               >
                 <X size={20} />
               </button>
@@ -1322,22 +1322,22 @@ export default function SessionWorkspacePage() {
               {/* Session Name & Job Title */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Session Name</label>
+                  <label className="text-xs font-bold text-muted-foreground dark:text-gray-300 uppercase tracking-wider">Session Name</label>
                   <input 
                     type="text" 
                     value={editName}
                     onChange={e => setEditName(e.target.value)}
-                    className="w-full text-sm p-2.5 border-[1.5px] border-gray-200 rounded-lg focus:border-accent focus:outline-none transition-colors"
+                    className="w-full text-sm p-2.5 border border-border dark:border-zinc-700 rounded-xl focus:border-accent focus:outline-none bg-background text-foreground dark:text-gray-100 transition-colors"
                     placeholder="e.g. Q4 Python hiring"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Job Title</label>
+                  <label className="text-xs font-bold text-muted-foreground dark:text-gray-300 uppercase tracking-wider">Job Title</label>
                   <input 
                     type="text" 
                     value={editJobTitle}
                     onChange={e => setEditJobTitle(e.target.value)}
-                    className="w-full text-sm p-2.5 border-[1.5px] border-gray-200 rounded-lg focus:border-accent focus:outline-none transition-colors"
+                    className="w-full text-sm p-2.5 border border-border dark:border-zinc-700 rounded-xl focus:border-accent focus:outline-none bg-background text-foreground dark:text-gray-100 transition-colors"
                     placeholder="e.g. Backend Software Engineer"
                   />
                 </div>
@@ -1345,12 +1345,12 @@ export default function SessionWorkspacePage() {
 
               {/* Job Description */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Job Description</label>
+                <label className="text-xs font-bold text-muted-foreground dark:text-gray-300 uppercase tracking-wider">Job Description</label>
                 <textarea 
                   rows={4}
                   value={editJobDescription}
                   onChange={e => setEditJobDescription(e.target.value)}
-                  className="w-full text-sm p-2.5 border-[1.5px] border-gray-200 rounded-lg focus:border-accent focus:outline-none transition-colors"
+                  className="w-full text-sm p-2.5 border border-border dark:border-zinc-700 rounded-xl focus:border-accent focus:outline-none bg-background text-foreground dark:text-gray-100 transition-colors"
                   placeholder="Paste detailed job description here..."
                 />
               </div>
@@ -1358,22 +1358,22 @@ export default function SessionWorkspacePage() {
               {/* Min Exp & Min Match Score */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Min Experience (Years)</label>
+                  <label className="text-xs font-bold text-muted-foreground dark:text-gray-300 uppercase tracking-wider">Min Experience (Years)</label>
                   <input 
                     type="number" 
                     value={editMinExperience}
                     onChange={e => setEditMinExperience(e.target.value)}
-                    className="w-full text-sm p-2.5 border-[1.5px] border-gray-200 rounded-lg focus:border-accent focus:outline-none transition-colors"
+                    className="w-full text-sm p-2.5 border border-border dark:border-zinc-700 rounded-xl focus:border-accent focus:outline-none bg-background text-foreground dark:text-gray-100 transition-colors"
                     min="0"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Min Match Score (%)</label>
+                  <label className="text-xs font-bold text-muted-foreground dark:text-gray-300 uppercase tracking-wider">Min Match Score (%)</label>
                   <input 
                     type="number" 
                     value={editMinMatchScore}
                     onChange={e => setEditMinMatchScore(e.target.value)}
-                    className="w-full text-sm p-2.5 border-[1.5px] border-gray-200 rounded-lg focus:border-accent focus:outline-none transition-colors"
+                    className="w-full text-sm p-2.5 border border-border dark:border-zinc-700 rounded-xl focus:border-accent focus:outline-none bg-background text-foreground dark:text-gray-100 transition-colors"
                     min="0"
                     max="100"
                   />
@@ -1383,11 +1383,11 @@ export default function SessionWorkspacePage() {
               {/* Salary Fields */}
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Currency</label>
+                  <label className="text-xs font-bold text-muted-foreground dark:text-gray-300 uppercase tracking-wider">Currency</label>
                   <select
                     value={editSalaryCurrency}
                     onChange={e => setEditSalaryCurrency(e.target.value)}
-                    className="w-full text-sm p-2.5 border-[1.5px] border-gray-200 rounded-lg focus:border-accent focus:outline-none bg-white transition-colors"
+                    className="w-full text-sm p-2.5 border border-border dark:border-zinc-700 rounded-xl focus:border-accent focus:outline-none bg-background text-foreground dark:text-gray-100 transition-colors"
                   >
                     <option value="USD">USD ($)</option>
                     <option value="INR">INR (₹)</option>
@@ -1396,22 +1396,22 @@ export default function SessionWorkspacePage() {
                   </select>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Min Salary</label>
+                  <label className="text-xs font-bold text-muted-foreground dark:text-gray-300 uppercase tracking-wider">Min Salary</label>
                   <input
                     type="number"
                     value={editSalaryMin}
                     onChange={e => setEditSalaryMin(e.target.value)}
-                    className="w-full text-sm p-2.5 border-[1.5px] border-gray-200 rounded-lg focus:border-accent focus:outline-none transition-colors"
+                    className="w-full text-sm p-2.5 border border-border dark:border-zinc-700 rounded-xl focus:border-accent focus:outline-none bg-background text-foreground dark:text-gray-100 transition-colors"
                     placeholder="e.g. 80000"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Max Salary</label>
+                  <label className="text-xs font-bold text-muted-foreground dark:text-gray-300 uppercase tracking-wider">Max Salary</label>
                   <input
                     type="number"
                     value={editSalaryMax}
                     onChange={e => setEditSalaryMax(e.target.value)}
-                    className="w-full text-sm p-2.5 border-[1.5px] border-gray-200 rounded-lg focus:border-accent focus:outline-none transition-colors"
+                    className="w-full text-sm p-2.5 border border-border dark:border-zinc-700 rounded-xl focus:border-accent focus:outline-none bg-background text-foreground dark:text-gray-100 transition-colors"
                     placeholder="e.g. 120000"
                   />
                 </div>
@@ -1419,7 +1419,7 @@ export default function SessionWorkspacePage() {
 
               {/* Required Skills */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Required Skills</label>
+                <label className="text-xs font-bold text-muted-foreground dark:text-gray-300 uppercase tracking-wider">Required Skills</label>
                 <TagInput 
                   tags={editRequiredSkills} 
                   onChange={setEditRequiredSkills} 
@@ -1430,7 +1430,7 @@ export default function SessionWorkspacePage() {
 
               {/* Nice-to-have Skills */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Nice-to-have Skills</label>
+                <label className="text-xs font-bold text-muted-foreground dark:text-gray-300 uppercase tracking-wider">Nice-to-have Skills</label>
                 <TagInput 
                   tags={editNiceToHave} 
                   onChange={setEditNiceToHave} 
@@ -1441,7 +1441,7 @@ export default function SessionWorkspacePage() {
 
               {/* Preferred Locations */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Preferred Locations</label>
+                <label className="text-xs font-bold text-muted-foreground dark:text-gray-300 uppercase tracking-wider">Preferred Locations</label>
                 <TagInput 
                   tags={editPreferredLocations} 
                   onChange={setEditPreferredLocations} 
@@ -1451,15 +1451,15 @@ export default function SessionWorkspacePage() {
               </div>
 
               {/* Interview Rounds */}
-              <div className="space-y-2 border-t border-gray-100 pt-4">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">Interview Rounds Configuration</label>
+              <div className="space-y-2 border-t border-border dark:border-zinc-800 pt-4">
+                <label className="text-xs font-bold text-muted-foreground dark:text-gray-300 uppercase tracking-wider block mb-1">Interview Rounds Configuration</label>
                 {editRounds.map((round, idx) => {
                   const isDeclared = round.result_announcement_date && new Date(round.result_announcement_date) < new Date();
                   const rType = round.round_type || (round.name.toLowerCase().includes("aptitude") || round.name.toLowerCase().includes("mcq") ? "mcq" : round.name.toLowerCase().includes("coding") ? "coding" : "interview");
                   return (
-                    <div key={idx} className="flex flex-col gap-3 bg-gray-50 p-3.5 rounded-xl border border-gray-200/70 relative">
+                    <div key={idx} className="flex flex-col gap-3 bg-muted/40 dark:bg-zinc-900 p-3.5 rounded-xl border border-border dark:border-zinc-800 relative">
                       <div className="flex gap-3 items-center flex-wrap">
-                        <span className="text-xs font-black text-gray-500 w-16 flex items-center gap-1">
+                        <span className="text-xs font-black text-muted-foreground dark:text-gray-300 w-16 flex items-center gap-1">
                           Round {round.order}
                         </span>
                         
@@ -1472,7 +1472,7 @@ export default function SessionWorkspacePage() {
                             updated[idx].name = e.target.value;
                             setEditRounds(updated);
                           }}
-                          className={`flex-1 text-xs p-2 border border-gray-200 bg-white rounded-lg focus:border-accent focus:outline-none font-bold ${isDeclared ? 'bg-gray-100 text-gray-500' : ''}`}
+                          className={`flex-1 text-xs p-2 border border-border dark:border-zinc-700 bg-background text-foreground dark:text-gray-100 rounded-lg focus:border-accent focus:outline-none font-bold ${isDeclared ? 'opacity-60 cursor-not-allowed' : ''}`}
                           placeholder="Round Name"
                         />
                         
@@ -1485,26 +1485,26 @@ export default function SessionWorkspacePage() {
                             updated[idx].interviewer = e.target.value;
                             setEditRounds(updated);
                           }}
-                          className={`flex-1 text-xs p-2 border border-gray-200 bg-white rounded-lg focus:border-accent focus:outline-none font-bold ${isDeclared ? 'bg-gray-100 text-gray-500' : ''}`}
+                          className={`flex-1 text-xs p-2 border border-border dark:border-zinc-700 bg-background text-foreground dark:text-gray-100 rounded-lg focus:border-accent focus:outline-none font-bold ${isDeclared ? 'opacity-60 cursor-not-allowed' : ''}`}
                           placeholder="Interviewer Name"
                         />
 
                         {isDeclared ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-100 border border-emerald-300 px-2 py-1 rounded-md">
-                            <Check className="w-3 h-3 text-emerald-600" /> Declared
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-700 px-2 py-1 rounded-md">
+                            <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-400" /> Declared
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-700 bg-blue-100 border border-blue-200 px-2 py-1 rounded-md">
-                            <Clock className="w-3 h-3 text-blue-600" /> Active
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-sky-700 dark:text-sky-300 bg-sky-100 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-700 px-2 py-1 rounded-md">
+                            <Clock className="w-3 h-3 text-sky-600 dark:text-sky-400" /> Active
                           </span>
                         )}
                       </div>
 
                       {/* Mode selection for AI Interview rounds */}
                       {rType === "interview" && (
-                        <div className="flex items-center gap-2 pt-1 border-t border-gray-200/50">
-                          <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap flex items-center gap-1">
-                            <Sparkles className="w-3 h-3 text-purple-600" /> AI Interview Mode:
+                        <div className="flex items-center gap-2 pt-1 border-t border-border dark:border-zinc-800">
+                          <label className="text-[10px] font-bold text-muted-foreground dark:text-gray-300 uppercase tracking-wider whitespace-nowrap flex items-center gap-1">
+                            <Sparkles className="w-3 h-3 text-purple-600 dark:text-purple-400" /> AI Interview Mode:
                           </label>
                           <select
                             disabled={isDeclared}
@@ -1514,7 +1514,7 @@ export default function SessionWorkspacePage() {
                               updated[idx].interview_mode = e.target.value;
                               setEditRounds(updated);
                             }}
-                            className={`text-xs p-1.5 border border-gray-200 bg-white rounded-lg focus:border-accent focus:outline-none font-semibold flex-1 ${isDeclared ? 'bg-gray-100 text-gray-500' : ''}`}
+                            className={`text-xs p-1.5 border border-border dark:border-zinc-700 bg-background text-foreground dark:text-gray-100 rounded-lg focus:border-accent focus:outline-none font-semibold flex-1 ${isDeclared ? 'opacity-60 cursor-not-allowed' : ''}`}
                           >
                             <option value="technical">Technical AI Interview (Architecture & Coding)</option>
                             <option value="hr">HR & Behavioral AI Interview (Culture Fit, Soft Skills, CTC)</option>
@@ -1524,8 +1524,8 @@ export default function SessionWorkspacePage() {
                       )}
 
                       <div className="flex items-center gap-2">
-                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap flex items-center gap-1">
-                          <Calendar className="w-3 h-3 text-gray-400" /> Result Declaration Time*:
+                        <label className="text-[10px] font-bold text-muted-foreground dark:text-gray-300 uppercase tracking-wider whitespace-nowrap flex items-center gap-1">
+                          <Calendar className="w-3 h-3 text-muted-foreground" /> Result Declaration Time*:
                         </label>
                         <input
                           type="datetime-local"
@@ -1540,7 +1540,7 @@ export default function SessionWorkspacePage() {
                             updated[idx].result_announcement_date = e.target.value;
                             setEditRounds(updated);
                           }}
-                          className={`text-xs p-2 border border-gray-200 bg-white rounded-lg focus:border-accent focus:outline-none font-bold flex-1 ${isDeclared ? 'bg-gray-100 text-gray-500' : ''}`}
+                          className={`text-xs p-2 border border-border dark:border-zinc-700 bg-background text-foreground dark:text-gray-100 rounded-lg focus:border-accent focus:outline-none font-bold flex-1 ${isDeclared ? 'opacity-60 cursor-not-allowed' : ''}`}
                           required
                         />
                       </div>
@@ -1552,17 +1552,17 @@ export default function SessionWorkspacePage() {
             </div>
 
             {/* Modal Actions */}
-            <div className="flex justify-end gap-3 pt-6 border-t border-gray-100 mt-6">
+            <div className="flex justify-end gap-3 pt-6 border-t border-border dark:border-zinc-800 mt-6">
               <button 
                 onClick={() => setIsEditModalOpen(false)}
-                className="border-[1.5px] border-gray-200 hover:bg-gray-50 text-charcoal px-5 py-2.5 rounded-xl font-bold transition-all text-sm"
+                className="border border-border hover:bg-muted text-foreground px-5 py-2.5 rounded-xl font-bold transition-all text-sm"
                 disabled={isSaving}
               >
                 Cancel
               </button>
               <button 
                 onClick={handleSaveChanges}
-                className="bg-accent hover:bg-[#1D4ED8] text-white px-5 py-2.5 rounded-xl font-bold transition-all text-sm shadow flex items-center gap-2"
+                className="bg-primary hover:opacity-90 text-primary-foreground px-5 py-2.5 rounded-xl font-bold transition-all text-sm shadow flex items-center gap-2"
                 disabled={isSaving}
               >
                 {isSaving ? <Loader2 size={16} className="animate-spin" /> : null}

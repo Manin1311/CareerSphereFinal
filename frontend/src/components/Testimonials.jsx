@@ -96,19 +96,19 @@ const TestimonialCard = ({ t, index, timeAgo, onEdit, onDelete }) => {
           </div>
           <div className="flex items-center gap-2">
             {t.createdAt && timeAgo && (
-              <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400">
+              <span className="text-[11px] font-semibold text-gray-500 dark:text-gray-300">
                 {timeAgo(t.createdAt)}
               </span>
             )}
             {t.companyId ? (
               <Link 
                 to={`/jobs/companies/${t.companyId}`}
-                className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 no-underline inline-flex items-center gap-1 hover:bg-blue-500/20 transition-colors"
+                className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-sky-100 dark:bg-sky-900/60 text-sky-700 dark:text-sky-200 border border-sky-300 dark:border-sky-700 no-underline inline-flex items-center gap-1 hover:bg-sky-200 dark:hover:bg-sky-800 transition-colors"
               >
                 <Building2 size={10} /> {t.targetBadge}
               </Link>
             ) : (
-              <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 inline-flex items-center gap-1">
+              <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-sky-100 dark:bg-sky-900/60 text-sky-700 dark:text-sky-200 border border-sky-300 dark:border-sky-700 inline-flex items-center gap-1">
                 {t.targetBadge}
               </span>
             )}
@@ -119,11 +119,11 @@ const TestimonialCard = ({ t, index, timeAgo, onEdit, onDelete }) => {
 
         {/* Official Response */}
         {t.officialReply && (
-          <div className="mt-2 mb-1 p-2.5 rounded-xl bg-blue-500/5 dark:bg-blue-500/10 border border-blue-500/15 text-[11px]">
-            <div className="font-bold text-blue-600 dark:text-blue-400 inline-flex items-center gap-1 mb-1">
+          <div className="mt-2 mb-1 p-2.5 rounded-xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 text-[11px]">
+            <div className="font-bold text-sky-700 dark:text-sky-300 inline-flex items-center gap-1 mb-1">
               <ShieldCheck size={12} /> Official Response
             </div>
-            <p className="text-gray-600 dark:text-gray-400">{t.officialReply}</p>
+            <p className="text-gray-600 dark:text-gray-300">{t.officialReply}</p>
           </div>
         )}
         
@@ -147,11 +147,11 @@ const TestimonialCard = ({ t, index, timeAgo, onEdit, onDelete }) => {
                       {t.author}
                     </span>
                     {t.isVerified && <VerifiedBadge size={14} className="shrink-0" />}
-                    {t.isOwn && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 shrink-0">You</span>}
+                    {t.isOwn && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-sky-100 dark:bg-sky-900/60 text-sky-700 dark:text-sky-200 border border-sky-300 dark:border-sky-700 shrink-0">You</span>}
                   </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{t.role}</p>
+                  <p className="text-xs font-medium text-gray-600 dark:text-gray-300 truncate">{t.role}</p>
                   {t.roleBadge && (
-                    <span className="text-[9px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-500/10 dark:bg-amber-400/15 text-amber-600 dark:text-amber-400 border border-amber-500/20 mt-1 inline-flex items-center">
+                    <span className="text-[9px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700 mt-1 inline-flex items-center">
                       {getRoleIcon(t.user_type)}
                       {t.roleBadge}
                     </span>
@@ -167,11 +167,11 @@ const TestimonialCard = ({ t, index, timeAgo, onEdit, onDelete }) => {
                       {t.author}
                     </span>
                     {t.isVerified && <VerifiedBadge size={14} className="shrink-0" />}
-                    {t.isOwn && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 shrink-0">You</span>}
+                    {t.isOwn && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-sky-100 dark:bg-sky-900/60 text-sky-700 dark:text-sky-200 border border-sky-300 dark:border-sky-700 shrink-0">You</span>}
                   </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{t.role}</p>
+                  <p className="text-xs font-medium text-gray-600 dark:text-gray-300 truncate">{t.role}</p>
                   {t.roleBadge && (
-                    <span className="text-[9px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-500/10 dark:bg-amber-400/15 text-amber-600 dark:text-amber-400 border border-amber-500/20 mt-1 inline-flex items-center">
+                    <span className="text-[9px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700 mt-1 inline-flex items-center">
                       {getRoleIcon(t.user_type)}
                       {t.roleBadge}
                     </span>
@@ -186,14 +186,14 @@ const TestimonialCard = ({ t, index, timeAgo, onEdit, onDelete }) => {
             <div className="flex items-center gap-1.5 ml-2 shrink-0">
               <button
                 onClick={(e) => { e.stopPropagation(); onEdit(t); }}
-                className="p-1.5 rounded-lg bg-blue-500/10 dark:bg-blue-500/20 border border-blue-500/30 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 cursor-pointer flex items-center justify-center transition-colors"
+                className="p-1.5 rounded-lg bg-sky-100 dark:bg-sky-900/60 border border-sky-300 dark:border-sky-700 text-sky-700 dark:text-sky-200 hover:bg-sky-200 dark:hover:bg-sky-800 cursor-pointer flex items-center justify-center transition-colors"
                 title="Edit review"
               >
                 <Pen size={14} />
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); onDelete(t); }}
-                className="p-1.5 rounded-lg bg-red-500/10 dark:bg-red-500/20 border border-red-500/30 text-red-600 dark:text-red-400 hover:bg-red-500/20 cursor-pointer flex items-center justify-center transition-colors"
+                className="p-1.5 rounded-lg bg-rose-100 dark:bg-rose-900/60 border border-rose-300 dark:border-rose-700 text-rose-700 dark:text-rose-200 hover:bg-rose-200 dark:hover:bg-rose-800 cursor-pointer flex items-center justify-center transition-colors"
                 title="Delete review"
               >
                 <Trash2 size={14} />
@@ -459,7 +459,7 @@ const Testimonials = ({ userTypeFilter }) => {
             <ThumbsUp size={14} /> {recommendPct}% Recommend CareerSphere
           </div>
 
-          <div className="inline-flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+          <div className="inline-flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-full bg-sky-100 dark:bg-sky-900/60 text-sky-700 dark:text-sky-200 border border-sky-300 dark:border-sky-700">
             <ShieldCheck size={14} /> {verifiedProfilesPct}% Verified Profiles
           </div>
         </div>

@@ -51,19 +51,7 @@ const Navbar = ({ onSignIn, isLoggedIn }) => {
       transition={{ duration: 0.8, ease: [0.21, 0.45, 0.32, 0.9] }}
     >
       <Link to="/" className="nav-left no-underline text-inherit">
-        <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-display font-bold text-sm bg-[#2A2A2A] p-1">
-          <svg viewBox="0 0 100 100" className="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="logo-grad-nav-new" x1="0%" y1="100%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#38bdf8" />
-                <stop offset="100%" stopColor="#2563eb" />
-              </linearGradient>
-            </defs>
-            <line x1="32" y1="68" x2="68" y2="32" stroke="url(#logo-grad-nav-new)" strokeWidth="14" strokeLinecap="round" />
-            <circle cx="32" cy="68" r="16" fill="#38bdf8" />
-            <circle cx="68" cy="32" r="24" fill="#2563eb" />
-          </svg>
-        </div>
+        <img src="/logo.png" alt="CareerSphere" className="w-8 h-8 object-contain shrink-0 rounded-lg" />
         <span className="font-display text-[22px] text-foreground tracking-tight font-semibold">
           CareerSphere
         </span>

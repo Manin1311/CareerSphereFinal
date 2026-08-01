@@ -668,7 +668,13 @@ async function testReq(method, path, body = null, isFile = false) {
     body: body ? (isFile ? body : JSON.stringify(body)) : undefined
   };
   const res = await fetch(`${API_HOST}/api/v1/test${path}`, opts);
-  const data = await res.json();
+  const rawText = await res.text();
+  let data;
+  try {
+    data = JSON.parse(rawText);
+  } catch (parseErr) {
+    throw new Error(res.status >= 500 ? "Server error during test load. Please refresh or try again." : rawText);
+  }
   if (!data.success) throw new Error(data.error || "Request failed");
   return data.data;
 }

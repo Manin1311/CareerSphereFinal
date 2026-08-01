@@ -171,19 +171,7 @@ curl -X POST "https://api.careersphere.indevs.in/api/v1/parse" \
       <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? "bg-white dark:bg-zinc-950 border-b border-gray-100 dark:border-zinc-800/80 shadow-md py-1" : "bg-white/90 dark:bg-zinc-950/90 border-b border-transparent dark:border-transparent backdrop-blur-md py-2"}`}>
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.scrollTo(0, 0)}>
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-display font-bold text-sm bg-[#2A2A2A] p-1">
-              <svg viewBox="0 0 100 100" className="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                  <linearGradient id="logo-grad-dev-landing" x1="0%" y1="100%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#38bdf8" />
-                    <stop offset="100%" stopColor="#2563eb" />
-                  </linearGradient>
-                </defs>
-                <line x1="32" y1="68" x2="68" y2="32" stroke="url(#logo-grad-dev-landing)" strokeWidth="14" strokeLinecap="round" />
-                <circle cx="32" cy="68" r="16" fill="#38bdf8" />
-                <circle cx="68" cy="32" r="24" fill="#2563eb" />
-              </svg>
-            </div>
+            <img src="/logo.png" alt="CareerSphere" className="w-8 h-8 object-contain shrink-0 rounded-lg" />
             <span className="font-display text-[22px] text-charcoal dark:text-white tracking-tight font-semibold">
               CareerSphere
             </span>

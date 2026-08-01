@@ -729,13 +729,13 @@ def validate_test_token(request):
 
     return JsonResponse(success_response({
         "valid": True,
-        "round_type": attempt.round.round_type,
-        "round_name": attempt.round.name,
-        "round_number": attempt.round.round_number,
-        "time_limit_minutes": attempt.round.time_limit_minutes,
-        "candidate_name": attempt.candidate.name or "Candidate",
-        "job_title": session.job_title,
-        "company_name": session.company.name,
+        "round_type": attempt.round.round_type if attempt.round else "mcq",
+        "round_name": attempt.round.name if attempt.round else "Assessment Round",
+        "round_number": attempt.round.round_number if attempt.round else 1,
+        "time_limit_minutes": attempt.round.time_limit_minutes if attempt.round else 30,
+        "candidate_name": getattr(attempt.candidate, "name", "Candidate"),
+        "job_title": getattr(session, "job_title", "Position") if session else "Position",
+        "company_name": session.company.name if (session and getattr(session, "company", None)) else "CareerSphere",
         "status": attempt.status,
         "sibling_rounds": sibling_rounds,
         "application_id": application_id
@@ -760,17 +760,22 @@ def get_mcq_questions(request):
     # If served question list doesn't exist, create it
     if not attempt.mcq_questions_served:
         count = sr.mcq_question_count or 10
-        # Check if session-specific custom questions exist
         session_id = str(sr.session.id)
-        session_questions = list(MCQQuestion.objects.filter(tags__contains=session_id))
+        all_questions = list(MCQQuestion.objects.all())
+        session_questions = [
+            q for q in all_questions 
+            if q.tags and isinstance(q.tags, list) and session_id in q.tags
+        ]
         
         if session_questions:
             questions = session_questions
         else:
-            # Fallback to general pool questions
-            questions = list(MCQQuestion.objects.exclude(tags__contains=session_id))
+            questions = [
+                q for q in all_questions
+                if not (q.tags and isinstance(q.tags, list) and session_id in q.tags)
+            ]
             if not questions:
-                questions = list(MCQQuestion.objects.all())
+                questions = all_questions
 
         import random
         # Seed shuffle if seed is set

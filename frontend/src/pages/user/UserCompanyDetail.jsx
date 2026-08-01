@@ -58,10 +58,11 @@ export default function UserCompanyDetail() {
           industry: data.industry || "Technology",
           location: data.hq_location || "Remote",
           size: data.company_size || "50-200",
-          founded: data.founded_year || 2020,
+          founded: data.founded_year || null,
           website: data.website_url || "#",
           about: data.about || "This company has not provided an overview yet.",
-          rating: data.rating || 4.5,
+          rating: data.rating || 5.0,
+          reviewCount: data.review_count || 0,
           logoColor: "#059669",
           logoPath: data.logo_path,
           openings: data.openings || 0,
@@ -169,6 +170,11 @@ export default function UserCompanyDetail() {
     );
   }
 
+  const totalReviewsCount = reviews.length > 0 ? reviews.length : (company?.reviewCount || 0);
+  const avgRating = reviews.length > 0
+    ? (reviews.reduce((acc, r) => acc + (Number(r.rating) || 5), 0) / reviews.length).toFixed(1)
+    : (company?.rating ? Number(company.rating).toFixed(1) : "5.0");
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -205,8 +211,10 @@ export default function UserCompanyDetail() {
               <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1.5"><MapPin className="h-4 w-4" />{company.location}</span>
                 <span className="flex items-center gap-1.5"><Users className="h-4 w-4" />{company.size} employees</span>
-                <span className="flex items-center gap-1.5"><Calendar className="h-4 w-4" />Founded {company.founded}</span>
-                <span className="flex items-center gap-1.5"><Star className="h-4 w-4 fill-[var(--google-yellow)] text-[var(--google-yellow)]" />{company.rating}</span>
+                {company.founded && (
+                  <span className="flex items-center gap-1.5"><Calendar className="h-4 w-4" />Founded {company.founded}</span>
+                )}
+                <span className="flex items-center gap-1.5"><Star className="h-4 w-4 fill-[var(--google-yellow)] text-[var(--google-yellow)]" />{avgRating} ({totalReviewsCount} {totalReviewsCount === 1 ? 'review' : 'reviews'})</span>
               </div>
             </div>
           </div>
@@ -280,8 +288,8 @@ export default function UserCompanyDetail() {
             <div className="rounded-[2rem] border border-border bg-card p-8">
               <div className="flex items-center justify-between flex-wrap gap-3">
                 <div>
-                  <h2 className="font-display text-xl font-semibold tracking-tight">Company Reviews ({company.review_count || reviews.length})</h2>
-                  <p className="text-xs text-muted-foreground mt-0.5">Average rating: {company.rating} / 5</p>
+                  <h2 className="font-display text-xl font-semibold tracking-tight">Company Reviews ({totalReviewsCount})</h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">Average rating: {avgRating} / 5</p>
                 </div>
                 {hasSeekerToken && (
                   <button
@@ -340,10 +348,10 @@ export default function UserCompanyDetail() {
                   ["Industry", company.industry],
                   ["Size", company.size],
                   ["HQ", company.location],
-                  ["Founded", String(company.founded)],
+                  ...(company.founded ? [["Founded", String(company.founded)]] : []),
                   ["Open roles", String(company.openings)],
-                  ["Rating", `${company.rating} / 5 (${company.review_count || reviews.length} reviews)`],
-                ].map(([k, v]) => (
+                  ["Rating", `${avgRating} / 5 (${totalReviewsCount} ${totalReviewsCount === 1 ? 'review' : 'reviews'})`],
+                ].filter(Boolean).map(([k, v]) => (
                   <div key={k} className="flex items-center justify-between">
                     <dt className="text-muted-foreground">{k}</dt>
                     <dd className="font-medium">{v}</dd>

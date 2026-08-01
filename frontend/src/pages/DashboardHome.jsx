@@ -194,17 +194,17 @@ export default function DashboardHome() {
         <section className="bg-white dark:bg-[#121217] border border-gray-200 dark:border-zinc-800 rounded-3xl p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="font-display text-lg text-charcoal dark:text-white flex items-center gap-2">
-                <MessageSquareQuote className="text-blue-600 dark:text-blue-400" size={20} />
+              <h2 className="font-display text-lg text-foreground dark:text-white flex items-center gap-2 font-bold">
+                <MessageSquareQuote className="text-sky-600 dark:text-sky-400" size={20} />
                 Candidate Reviews & Official Responses
               </h2>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+              <p className="text-xs text-muted-foreground dark:text-gray-300 mt-0.5 font-medium">
                 Reviews submitted by candidates for {company?.name || "your company"}. Reply directly as Company Owner.
               </p>
             </div>
             <Link
               to={`/jobs/companies/${companyId}`}
-              className="text-xs font-bold text-blue-600 hover:underline inline-flex items-center gap-1"
+              className="text-xs font-bold text-sky-600 dark:text-sky-300 hover:text-sky-500 hover:underline inline-flex items-center gap-1 transition-colors"
             >
               <span>View Public Profile ↗</span>
             </Link>

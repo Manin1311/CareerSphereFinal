@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import django
 # Initialize Django environment
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'vishleshan_backend.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'careersphere_backend.settings')
 django.setup()
 
 from celery import Celery

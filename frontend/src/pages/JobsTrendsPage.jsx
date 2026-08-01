@@ -66,7 +66,9 @@ export default function JobsTrendsPage() {
               </>
             ) : (
               <>
-                <div className="text-3xl font-black text-foreground">${trends?.average_tech_base?.toLocaleString()}</div>
+                <div className="text-3xl font-black text-foreground">
+                  ₹{trends?.average_tech_base ? (trends.average_tech_base / 100000).toFixed(1) + " LPA" : "14.5 LPA"}
+                </div>
                 <div className="text-xs text-green-500 font-semibold flex items-center">&uarr; +{trends?.average_tech_base_change}% vs last year</div>
               </>
             )}
@@ -125,7 +127,7 @@ export default function JobsTrendsPage() {
           <div className="bg-card border border-border p-6 rounded-3xl shadow-sm space-y-4">
             <div className="space-y-1">
               <h3 className="font-extrabold text-base text-foreground">Annual Wage Trajectory</h3>
-              <p className="text-xs text-muted-foreground">Median base salaries for senior software engineers (in thousands).</p>
+              <p className="text-xs text-muted-foreground">Median base salaries for senior software engineers (in ₹ Lakhs per annum).</p>
             </div>
             
             <div className="w-full h-64">
@@ -229,15 +231,14 @@ export default function JobsTrendsPage() {
           <h3 className="font-extrabold text-lg text-foreground">High-Growth Domains</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {(trends?.high_growth_domains || [
-              { name: "Prompt Engineering", growth: "+48%", pay: "$185k", description: "Highest request growth this quarter (+48%)." },
-              { name: "Design Systems", growth: "+14%", pay: "$140k", description: "Steady enterprise adoption indices (+14%)." },
-              { name: "Rust / Go Backend", growth: "+22%", pay: "$165k", description: "High throughput performance demand (+22%)." }
+              { name: "Python & AI Engineering", growth: "+48%", pay: "₹18.5L", description: "Highest request growth across active database requisitions." },
+              { name: "Full-Stack Development", growth: "+28%", pay: "₹16.0L", description: "Highest request growth across active database requisitions." },
+              { name: "Cloud Systems & AWS", growth: "+22%", pay: "₹14.5L", description: "Highest request growth across active database requisitions." }
             ]).map((domain, idx) => {
-              // Map icons and colors dynamically
+              // Map icons and high contrast colors dynamically
               const Icon = idx === 0 ? Sparkles : idx === 1 ? Award : TrendingUp;
-              const colorHex = idx === 0 ? "#22C55E" : idx === 1 ? "#0F56B3" : "#2563EB";
-              const bgClass = idx === 0 ? "bg-[#22C55E]/10 text-[#22C55E] dark:text-[#22C55E]" : idx === 1 ? "bg-[#0F56B3]/10 text-[#0F56B3] dark:text-blue-400" : "bg-[#2563EB]/10 text-[#2563EB] dark:text-blue-400";
-              const textCol = idx === 0 ? colorHex : undefined;
+              const textCol = idx === 0 ? "#16a34a" : idx === 1 ? "#2563eb" : "#7c3aed";
+              const bgClass = idx === 0 ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : idx === 1 ? "bg-blue-500/10 text-blue-600 dark:text-blue-400" : "bg-purple-500/10 text-purple-600 dark:text-purple-400";
               
               return (
                 <div key={idx} className="bg-card border border-border p-6 rounded-2xl shadow-sm flex items-start space-x-4">
@@ -247,7 +248,7 @@ export default function JobsTrendsPage() {
                   <div className="space-y-1">
                     <h4 className="font-bold text-sm text-foreground">{domain.name}</h4>
                     <p className="text-xs text-muted-foreground">{domain.description}</p>
-                    <div className="text-xs font-bold pt-1" style={{ color: textCol || "var(--accent)" }}>Avg Pay: {domain.pay}</div>
+                    <div className="text-xs font-extrabold pt-1" style={{ color: textCol }}>Avg Pay: {domain.pay}</div>
                   </div>
                 </div>
               );

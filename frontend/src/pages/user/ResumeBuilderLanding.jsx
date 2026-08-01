@@ -283,9 +283,9 @@ export default function ResumeBuilderLanding() {
             {!atsLoading && !atsReport && !atsError && (
               <button
                 onClick={handleScanCurrentResume}
-                className="w-full pill bg-[var(--google-blue)] text-white py-2.5 text-xs font-semibold hover:opacity-95 transition-all flex items-center justify-center gap-2"
+                className="w-full pill bg-blue-600 dark:bg-blue-600 text-white py-2.5 text-xs font-bold hover:bg-blue-700 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm"
               >
-                Scan current profile resume
+                <Sparkles size={14} /> Scan current profile resume
               </button>
             )}
 

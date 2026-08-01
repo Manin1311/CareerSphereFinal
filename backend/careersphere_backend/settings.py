@@ -93,12 +93,12 @@ MIDDLEWARE = [
     'api.middleware.UsageLoggerMiddleware',
 ]
 
-ROOT_URLCONF = 'vishleshan_backend.urls'
+ROOT_URLCONF = 'careersphere_backend.urls'
 
 TEMPLATES = []
 
-WSGI_APPLICATION = 'vishleshan_backend.wsgi.application'
-ASGI_APPLICATION = 'vishleshan_backend.asgi.application'
+WSGI_APPLICATION = 'careersphere_backend.wsgi.application'
+ASGI_APPLICATION = 'careersphere_backend.asgi.application'
 
 # Database configuration
 DATABASE_URL = os.getenv("DATABASE_URL", "")
