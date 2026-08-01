@@ -54,8 +54,10 @@ jobs:
       - name: Install dependencies
         run: |
           cd backend
+          python -m pip install --upgrade pip setuptools wheel
           pip install -r requirements.txt
 
       - name: Python syntax check
         run: |
-          python -m compileall backend/
+          cd backend
+          python -m compileall .
