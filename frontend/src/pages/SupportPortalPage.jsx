@@ -253,7 +253,7 @@ export default function SupportPortalPage() {
                 <circle cx="68" cy="32" r="24" fill="#2563eb" />
               </svg>
             </div>
-            <span className="font-display font-bold text-xl text-slate-900 dark:text-white tracking-tight">Between</span>
+            <span className="font-display font-bold text-xl text-slate-900 dark:text-white tracking-tight">CareerSphere</span>
             <span className="text-xs bg-blue-500/10 text-blue-600 dark:text-blue-400 font-semibold px-2 py-0.5 rounded border border-blue-500/20 ml-1">
               Support & Appeals
             </span>
@@ -289,7 +289,7 @@ export default function SupportPortalPage() {
                     className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
                   >
                     <Home size={14} className="text-slate-400 shrink-0" />
-                    <span>Between Jobs</span>
+                    <span>CareerSphere Jobs</span>
                   </Link>
                   <a
                     href="/dashboard"
@@ -297,7 +297,7 @@ export default function SupportPortalPage() {
                     className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
                   >
                     <LayoutDashboard size={14} className="text-slate-400 shrink-0" />
-                    <span>Between Recruiter</span>
+                    <span>CareerSphere Recruiter</span>
                   </a>
                   <a
                     href="/developer"
@@ -305,7 +305,7 @@ export default function SupportPortalPage() {
                     className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition border-t border-slate-200 dark:border-slate-800 mt-1 pt-2"
                   >
                     <Bot size={14} className="text-slate-400 shrink-0" />
-                    <span>Between Developer</span>
+                    <span>CareerSphere Developer</span>
                   </a>
                 </div>
               )}
@@ -664,7 +664,7 @@ export default function SupportPortalPage() {
 
       {/* FOOTER */}
       <footer className="border-t border-slate-200 dark:border-slate-800/80 bg-white/50 dark:bg-slate-900/40 py-6 text-center text-xs text-slate-500">
-        © 2026 Between Support & Ticket Appeals Center · Open 24/7
+        © 2026 CareerSphere Support & Ticket Appeals Center · Open 24/7
       </footer>
     </div>
   );

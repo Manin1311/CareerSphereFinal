@@ -3,7 +3,7 @@ import json
 SKILLS_DATA = {
   "metadata": {
     "version": "1.0.0",
-    "description": "Vishleshan Normalization Agent - Canonical Skill Alias Dataset",
+    "description": "CareerSphere Normalization Agent - Canonical Skill Alias Dataset",
     "total_skills": 320,
     "domains": [
       "programming_languages", "web_frontend", "web_backend", "databases", "devops_cloud",

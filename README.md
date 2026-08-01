@@ -1,7 +1,7 @@
 <div align="center">
-  <img src="./assets/hero_banner.png" alt="Vishleshan API Banner" width="100%" />
+  <img src="./assets/hero_banner.png" alt="CareerSphere API Banner" width="100%" />
 
-  <h1 align="center">Vishleshan — Multi-Agent Recruitment Intelligence Platform</h1>
+  <h1 align="center">CareerSphere — Multi-Agent Recruitment Intelligence Platform</h1>
 
   <p align="center">
     <strong>A multi-agent AI system for semantic resume parsing, candidate matching, fraud detection, and recruitment automation — built for enterprise HR teams and developer integrations.</strong>
@@ -35,7 +35,7 @@
 
 ## Overview
 
-**Vishleshan** is a production-grade, multi-agent AI platform that automates the entire recruitment pipeline — from resume ingestion and skill extraction to candidate ranking, AI-powered interviews, and fraud detection. It uses a coordinated system of specialized LLM agents, vector databases, and asynchronous workers to transform unstructured documents into actionable intelligence.
+**CareerSphere** is a production-grade, multi-agent AI platform that automates the entire recruitment pipeline — from resume ingestion and skill extraction to candidate ranking, AI-powered interviews, and fraud detection. It uses a coordinated system of specialized LLM agents, vector databases, and asynchronous workers to transform unstructured documents into actionable intelligence.
 
 The platform serves **four** distinct user groups:
 - **Recruiters** — A full-featured Applicant Tracking System (ATS) with AI screening, matching, and analytics
@@ -47,7 +47,7 @@ The platform serves **four** distinct user groups:
 
 ## Multi-Agent System
 
-Vishleshan's core intelligence is powered by a coordinated system of **12+ specialized AI agents**, each responsible for a distinct task in the recruitment pipeline:
+CareerSphere's core intelligence is powered by a coordinated system of **12+ specialized AI agents**, each responsible for a distinct task in the recruitment pipeline:
 
 | Agent | File | Responsibility |
 |-------|------|---------------|
@@ -131,7 +131,7 @@ All agents communicate through the `RotateLLMClient`, which distributes requests
 - **Rate Limiting** — Redis-backed per-key monthly quotas for parse, match, chat, and scan operations
 - **Usage Analytics** — Real-time traffic charts, endpoint latency, and monthly usage breakdowns
 - **Webhooks** — Configure HTTP callbacks for async parsing completion events
-- **Embed Widget** — Generate secure tokens to mount Vishleshan UI in external applications
+- **Embed Widget** — Generate secure tokens to mount CareerSphere UI in external applications
 - **API Documentation** — Interactive playground with request/response examples
 
 ### Candidate Assessment Rounds
@@ -297,7 +297,7 @@ The frontend runs on port `5173` by default and serves all four portals (Recruit
 
 ### Resume Parsing
 ```bash
-curl -X POST "https://api.vishleshan.ai/api/v1/parse" \
+curl -X POST "https://api.careersphere.ai/api/v1/parse" \
   -H "X-API-Key: vish_live_xxxxxxxxxxx" \
   -F "file=@resume.pdf"
 ```
@@ -316,7 +316,7 @@ curl -X POST "https://api.vishleshan.ai/api/v1/parse" \
 
 ### Fraud Detection Scan
 ```bash
-curl -X POST "https://api.vishleshan.ai/api/v1/protection/scan" \
+curl -X POST "https://api.careersphere.ai/api/v1/protection/scan" \
   -H "X-API-Key: vish_live_xxxxxxxxxxx" \
   -d '{
     "scan_type": "job",
@@ -440,7 +440,7 @@ curl -X POST "https://api.vishleshan.ai/api/v1/protection/scan" \
 
 ## Security
 
-Vishleshan includes comprehensive security controls:
+CareerSphere includes comprehensive security controls:
 
 - **IDOR Protection** — Enforces company/seeker ownership checks on all candidate management views
 - **JWT Blacklisting** — Revokes tokens instantly upon logout using Redis-based blacklist with auto-expiration

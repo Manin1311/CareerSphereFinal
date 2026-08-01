@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 BREVO_API_KEY = os.getenv("BREVO_API_KEY")
 BREVO_MA_KEY = os.getenv("BREVO_MA_KEY") or BREVO_API_KEY # Fallback if same key is used
-SMS_SENDER = os.getenv("BREVO_SMS_SENDER", "Between")
+SMS_SENDER = os.getenv("BREVO_SMS_SENDER", "CareerSphere")
 WHATSAPP_SENDER = os.getenv("BREVO_WHATSAPP_SENDER") # E.g., "+1234567890"
 
 # SMS and WhatsApp require paid credits on Brevo.

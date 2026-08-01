@@ -129,7 +129,7 @@ export default function JobsNavbar({ onUploadClick }) {
             </svg>
           </div>
           <span className="font-display text-[22px] text-foreground tracking-tight font-semibold">
-            Between
+            CareerSphere
           </span>
         </Link>
 

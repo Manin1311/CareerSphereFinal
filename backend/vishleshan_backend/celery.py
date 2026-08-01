@@ -3,7 +3,7 @@ from celery import Celery
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'vishleshan_backend.settings')
 
-app = Celery('vishleshan')
+app = Celery('careersphere')
 
 # Read settings from Django settings using CELERY_ namespace
 app.config_from_object('django.conf:settings', namespace='CELERY')

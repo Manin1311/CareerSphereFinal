@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 
 /**
  * ProtectedRoute — wraps children and only renders them if
- * "between_user" exists in localStorage.
+ * "careersphere_user" exists in localStorage.
  *
  * Otherwise redirects to /login.
  *
@@ -20,7 +20,7 @@ export default function ProtectedRoute({ children }) {
   const [checked, setChecked] = useState(false);
 
   useEffect(() => {
-    const userRaw = localStorage.getItem("between_user");
+    const userRaw = localStorage.getItem("careersphere_user");
     const jwt = localStorage.getItem("vish_jwt");
 
     if (userRaw && jwt) {
@@ -33,7 +33,7 @@ export default function ProtectedRoute({ children }) {
           if (adminJwt) {
             navigate("/admin/dashboard", { replace: true });
           } else {
-            localStorage.removeItem("between_user");
+            localStorage.removeItem("careersphere_user");
             localStorage.removeItem("vish_jwt");
             navigate("/login", { replace: true });
           }

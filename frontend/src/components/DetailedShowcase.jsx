@@ -211,7 +211,7 @@ const DetailedShowcase = () => {
                   <Sparkles size={13} /> Live Screening Simulation
                 </span>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 font-display">Between Multi-Agent AI Screening</h3>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 font-display">CareerSphere Multi-Agent AI Screening</h3>
               <p className="text-gray-600 dark:text-zinc-400 text-xs mb-6">
                 Watch how specialized AI agents ingest resumes, perform semantic matching, and rank candidates in real-time.
               </p>

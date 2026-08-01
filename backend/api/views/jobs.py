@@ -86,7 +86,7 @@ def list_public_jobs(request):
                 if not loc_match:
                     continue
             
-            company_name = s.company.name if s.company else "Between Partner"
+            company_name = s.company.name if s.company else "CareerSphere Partner"
             meta = _parse_job_description_meta(s.job_description)
             
             jobs.append({
@@ -140,7 +140,7 @@ def get_public_job(request, session_id):
             return JsonResponse(error_response("Job posting not found"), status=404)
             
         criteria = s.criteria or {}
-        company_name = s.company.name if s.company else "Between Partner"
+        company_name = s.company.name if s.company else "CareerSphere Partner"
         meta = _parse_job_description_meta(s.job_description)
         
         return JsonResponse(success_response({

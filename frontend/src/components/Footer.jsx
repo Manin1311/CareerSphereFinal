@@ -78,7 +78,7 @@ const Footer = () => {
               </svg>
             </div>
             <span className="font-display text-[22px] text-white tracking-tight font-semibold">
-              Between
+              CareerSphere
             </span>
           </div>
           <p style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px', maxWidth: '240px', lineHeight: '1.6' }}>
@@ -110,7 +110,7 @@ const Footer = () => {
         transition={{ delay: 0.8 }}
       >
         <div className="footer-copyright">
-          © {new Date().getFullYear()} Between AI, Inc.
+          © {new Date().getFullYear()} CareerSphere AI, Inc.
         </div>
         
         <div className="social-icons-footer flex items-center gap-3">

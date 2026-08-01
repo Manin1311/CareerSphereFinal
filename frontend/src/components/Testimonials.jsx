@@ -210,11 +210,11 @@ const TestimonialCard = ({ t, index, timeAgo, onEdit, onDelete }) => {
 const DEFAULT_TESTIMONIALS = [
   {
     id: "fb-1",
-    quote: "Between transformed our hiring pipeline. Candidate matching scores are incredibly accurate and save us dozens of screening hours weekly.",
+    quote: "CareerSphere transformed our hiring pipeline. Candidate matching scores are incredibly accurate and save us dozens of screening hours weekly.",
     author: "Ananya Sharma",
     role: "Head of Talent at TechScale",
     roleBadge: "RECRUITER",
-    targetBadge: "Between Platform",
+    targetBadge: "CareerSphere Platform",
     initials: "A",
     rating: 5,
     user_type: "recruiter",
@@ -227,7 +227,7 @@ const DEFAULT_TESTIMONIALS = [
     author: "Rohan Verma",
     role: "Senior Full Stack Engineer",
     roleBadge: "JOB SEEKER",
-    targetBadge: "Between Platform",
+    targetBadge: "CareerSphere Platform",
     initials: "R",
     rating: 5,
     user_type: "job_seeker",
@@ -236,7 +236,7 @@ const DEFAULT_TESTIMONIALS = [
   },
   {
     id: "fb-3",
-    quote: "Building integrations with Between's developer API is effortless. The webhook system and API key infrastructure are rock solid.",
+    quote: "Building integrations with CareerSphere's developer API is effortless. The webhook system and API key infrastructure are rock solid.",
     author: "David Chen",
     role: "Lead Platform Architect",
     roleBadge: "DEVELOPER",
@@ -294,7 +294,7 @@ const Testimonials = ({ userTypeFilter }) => {
             isVerified: r.author?.is_verified,
             role: r.author?.headline || (r.company_name ? `Review for ${r.company_name}` : "Verified Member"),
             roleBadge: r.author?.role_badge || (r.user_type ? r.user_type.replace('_', ' ').toUpperCase() : "MEMBER"),
-            targetBadge: r.company_name ? r.company_name : "Between Platform",
+            targetBadge: r.company_name ? r.company_name : "CareerSphere Platform",
             initials: r.author?.full_name?.charAt(0) || "V",
             rating: r.rating || 5,
             review_type: r.review_type,
@@ -456,7 +456,7 @@ const Testimonials = ({ userTypeFilter }) => {
           </div>
 
           <div className="inline-flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-            <ThumbsUp size={14} /> {recommendPct}% Recommend Between
+            <ThumbsUp size={14} /> {recommendPct}% Recommend CareerSphere
           </div>
 
           <div className="inline-flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
@@ -468,7 +468,7 @@ const Testimonials = ({ userTypeFilter }) => {
         <div className="flex gap-2 justify-center mt-6 flex-wrap items-center">
           {[
             { id: "all", label: `All Testimonials (${items.length})` },
-            { id: "platform", label: `Between Platform (${platformCount})` },
+            { id: "platform", label: `CareerSphere Platform (${platformCount})` },
             { id: "company", label: `Company Reviews (${companyCount})` },
             { id: "developer", label: `Developer API (${devCount})` }
           ].map(tab => (

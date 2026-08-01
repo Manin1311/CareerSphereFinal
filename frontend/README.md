@@ -1,4 +1,4 @@
-# Vishleshan Frontend — Recruiter Dashboard
+# CareerSphere Frontend — Recruiter Dashboard
 
 This is the Applicant Tracking System (ATS) interface for recruiters.
 

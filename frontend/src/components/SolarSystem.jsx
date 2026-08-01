@@ -144,7 +144,7 @@ export const SolarSystem = React.forwardRef(
   (
     {
       centerLogo,
-      centerLogoAlt = "Between Core AI Engine",
+      centerLogoAlt = "CareerSphere Core AI Engine",
       orbits = DEFAULT_ORBITS,
       isPaused = false,
       speedMultiplier = 1,

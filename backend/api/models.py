@@ -652,7 +652,7 @@ class Review(models.Model):
             dev_name = (getattr(self.developer, "full_name", None) or getattr(self.developer, "company_name", None) or getattr(self.developer, "email", None)) if self.developer else None
             rec_name = getattr(self.recruiter, "name", None) if self.recruiter else None
             author = seeker_name or dev_name or rec_name or "Anonymous"
-            target = getattr(self.company, "name", None) if self.company else "Between Platform"
+            target = getattr(self.company, "name", None) if self.company else "CareerSphere Platform"
             return f"{author} ({self.user_type}) → {target} ({self.rating} stars)"
         except Exception:
             return f"Review {self.id} ({self.rating} stars)"

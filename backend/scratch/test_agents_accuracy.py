@@ -9,7 +9,7 @@ import traceback
 sys.path.insert(0, r"c:\Users\parul\Desktop\Resume Project\DAIICT_Hackathon-26\backend")
 
 # Setup Django environment
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "vishleshan_backend.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "careersphere_backend.settings")
 import django
 django.setup()
 os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
@@ -146,17 +146,17 @@ async def main():
     company = Company.objects.first()
     if not company:
         company = Company.objects.create(
-            name="Vishleshan Accuracy Test Org",
-            email="test-accuracy@vishleshan.com",
+            name="CareerSphere Accuracy Test Org",
+            email="test-accuracy@careersphere.com",
             password_hash="fake-hash"
         )
     
-    seeker = JobSeekerAccount.objects.filter(email="seeker-accuracy@vishleshan.com").first()
+    seeker = JobSeekerAccount.objects.filter(email="seeker-accuracy@careersphere.com").first()
     created_seeker = False
     if not seeker:
         seeker = JobSeekerAccount.objects.create(
             full_name="Accuracy Seeker",
-            email="seeker-accuracy@vishleshan.com",
+            email="seeker-accuracy@careersphere.com",
             password_hash="fake-hash",
             skills=["Python", "Django", "React", "Docker", "PostgreSQL"],
             resume_data={
@@ -349,7 +349,7 @@ async def main():
     results.append(await run_agent_test(
         "JobDescriptionGeneratorAgent",
         jd_gen.generate_jd,
-        "Python Engineer", ["Python", "Django", "FastAPI"], 3, "Vishleshan Corp"
+        "Python Engineer", ["Python", "Django", "FastAPI"], 3, "CareerSphere Corp"
     ))
     if results[-1]["status"] == "Passed":
         res = results[-1]["result"]
@@ -420,7 +420,7 @@ async def main():
     results.append(await run_agent_test(
         "CoverLetterGeneratorAgent",
         cover_agent.generate_cover_letter,
-        "John Doe", ["Python", "Django"], [], "Python Engineer", MOCK_JD_TEXT, "Vishleshan Corp"
+        "John Doe", ["Python", "Django"], [], "Python Engineer", MOCK_JD_TEXT, "CareerSphere Corp"
     ))
     if results[-1]["status"] == "Passed":
         res = results[-1]["result"]

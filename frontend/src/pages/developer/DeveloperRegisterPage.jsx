@@ -138,7 +138,7 @@ export default function DeveloperRegisterPage() {
   };
 
   const copyAllKeys = () => {
-    const text = `Between API Keys\n\nTest Public: ${apiKeysData?.test_public_key || '...'}\nTest Secret: ${apiKeysData?.test_secret_key || '...'}\n\nLive Public: ${apiKeysData?.public_key || '...'}\nLive Secret: ${apiKeysData?.secret_key || '...'}`;
+    const text = `CareerSphere API Keys\n\nTest Public: ${apiKeysData?.test_public_key || '...'}\nTest Secret: ${apiKeysData?.test_secret_key || '...'}\n\nLive Public: ${apiKeysData?.public_key || '...'}\nLive Secret: ${apiKeysData?.secret_key || '...'}`;
     copyToClipboard(text);
   };
 
@@ -160,7 +160,7 @@ export default function DeveloperRegisterPage() {
         <motion.div initial={{opacity:0, y:20}} animate={{opacity:1, y:0}} className="w-full max-w-md bg-white rounded-3xl p-8 shadow-2xl shadow-gray-200/50 border border-gray-100">
           <div className="mb-8 text-center">
              <h1 className="text-3xl font-black text-charcoal mb-2">Get your API Key</h1>
-             <p className="text-gray-500 font-medium tracking-tight">Start integrating Between in minutes</p>
+             <p className="text-gray-500 font-medium tracking-tight">Start integrating CareerSphere in minutes</p>
           </div>
           <form onSubmit={handleStep1} className="flex flex-col gap-4">
              <div className="flex flex-col gap-1.5">
@@ -331,7 +331,7 @@ export default function DeveloperRegisterPage() {
               <motion.div initial={{scale:0}} animate={{scale:1}} className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center text-green-600 mb-6">
                 <Check size={40} className="stroke-[3]" />
               </motion.div>
-              <h1 className="text-4xl font-black text-charcoal ">Welcome to Between!</h1>
+              <h1 className="text-4xl font-black text-charcoal ">Welcome to CareerSphere!</h1>
             </div>
 
            <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4 mb-8 flex items-start gap-3">

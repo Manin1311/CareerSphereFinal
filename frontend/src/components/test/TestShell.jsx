@@ -47,7 +47,7 @@ export function TestShell({
               </svg>
             </div>
             <span className="font-display text-lg text-foreground tracking-tight font-semibold">
-              Between
+              CareerSphere
             </span>
           </div>
 

@@ -119,11 +119,11 @@ export default function DeveloperLandingPage() {
 
   const heroCode = `// One API call. Complete intelligence.
 const response = await fetch(
-  'https://api.between.indevs.in/api/v1/parse',
+  'https://api.careersphere.indevs.in/api/v1/parse',
   {
     method: 'POST',
     headers: {
-      'X-API-Key': 'between_live_abc123...'
+      'X-API-Key': 'cs_live_abc123...'
     },
     body: formData  // attach resume PDF
   }
@@ -143,27 +143,24 @@ const { data } = await response.json();
   const tabs = {
     Python: `import requests
 response = requests.post(
-    "https://api.between.indevs.in/api/v1/ingest/upload",
+    "https://api.careersphere.indevs.in/api/v1/ingest/upload",
     headers={"X-API-Key": "between_live_your_key"},
-    files={"files": open("resume.pdf", "rb")},
-    data={"session_id": "your_session_id"}
-)
-result = response.json()`,
-    JavaScript: `const formData = new FormData();
-formData.append('files', resumeFile);
-formData.append('session_id', 'your_session_id');
+r = requests.post(
+    "https://api.careersphere.indevs.in/api/v1/parse",
+    headers={"X-API-Key": "cs_live_your_key"},
+  )
+  print(r.json())
 
-const response = await fetch(
-  'https://api.between.indevs.in/api/v1/ingest/upload',
-  {
-    method: 'POST',
-    headers: { 'X-API-Key': 'between_live_your_key' },
-    body: formData
-  }
-);`,
-    cURL: `curl -X POST \
-  https://api.between.indevs.in/api/v1/ingest/upload \
-  -H "X-API-Key: between_live_your_key" \\
+// Node.js (Axios)
+const res = await axios.post(
+  'https://api.careersphere.indevs.in/api/v1/parse',
+  formData,
+  { headers: { 'X-API-Key': 'cs_live_your_key' } }
+);
+
+// cURL
+curl -X POST "https://api.careersphere.indevs.in/api/v1/parse" \
+  -H "X-API-Key: cs_live_your_key" \\
   -F "session_id=your_session_id" \
   -F "files=@resume.pdf"`
   };
@@ -188,7 +185,7 @@ const response = await fetch(
               </svg>
             </div>
             <span className="font-display text-[22px] text-charcoal dark:text-white tracking-tight font-semibold">
-              Between
+              CareerSphere
             </span>
             <span className="text-[13px] text-gray-500 dark:text-zinc-400 font-medium ml-1">for Developers</span>
           </div>
@@ -226,7 +223,7 @@ const response = await fetch(
                     className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-blue-600 dark:text-blue-400 hover:bg-gray-100 dark:hover:bg-zinc-800 transition"
                   >
                     <Bot size={14} className="text-blue-500 shrink-0" />
-                    <span>Between Developer</span>
+                    <span>CareerSphere Developer</span>
                   </a>
                   <a
                     href="/jobs"
@@ -234,7 +231,7 @@ const response = await fetch(
                     className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-800 transition"
                   >
                     <Home size={14} className="text-gray-400 shrink-0" />
-                    <span>Between Jobs</span>
+                    <span>CareerSphere Jobs</span>
                   </a>
                   <a
                     href="/dashboard"
@@ -242,7 +239,7 @@ const response = await fetch(
                     className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-800 transition"
                   >
                     <LayoutDashboard size={14} className="text-gray-400 shrink-0" />
-                    <span>Between Recruiter</span>
+                    <span>CareerSphere Recruiter</span>
                   </a>
                   <a
                     href="/support"
@@ -565,7 +562,7 @@ const response = await fetch(
            onSubmit={(newRev) => {
              setShowDevReviewModal(false);
              setDevReviews(prev => [newRev, ...prev.filter(r => r.id !== newRev.id)]);
-             toast.success("Thank you for reviewing Between API Platform!");
+             toast.success("Thank you for reviewing CareerSphere API Platform!");
            }}
          />
        )}

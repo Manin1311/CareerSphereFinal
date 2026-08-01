@@ -37,7 +37,7 @@ if redis_url.startswith("rediss://") and "ssl_cert_reqs" not in redis_url:
         redis_url += "?ssl_cert_reqs=none"
 
 celery_app = Celery(
-    "vishleshan",
+    "careersphere",
     broker=redis_url,
     backend=redis_url
 )
@@ -946,7 +946,7 @@ def release_round_results(application_id: str, notify_status: str):
         app.status = notify_status
         app.save(update_fields=['status'])
 
-        company_name = app.session.company.name if app.session and app.session.company else (app.session.name if app.session else "Between Partner")
+        company_name = app.session.company.name if app.session and app.session.company else (app.session.name if app.session else "CareerSphere Partner")
         
         # Calculate unified match score & active round details
         match_val = None

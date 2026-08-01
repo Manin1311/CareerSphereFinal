@@ -1,6 +1,6 @@
-# Contributing to Vishleshan
+# Contributing to CareerSphere
 
-Thank you for your interest in contributing to **Vishleshan — Multi-Agent Recruitment Intelligence Platform**! We welcome contributions from developers, recruiters, and AI researchers to help build and scale this platform.
+Thank you for your interest in contributing to **CareerSphere — Multi-Agent Recruitment Intelligence Platform**! We welcome contributions from developers, recruiters, and AI researchers to help build and scale this platform.
 
 ---
 
@@ -168,4 +168,4 @@ Before submitting a PR, verify the following:
 
 ---
 
-*Thank you for contributing to Vishleshan!*
+*Thank you for contributing to CareerSphere!*

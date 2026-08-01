@@ -1,4 +1,4 @@
-# Vishleshan (Between) - Industry Faculty Presentation Guide
+# CareerSphere (CareerSphere) - Industry Faculty Presentation Guide
 
 Welcome, External Faculty Members! This guide details the core engineering components, machine learning algorithms, and security detection engines implemented in the project.
 

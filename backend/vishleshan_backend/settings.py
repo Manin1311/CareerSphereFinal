@@ -105,8 +105,9 @@ if DATABASE_URL:
         conn_max_age=conn_max_age,
         conn_health_checks=True,
     )
-    db_config['ENGINE'] = 'django.db.backends.postgresql'
-    db_config['DISABLE_SERVER_SIDE_CURSORS'] = True
+    if "postgresql" in SYNC_DATABASE_URL:
+        db_config['ENGINE'] = 'django.db.backends.postgresql'
+        db_config['DISABLE_SERVER_SIDE_CURSORS'] = True
     
     if 'sslmode' not in SYNC_DATABASE_URL:
         db_config.setdefault('OPTIONS', {})
@@ -144,7 +145,7 @@ allowed_origins_str = os.getenv("ALLOWED_ORIGINS", "")
 if allowed_origins_str:
     CORS_ALLOWED_ORIGINS = [origin.strip() for origin in allowed_origins_str.split(",") if origin.strip()]
 else:
-    CORS_ALLOWED_ORIGINS = ["http://localhost:5173", "http://localhost:3000", "https://between.indevs.in"]
+    CORS_ALLOWED_ORIGINS = ["http://localhost:5173", "http://localhost:3000", "https://careersphere.indevs.in"]
 CORS_ALLOW_HEADERS = [
     'accept',
     'accept-encoding',
@@ -183,5 +184,5 @@ ANYMAIL = {
 }
 
 EMAIL_BACKEND = "anymail.backends.brevo.EmailBackend"
-DEFAULT_FROM_EMAIL = os.getenv("MAIL_FROM", "noreply@vishleshan.ai")
+DEFAULT_FROM_EMAIL = os.getenv("MAIL_FROM", "noreply@careersphere.ai")
 

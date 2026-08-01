@@ -89,7 +89,7 @@ def admin_login(request):
                 "company_id": "admin",
                 "is_admin": True,
                 "role": "admin",
-                "name": "Between Admin",
+                "name": "CareerSphere Admin",
                 "email": admin_email,
                 "tier": "enterprise"
             }))

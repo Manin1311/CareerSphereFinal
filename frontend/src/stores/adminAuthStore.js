@@ -10,7 +10,7 @@ export const useAdminAuthStore = create((set) => ({
       const user = {
         id: "admin",
         email: data.email,
-        name: data.name || "Between Admin",
+        name: data.name || "CareerSphere Admin",
         role: "admin"
       };
       localStorage.setItem("admin_jwt", token);

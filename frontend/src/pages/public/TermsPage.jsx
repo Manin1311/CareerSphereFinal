@@ -76,14 +76,14 @@ export default function TermsPage() {
                 <section className="space-y-2">
                   <h3 className="font-bold text-gray-900 dark:text-white text-base">1. Acceptance of Terms</h3>
                   <p>
-                    By accessing or using the website between.indevs.in ("Between"), you agree to comply with and be bound by these Terms of Service. If you do not agree to these terms, please do not use our services.
+                    By accessing or using the website careersphere.indevs.in ("CareerSphere"), you agree to comply with and be bound by these Terms of Service. If you do not agree to these terms, please do not use our services.
                   </p>
                 </section>
 
                 <section className="space-y-2">
                   <h3 className="font-bold text-gray-900 dark:text-white text-base">2. Description of Service</h3>
                   <p>
-                    Between is an AI-powered recruitment platform designed to assist job seekers in optimizing their resumes and applying for jobs, and recruiters/companies in managing applicant pools and evaluating talent.
+                    CareerSphere is an AI-powered recruitment platform designed to assist job seekers in optimizing their resumes and applying for jobs, and recruiters/companies in managing applicant pools and evaluating talent.
                   </p>
                 </section>
 
@@ -104,7 +104,7 @@ export default function TermsPage() {
                 <section className="space-y-2">
                   <h3 className="font-bold text-gray-900 dark:text-white text-base">5. Intellectual Property</h3>
                   <p>
-                    All content, design, code, logos, and features of Between are the intellectual property of Between Technologies Private Limited. You may not reproduce, copy, distribute, or modify any portion of our platform without prior written authorization.
+                    All content, design, code, logos, and features of CareerSphere are the intellectual property of CareerSphere Technologies Private Limited. You may not reproduce, copy, distribute, or modify any portion of our platform without prior written authorization.
                   </p>
                 </section>
 
@@ -161,7 +161,7 @@ export default function TermsPage() {
                 <section className="space-y-2">
                   <h3 className="font-bold text-gray-900 dark:text-white text-base">5. Your Data Rights</h3>
                   <p>
-                    You have the right to access, edit, download, or delete your personal account data at any time through your profile settings page. For data deletion requests, you may also email support@between.indevs.in.
+                    You have the right to access, edit, download, or delete your personal account data at any time through your profile settings page. For data deletion requests, you may also email support@careersphere.indevs.in.
                   </p>
                 </section>
               </div>

@@ -1,12 +1,12 @@
-# Security Policy — Vishleshan
+# Security Policy — CareerSphere
 
-**Vishleshan** is a Multi-Agent Recruitment Intelligence Platform that processes sensitive personal data (resumes, contact details, employment history) and provides fraud detection services. We take security seriously and appreciate responsible disclosure from the community.
+**CareerSphere** is a Multi-Agent Recruitment Intelligence Platform that processes sensitive personal data (resumes, contact details, employment history) and provides fraud detection services. We take security seriously and appreciate responsible disclosure from the community.
 
 ---
 
 ## Supported Versions
 
-The following versions of Vishleshan are actively maintained and receive security updates:
+The following versions of CareerSphere are actively maintained and receive security updates:
 
 | Version | Supported          | Notes                              |
 | ------- | ------------------ | ---------------------------------- |
@@ -45,7 +45,7 @@ The following are **out of scope**:
 
 ## Sensitive Data Handled
 
-Vishleshan processes and stores the following sensitive information. Any vulnerability affecting these assets is considered **high priority**:
+CareerSphere processes and stores the following sensitive information. Any vulnerability affecting these assets is considered **high priority**:
 
 - **PII** — Candidate names, email addresses, phone numbers, LinkedIn/GitHub profiles
 - **Resume Contents** — Employment history, education records, project details
@@ -61,7 +61,7 @@ Vishleshan processes and stores the following sensitive information. Any vulnera
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability in Vishleshan, **please do not open a public GitHub Issue**. Instead, report it privately using one of the following channels:
+If you discover a security vulnerability in CareerSphere, **please do not open a public GitHub Issue**. Instead, report it privately using one of the following channels:
 
 ### Option 1 — GitHub Private Security Advisory (Preferred)
 Use GitHub's built-in [Private Vulnerability Reporting](https://github.com/DakshBhavsar007/Multi-Agent-Resume-Project/security/advisories/new) to submit a confidential advisory directly to the maintainers.
@@ -70,7 +70,7 @@ Use GitHub's built-in [Private Vulnerability Reporting](https://github.com/Daksh
 Send a detailed report to the project maintainers. Include the following information:
 
 ```
-Subject: [SECURITY] Vishleshan — <brief description>
+Subject: [SECURITY] CareerSphere — <brief description>
 
 - Component affected (e.g., "Admin login endpoint", "API Key auth")
 - Steps to reproduce the vulnerability
@@ -109,7 +109,7 @@ We use the following severity levels to prioritise reported issues:
 
 ## Security Best Practices for Self-Hosting
 
-If you are running Vishleshan locally or in your own infrastructure, follow these guidelines:
+If you are running CareerSphere locally or in your own infrastructure, follow these guidelines:
 
 ### Environment & Secrets
 - **Never commit `.env` or `.env.local` to version control** — they contain Gemini API keys, DB credentials, JWT secrets, OAuth credentials, and admin passwords.
@@ -142,7 +142,7 @@ If you are running Vishleshan locally or in your own infrastructure, follow thes
 
 ## Known Security Features
 
-Vishleshan includes the following built-in security controls:
+CareerSphere includes the following built-in security controls:
 
 | Feature | Description |
 |---------|-------------|
@@ -168,7 +168,7 @@ Vishleshan includes the following built-in security controls:
 
 ## Acknowledgements
 
-We are grateful to security researchers who help make Vishleshan safer. Responsible disclosures will be credited in release notes (with your permission).
+We are grateful to security researchers who help make CareerSphere safer. Responsible disclosures will be credited in release notes (with your permission).
 
 ---
 

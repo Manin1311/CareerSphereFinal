@@ -55,7 +55,7 @@ export default function ContactPage() {
             <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-3xl p-7 space-y-6 overflow-hidden">
               <div>
                 <h3 className="text-xs font-black text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-1">Entity Details</h3>
-                <p className="text-sm font-bold text-gray-900 dark:text-white">Between Technologies Private Limited</p>
+                <p className="text-sm font-bold text-gray-900 dark:text-white">CareerSphere Technologies Private Limited</p>
               </div>
 
               <div className="space-y-4">
@@ -73,8 +73,8 @@ export default function ContactPage() {
                   <Mail className="h-5 w-5 text-gray-400 dark:text-zinc-500 shrink-0" />
                   <div>
                     <span className="font-bold text-gray-900 dark:text-white block mb-0.5">Support Email</span>
-                    <a href="mailto:support@between.indevs.in" className="text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white underline transition">
-                      support@between.indevs.in
+                    <a href="mailto:support@careersphere.indevs.in" className="text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white underline transition">
+                      support@careersphere.indevs.in
                     </a>
                   </div>
                 </div>

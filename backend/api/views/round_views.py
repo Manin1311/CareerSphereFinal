@@ -285,7 +285,7 @@ def auto_progress_candidate(candidate, session, round_score, attempt=None):
     passing_threshold = current_sr.passing_score if current_sr else 50
     
     app = JobApplication.objects.filter(candidate=candidate).first()
-    company_name = session.company.name if session.company else "Between Partner"
+    company_name = session.company.name if session.company else "CareerSphere Partner"
 
     if round_score >= passing_threshold:
         if candidate.current_round_index < max_round:
@@ -869,7 +869,7 @@ def submit_mcq(request):
         if app and app.seeker and app.seeker.email:
             seeker = app.seeker
             sess = attempt.round.session
-            company_name = sess.company.name if sess.company else 'Between Partner'
+            company_name = sess.company.name if sess.company else 'CareerSphere Partner'
             send_round_score_to_seeker(
                 seeker_email=seeker.email,
                 seeker_name=seeker.full_name,
@@ -1056,7 +1056,7 @@ def submit_coding(request):
         if app and app.seeker and app.seeker.email:
             seeker = app.seeker
             sess = attempt.round.session
-            company_name = sess.company.name if sess.company else 'Between Partner'
+            company_name = sess.company.name if sess.company else 'CareerSphere Partner'
             send_round_score_to_seeker(
                 seeker_email=seeker.email,
                 seeker_name=seeker.full_name,

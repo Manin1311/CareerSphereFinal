@@ -406,7 +406,7 @@ export default function AdminDashboard() {
             </svg>
           </div>
           <div>
-            <h1 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">Between AI Control Deck</h1>
+            <h1 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">CareerSphere AI Control Deck</h1>
             <p className="text-xs text-slate-500 dark:text-zinc-400 font-mono">System Administrator</p>
           </div>
         </div>
@@ -1136,7 +1136,7 @@ export default function AdminDashboard() {
 
       {/* Footer */}
       <footer className="border-t border-slate-200 dark:border-zinc-900 py-6 text-center text-xs text-slate-400 dark:text-zinc-600 font-mono mt-auto bg-white/50 dark:bg-transparent">
-        &copy; 2026 Between AI. Dedicated System Console. All activities logged.
+        &copy; 2026 CareerSphere AI. Dedicated System Console. All activities logged.
       </footer>
     </div>
   );

@@ -61,7 +61,7 @@ export default function Sidebar() {
       {/* Top Section */}
       <div className="pt-6 px-5 pb-4">
         <div>
-          <h1 className="text-[#2563EB] text-[20px] font-bold tracking-tight">Between</h1>
+          <h1 className="text-[#2563EB] text-[20px] font-bold tracking-tight">CareerSphere</h1>
           <p className="text-[#9CA3AF] text-xs mt-0.5">Recruiter Dashboard</p>
         </div>
       </div>

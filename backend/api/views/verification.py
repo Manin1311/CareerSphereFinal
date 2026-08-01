@@ -80,7 +80,7 @@ def send_email_otp(request):
         cache.set(cache_key, otp, timeout=300)  # 5 minutes expiration
         
         # Send Email
-        subject = "Your Verification Code — Between AI"
+        subject = "Your Verification Code — CareerSphere AI"
         text_body = f"Your verification code is: {otp}. It will expire in 5 minutes."
         html_body = _build_otp_html(otp, purpose="email verification")
         

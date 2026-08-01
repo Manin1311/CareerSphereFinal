@@ -589,7 +589,7 @@ export default function MyResumePage() {
                 {/* Print layout section if PDF */}
                 {downloadFormat === 'pdf' && (
                   <div style={{ background:'#fafaf8', border:'1px solid #e5e7eb', borderRadius:'12px', padding:'20px', marginBottom:'24px' }}>
-                    <div style={{ display:'flex', justifyBetween:'space-between', justifyContent:'space-between', alignItems:'center', marginBottom:'14px' }}>
+                    <div style={{ display:'flex', justifyCareerSphere:'space-between', justifyContent:'space-between', alignItems:'center', marginBottom:'14px' }}>
                       <span style={{ fontSize:'11px', fontWeight:800, color:'#6b7280', textTransform:'uppercase', letterSpacing:'0.5px' }}>Print Preview Layout</span>
                       <button 
                         onClick={triggerPrint}
@@ -678,15 +678,15 @@ export default function MyResumePage() {
                   <span style={{ fontSize:'11px', fontWeight:800, color:'#6b7280', textTransform:'uppercase', letterSpacing:'0.5px', display:'block', marginBottom:'14px' }}>Compliance Checks</span>
                   
                   <div style={{ display:'flex', flexDirection:'column', gap:'10px' }}>
-                    <div style={{ display:'flex', justifyBetween:'space-between', justifyContent:'space-between', fontSize:'13px' }}>
+                    <div style={{ display:'flex', justifyCareerSphere:'space-between', justifyContent:'space-between', fontSize:'13px' }}>
                       <span style={{ color:'#6b7280' }}>Formatting & Structural Match</span>
                       <span style={{ color:'#22c55e', fontWeight:700 }}>{atsReport.format_check}</span>
                     </div>
-                    <div style={{ display:'flex', justifyBetween:'space-between', justifyContent:'space-between', fontSize:'13px' }}>
+                    <div style={{ display:'flex', justifyCareerSphere:'space-between', justifyContent:'space-between', fontSize:'13px' }}>
                       <span style={{ color:'#6b7280' }}>Job Keywords Alignment</span>
                       <span style={{ color:'#22c55e', fontWeight:700 }}>{atsReport.keyword_check}</span>
                     </div>
-                    <div style={{ display:'flex', justifyBetween:'space-between', justifyContent:'space-between', fontSize:'13px' }}>
+                    <div style={{ display:'flex', justifyCareerSphere:'space-between', justifyContent:'space-between', fontSize:'13px' }}>
                       <span style={{ color:'#6b7280' }}>Section Header Compatibility</span>
                       <span style={{ color:'#22c55e', fontWeight:700 }}>{atsReport.structure_check}</span>
                     </div>

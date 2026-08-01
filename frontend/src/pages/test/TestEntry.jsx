@@ -95,7 +95,7 @@ export default function TestEntry() {
               <circle cx="68" cy="32" r="24" fill="#2563eb" />
             </svg>
           </div>
-          <h1 className="mt-4 text-2xl font-bold tracking-tight text-gray-900">Between Assessment Portal</h1>
+          <h1 className="mt-4 text-2xl font-bold tracking-tight text-gray-900">CareerSphere Assessment Portal</h1>
           <p className="mt-1 text-sm text-gray-500">Secure proctored testing environment</p>
         </div>
 

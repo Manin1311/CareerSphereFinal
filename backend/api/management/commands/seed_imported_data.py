@@ -1967,8 +1967,8 @@ SEED_DATA = [
     },
     {
         "id": "3d1bbffe-496e-4375-8c8a-ae3afae86db7",
-        "name": "Workly AI",
-        "email": "admin@workly.ai",
+        "name": "CareerSphere AI",
+        "email": "admin@careersphere.ai",
         "password_hash": "$2b$12$myaTTqi94y06hOF.FLmU7us9ZxNP1KJe4vVz.x.tkjGm2ZCoxeiUq",
         "tier": "enterprise",
         "is_active": True,
@@ -1976,10 +1976,10 @@ SEED_DATA = [
         "hq_location": "Ahmedabad, Gujarat, India",
         "company_size": "11-50 employees",
         "founded_year": 2024,
-        "website_url": "https://workly.ai",
-        "about": "Workly AI is an intelligent recruiting platform that uses advanced AI agents to screen, match, and tailor candidate hiring workflows.",
+        "website_url": "https://careersphere.ai",
+        "about": "CareerSphere AI is an intelligent recruiting platform that uses advanced AI agents to screen, match, and tailor candidate hiring workflows.",
         "logo_path": "https://logos.hunter.io/workday.com",
-        "slug": "workly-ai",
+        "slug": "careersphere-ai",
         "api_keys": [
             {
                 "id": "921f57dd-6336-43ae-89ac-735ef50f277f",

@@ -11,7 +11,7 @@ import numpy as np
 
 # ── Django Setup ────────────────────────────────────────────────────────────
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "vishleshan_backend.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "careersphere_backend.settings")
 
 import django
 django.setup()
@@ -386,7 +386,7 @@ def test_kmeans_skill_clustering():
 # ═══════════════════════════════════════════════════════════════════════════
 if __name__ == "__main__":
     print("=" * 80)
-    print("  ML Model Accuracy Test Suite (Large Scale) — Vishleshan AI Agents")
+    print("  ML Model Accuracy Test Suite (Large Scale) — CareerSphere AI Agents")
     print("=" * 80)
     print()
 

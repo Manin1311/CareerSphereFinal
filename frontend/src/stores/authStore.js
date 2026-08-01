@@ -7,7 +7,7 @@ export const useAuthStore = create((set) => ({
       localStorage.setItem("vish_jwt", data.jwt_token || "");
       localStorage.setItem("vish_api_key", data.api_key || data.secret_key || "");
       localStorage.setItem("vish_company", JSON.stringify(data));
-      localStorage.setItem("between_user", JSON.stringify({
+      localStorage.setItem("careersphere_user", JSON.stringify({
         id: data.id || data.company_id,
         user_id: data.id || data.company_id,
         email: data.email,
@@ -28,7 +28,7 @@ export const useAuthStore = create((set) => ({
     localStorage.removeItem("vish_jwt");
     localStorage.removeItem("vish_api_key");
     localStorage.removeItem("vish_company");
-    localStorage.removeItem("between_user");
+    localStorage.removeItem("careersphere_user");
     set({company:null,apiKey:"",jwt:"",tier:"free"})
     window.location.href="/login"
   },
@@ -42,8 +42,8 @@ export const useAuthStore = create((set) => ({
     if (company && jwt) {
       set({company, jwt, apiKey, 
            tier: company.tier || "free"})
-      if (!localStorage.getItem("between_user")) {
-        localStorage.setItem("between_user", JSON.stringify({
+      if (!localStorage.getItem("careersphere_user")) {
+        localStorage.setItem("careersphere_user", JSON.stringify({
           id: company.id || company.company_id,
           user_id: company.id || company.company_id,
           email: company.email,

@@ -35,7 +35,7 @@ export default function WriteReviewModal({
   try {
     const s = localStorage.getItem('vish_seeker_data');
     if (s) seekerName = JSON.parse(s)?.full_name || "Job Seeker";
-    const r = localStorage.getItem('between_user');
+    const r = localStorage.getItem('careersphere_user');
     if (r) recruiterName = JSON.parse(r)?.name || "Recruiter";
     const d = localStorage.getItem('portal_user');
     if (d) developerName = JSON.parse(d)?.full_name || "Developer";
@@ -230,7 +230,7 @@ export default function WriteReviewModal({
                 onChange={(e) => setSelectedCompanyId(e.target.value)}
                 className="w-full p-3 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-xs font-bold text-charcoal dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white transition-all"
               >
-                <option value="">General Platform Feedback (Between)</option>
+                <option value="">General Platform Feedback (CareerSphere)</option>
                 {companiesList.map((c) => (
                   <option key={c.id} value={c.id}>
                     Company: {c.name} ({c.industry || 'Technology'})

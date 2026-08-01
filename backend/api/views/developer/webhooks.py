@@ -147,7 +147,7 @@ def test_webhook(request, webhook_id):
             "event": "test",
             "timestamp": datetime.utcnow().isoformat(),
             "data": {
-                "message": "This is a test webhook delivery from Vishleshan",
+                "message": "This is a test webhook delivery from CareerSphere",
                 "webhook_id": str(webhook.id)
             }
         }

@@ -1,4 +1,4 @@
-# Vishleshan — Application Flow & Architecture Document
+# CareerSphere — Application Flow & Architecture Document
 
 > **Version:** 1.0.0
 > **Created:** 2026-07-11
@@ -12,7 +12,7 @@
 
 ## 1. 📋 Document Purpose
 
-This document maps every major user journey and system process in **Vishleshan** using Mermaid diagrams. It answers the question: **"What happens when?"** — for every actor, interaction, and AI pipeline in the platform.
+This document maps every major user journey and system process in **CareerSphere** using Mermaid diagrams. It answers the question: **"What happens when?"** — for every actor, interaction, and AI pipeline in the platform.
 
 ---
 
@@ -33,7 +33,7 @@ flowchart TD
     DJ -->|Payment metadata| RP[Razorpay Gateway]
     DJ -->|Email triggers| EMAIL[SMTP Email Service]
 
-    CEL -->|Uses Multi-Agent Pipeline| AG[Vishleshan AI Agents\nParser · Matcher · Fraud Detection]
+    CEL -->|Uses Multi-Agent Pipeline| AG[CareerSphere AI Agents\nParser · Matcher · Fraud Detection]
     AG -->|API key rotation| ROT[RotateLLMClient]
     ROT -->|Load balanced calls| GEM[Google Gemini API]
 ```
@@ -46,7 +46,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    START([🎓 New Seeker\nVisits Vishleshan]) --> REG
+    START([🎓 New Seeker\nVisits CareerSphere]) --> REG
 
     REG[Register with Email\nor Google OAuth]
     REG --> ROLE[Role Auto-assigned: SEEKER]
@@ -92,7 +92,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    START([🏢 New Recruiter\nVisits Vishleshan]) --> REG
+    START([🏢 New Recruiter\nVisits CareerSphere]) --> REG
 
     REG[Register with Email\nor Google OAuth]
     REG --> ROLE[Select Role: RECRUITER]
@@ -267,5 +267,5 @@ flowchart TD
 
 ---
 
-*© 2026 Vishleshan AI. Confidential — Internal Use Only.*
-*AppFlow Version 1.0.0 | Created: 2026-07-11 | Author: Vishleshan Engineering Team*
+*© 2026 CareerSphere AI. Confidential — Internal Use Only.*
+*AppFlow Version 1.0.0 | Created: 2026-07-11 | Author: CareerSphere Engineering Team*

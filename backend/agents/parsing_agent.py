@@ -7,8 +7,8 @@ import re
 class ResumeParsingAgent:
     def __init__(self):
         self.client = RotateLLMClient(agent_name="parsing_agent")
-        self.upload_dir = os.getenv("UPLOAD_DIR", "/tmp/vishleshan/resumes")
-        self.photo_dir = os.getenv("PHOTO_DIR", "/tmp/vishleshan/photos")
+        self.upload_dir = os.getenv("UPLOAD_DIR", "/tmp/careersphere/resumes")
+        self.photo_dir = os.getenv("PHOTO_DIR", "/tmp/careersphere/photos")
         os.makedirs(self.photo_dir, exist_ok=True)
 
     async def parse(self, file_path: str, file_type: str) -> dict:

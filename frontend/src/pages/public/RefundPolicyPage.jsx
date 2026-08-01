@@ -95,7 +95,7 @@ export default function RefundPolicyPage() {
                 However, in cases of technical billing issues, duplicate charges, or gateway errors on Razorpay:
               </p>
               <ul className="list-disc pl-5 space-y-1">
-                <li>Please contact us at **support@between.indevs.in** within 7 days of the transaction.</li>
+                <li>Please contact us at **support@careersphere.indevs.in** within 7 days of the transaction.</li>
                 <li>Provide the payment ID (e.g. `pay_...`) and transaction receipt.</li>
                 <li>Our billing team will review the transaction. If verified as a duplicate charge or technical gateway error, the refund will be processed back to the original payment source within 5-7 business days.</li>
               </ul>

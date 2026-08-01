@@ -74,7 +74,7 @@ async function req(method, path, body=null, isFile=false) {
   if (isAccountBanned) {
     let email = "";
     try {
-      const u = localStorage.getItem("between_user");
+      const u = localStorage.getItem("careersphere_user");
       const s = localStorage.getItem("vish_seeker_data");
       if (u) email = JSON.parse(u).email || "";
       else if (s) email = JSON.parse(s).email || "";
@@ -83,7 +83,7 @@ async function req(method, path, body=null, isFile=false) {
     localStorage.removeItem("vish_jwt");
     localStorage.removeItem("vish_api_key");
     localStorage.removeItem("vish_company");
-    localStorage.removeItem("between_user");
+    localStorage.removeItem("careersphere_user");
     localStorage.removeItem("vish_seeker_token");
     localStorage.removeItem("vish_seeker_data");
 

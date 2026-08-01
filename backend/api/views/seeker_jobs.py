@@ -137,7 +137,7 @@ def _session_to_job(session: Session, match_score=None, applied=False, is_saved=
     return {
         "id": str(session.id),
         "job_title": session.job_title,
-        "company_name": session.company.name if session.company else "Between Partner",
+        "company_name": session.company.name if session.company else "CareerSphere Partner",
         "company_logo_path": session.company.logo_path if session.company else None,
         "job_description": session.job_description[:500] + "..." if len(session.job_description) > 500 else session.job_description,
         "full_description": session.job_description,
@@ -473,7 +473,7 @@ def apply_job(request, session_id):
         # Compute match score & details
         match_val = _compute_match_score(seeker.skills if seeker.skills else [], [], str(session.id), seeker, session)
         match_score_str = f"{match_val}%" if (match_val is not None and match_val > 0) else "N/A"
-        company_name = session.company.name if (session.company and session.company.name) else "Between Partner"
+        company_name = session.company.name if (session.company and session.company.name) else "CareerSphere Partner"
 
         # Notification for seeker
         Notification.objects.create(
@@ -547,7 +547,7 @@ def apply_job(request, session_id):
         return JsonResponse(success_response({
             "application_id": str(application.id),
             "status": "applied",
-            "message": f"Successfully applied to {session.job_title} at {session.company.name if session.company else 'Between Partner'}",
+            "message": f"Successfully applied to {session.job_title} at {session.company.name if session.company else 'CareerSphere Partner'}",
         }), status=201)
 
     except Exception as e:
@@ -623,7 +623,7 @@ def release_due_results_for_seeker(seeker):
                 # Compute rich details for pending notification & email release
                 match_val = _compute_match_score(seeker.skills if seeker and seeker.skills else [], [], str(session.id), seeker, session)
                 match_score_str = f"{match_val}%" if (match_val is not None and match_val > 0) else "N/A"
-                company_name = session.company.name if session.company else "Between Partner"
+                company_name = session.company.name if session.company else "CareerSphere Partner"
 
                 current_sr = SessionRound.objects.filter(session=session, round_number=candidate.current_round_index).first() if candidate else None
                 current_round_name = current_sr.name if current_sr else None
@@ -857,7 +857,7 @@ def my_applications(request):
                 "id": str(app.id),
                 "job_id": str(session.id),
                 "job_title": session.job_title,
-                "company_name": session.company.name if session.company else "Between Partner",
+                "company_name": session.company.name if session.company else "CareerSphere Partner",
                 "company_logo_path": None,
                 "status": seeker_status,
                 "accepted_terms": app.accepted_terms,
@@ -904,7 +904,7 @@ def accept_offer(request, app_id):
         session.status = "completed"
         session.save(update_fields=["status"])
 
-        return JsonResponse(success_response({"accepted": True, "company_name": app.session.company.name if app.session.company else "Between Partner"}))
+        return JsonResponse(success_response({"accepted": True, "company_name": app.session.company.name if app.session.company else "CareerSphere Partner"}))
     except Exception as e:
         return JsonResponse(error_response(f"Server error: {e}"), status=500)
 

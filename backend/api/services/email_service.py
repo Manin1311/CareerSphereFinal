@@ -1,9 +1,9 @@
 """
 Email Service
 ─────────────
-High-quality, responsive HTML email service for Between AI platform.
+High-quality, responsive HTML email service for CareerSphere AI platform.
 Uses the SMTP configuration defined in Django settings / environment variables.
-Supports HTML email templates with Between logo, clean design tokens, and strict NO-EMOJI rules.
+Supports HTML email templates with CareerSphere logo, clean design tokens, and strict NO-EMOJI rules.
 All email & notification functions deliver full comprehensive details (job title, company name, match score, stage, test links).
 """
 
@@ -15,8 +15,8 @@ from django.conf import settings
 logger = logging.getLogger(__name__)
 
 # Sender address — falls back to settings.DEFAULT_FROM_EMAIL
-FROM_EMAIL = getattr(settings, "DEFAULT_FROM_EMAIL", "noreply@between.indevs.in")
-FRONTEND_URL = os.getenv("FRONTEND_URL", "https://between.indevs.in")
+FROM_EMAIL = getattr(settings, "DEFAULT_FROM_EMAIL", "noreply@careersphere.indevs.in")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "https://careersphere.indevs.in")
 
 
 def build_between_email_html(
@@ -28,8 +28,8 @@ def build_between_email_html(
     badge_text: str = None
 ) -> str:
     """
-    Renders an ultra-premium, responsive, HTML email template for Between AI.
-    - Features Between branding with styled SVG logo & header.
+    Renders an ultra-premium, responsive, HTML email template for CareerSphere AI.
+    - Features CareerSphere branding with styled SVG logo & header.
     - Strict NO EMOJI policy — clean SVG/CSS badges & Lucide-inspired design system.
     - Tailored color palette matching light & dark theme design system.
     """
@@ -88,7 +88,7 @@ def build_between_email_html(
                                                     </div>
                                                 </td>
                                                 <td style="vertical-align: middle;">
-                                                    <span style="font-size: 22px; font-weight: 900; color: #ffffff; letter-spacing: -0.5px; font-family: 'Inter', sans-serif;">Between</span>
+                                                    <span style="font-size: 22px; font-weight: 900; color: #ffffff; letter-spacing: -0.5px; font-family: 'Inter', sans-serif;">CareerSphere</span>
                                                 </td>
                                             </tr>
                                         </table>
@@ -120,13 +120,13 @@ def build_between_email_html(
                     <tr>
                         <td style="background-color: #f8fafc; padding: 24px 32px; border-top: 1px solid #f1f5f9; text-align: center;">
                             <p style="color: #64748b; font-size: 12px; margin: 0 0 6px; font-weight: 500;">
-                                Between Technologies Private Limited &bull; AI Recruitment Intelligence Platform
+                                CareerSphere Technologies Private Limited &bull; AI Recruitment Intelligence Platform
                             </p>
                             <p style="color: #94a3b8; font-size: 11px; margin: 0 0 12px;">
-                                Need assistance? Contact our support desk at <a href="mailto:support@between.indevs.in" style="color: #2563eb; text-decoration: none; font-weight: 600;">support@between.indevs.in</a>
+                                Need assistance? Contact our support desk at <a href="mailto:support@careersphere.indevs.in" style="color: #2563eb; text-decoration: none; font-weight: 600;">support@careersphere.indevs.in</a>
                             </p>
                             <p style="color: #cbd5e1; font-size: 11px; margin: 0;">
-                                &copy; 2026 Between AI. All rights reserved.
+                                &copy; 2026 CareerSphere AI. All rights reserved.
                             </p>
                         </td>
                     </tr>
@@ -186,7 +186,7 @@ def send_application_received_to_company(
 
     body_html = f"""
     <p>Hi <strong>{company_name}</strong>,</p>
-    <p>You have received a new application for the <strong>{job_title}</strong> position on Between.</p>
+    <p>You have received a new application for the <strong>{job_title}</strong> position on CareerSphere.</p>
     
     <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px; margin: 20px 0;">
         <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0">
@@ -209,10 +209,10 @@ def send_application_received_to_company(
         </table>
     </div>
     
-    <p>Log in to your Between Recruiter Dashboard to review the complete profile, ATS compatibility match details, and candidate resume.</p>
+    <p>Log in to your CareerSphere Recruiter Dashboard to review the complete profile, ATS compatibility match details, and candidate resume.</p>
     """
 
-    text_body = f"Hi {company_name},\n\nYou have received a new application from {seeker_name} for {job_title} ({match_score_display} Match).\n\nReview application: {cta_url}\n\n— Between AI Platform"
+    text_body = f"Hi {company_name},\n\nYou have received a new application from {seeker_name} for {job_title} ({match_score_display} Match).\n\nReview application: {cta_url}\n\n— CareerSphere AI Platform"
     html_email = build_between_email_html(
         title=title,
         subtitle=subtitle,
@@ -247,7 +247,7 @@ def send_application_confirmation_to_seeker(
 
     body_html = f"""
     <p>Hi <strong>{seeker_name}</strong>,</p>
-    <p>Your application for <strong>{job_title}</strong> at <strong>{company_name}</strong> has been successfully submitted via Between.</p>
+    <p>Your application for <strong>{job_title}</strong> at <strong>{company_name}</strong> has been successfully submitted via CareerSphere.</p>
     
     <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 14px; padding: 20px; margin: 20px 0;">
         <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0">
@@ -277,7 +277,7 @@ def send_application_confirmation_to_seeker(
     <p>You can track real-time application stage progress, scheduled assessment rounds, and interviewer updates anytime on your Seeker Dashboard.</p>
     """
 
-    text_body = f"Hi {seeker_name},\n\nYour application for {job_title} at {company_name} ({match_score_display} Match) has been submitted.\nLocation: {location_display}\n\nTrack applications: {cta_url}\n\n— Between AI Platform"
+    text_body = f"Hi {seeker_name},\n\nYour application for {job_title} at {company_name} ({match_score_display} Match) has been submitted.\nLocation: {location_display}\n\nTrack applications: {cta_url}\n\n— CareerSphere AI Platform"
     html_email = build_between_email_html(
         title=title,
         subtitle=subtitle,
@@ -421,10 +421,10 @@ def send_status_update_to_seeker(
         {rejection_html}
     </div>
     
-    <p>Log in to your Between Seeker Dashboard to view complete application details and proceed with next steps.</p>
+    <p>Log in to your CareerSphere Seeker Dashboard to view complete application details and proceed with next steps.</p>
     """
 
-    text_body = f"Hi {seeker_name},\n\n{status_body}\n\nJob: {job_title}\nCompany: {company_name}\nStatus: {new_status.title()}\nMatch Score: {match_score_display}\n\nView details: {cta_url}\n\n— Between AI Platform"
+    text_body = f"Hi {seeker_name},\n\n{status_body}\n\nJob: {job_title}\nCompany: {company_name}\nStatus: {new_status.title()}\nMatch Score: {match_score_display}\n\nView details: {cta_url}\n\n— CareerSphere AI Platform"
 
     html_email = build_between_email_html(
         title=title,
@@ -464,7 +464,7 @@ def send_new_job_notification_to_follower(
 
     body_html = f"""
     <p>Hi <strong>{seeker_name}</strong>,</p>
-    <p><strong>{company_name}</strong>, a company you follow on Between, has just posted a new career opportunity for <strong>{job_title}</strong>.</p>
+    <p><strong>{company_name}</strong>, a company you follow on CareerSphere, has just posted a new career opportunity for <strong>{job_title}</strong>.</p>
     
     <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 14px; padding: 20px; margin: 20px 0;">
         <p style="margin: 0 0 2px; font-size: 11px; color: #1e40af; font-weight: 700; text-transform: uppercase;">Job Title</p>
@@ -474,10 +474,10 @@ def send_new_job_notification_to_follower(
         <p style="margin: 0; font-size: 14px; font-weight: 600; color: #1e40af;">{company_name} &bull; {location_display}{exp_display}</p>
     </div>
     
-    <p>Check the full job description and submit your application directly on Between.</p>
+    <p>Check the full job description and submit your application directly on CareerSphere.</p>
     """
 
-    text_body = f"Hi {seeker_name},\n\n{company_name} has posted a new job: {job_title} ({location_display}).\n\nApply now: {cta_url}\n\n— Between AI Platform"
+    text_body = f"Hi {seeker_name},\n\n{company_name} has posted a new job: {job_title} ({location_display}).\n\nApply now: {cta_url}\n\n— CareerSphere AI Platform"
     html_email = build_between_email_html(
         title=title,
         subtitle=subtitle,
@@ -525,14 +525,14 @@ def send_welcome_email(
     }
     cta_link = role_links.get(role, FRONTEND_URL)
 
-    subject = f"Welcome to Between AI, {user_name.split()[0] if user_name else 'User'}"
-    title = "Welcome to Between AI"
+    subject = f"Welcome to CareerSphere AI, {user_name.split()[0] if user_name else 'User'}"
+    title = "Welcome to CareerSphere AI"
     subtitle = f"Registration Confirmed as {role_label}"
     badge = "Welcome"
 
     body_html = f"""
     <p>Hi <strong>{user_name}</strong>,</p>
-    <p>Welcome to Between AI — the intelligent hiring platform! Your account registration as a <strong>{role_label}</strong> is complete.</p>
+    <p>Welcome to CareerSphere AI — the intelligent hiring platform! Your account registration as a <strong>{role_label}</strong> is complete.</p>
     
     <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin: 20px 0;">
         <p style="margin: 0 0 10px; font-size: 13px; font-weight: 700; color: #0f172a; text-transform: uppercase;">Getting Started Steps:</p>
@@ -542,10 +542,10 @@ def send_welcome_email(
             <li>Explore features directly from your dashboard</li>
         </ul>
     </div>
-    <p style="font-size: 13px; color: #64748b;">If you have questions, our support team is available 24/7 at support@between.indevs.in.</p>
+    <p style="font-size: 13px; color: #64748b;">If you have questions, our support team is available 24/7 at support@careersphere.indevs.in.</p>
     """
 
-    text_body = f"Hi {user_name},\n\nWelcome to Between AI! Your {role_label} account is ready.\n\nGo to dashboard: {cta_link}\n\n— Between AI Team"
+    text_body = f"Hi {user_name},\n\nWelcome to CareerSphere AI! Your {role_label} account is ready.\n\nGo to dashboard: {cta_link}\n\n— CareerSphere AI Team"
     html_email = build_between_email_html(
         title=title,
         subtitle=subtitle,
@@ -589,7 +589,7 @@ def send_support_ticket_confirmation(user_email: str, user_name: str, ticket_id:
     <p style="font-size: 13px; color: #64748b;">You can track real-time admin replies or chat directly via the Support & Appeals Portal.</p>
     """
 
-    text_body = f"Hi {user_name},\n\nWe have received your support ticket #{ticket_short_id}.\nSubject: {subject_text}\n\nTrack ticket: {cta_url}\n\n— Between Support Team"
+    text_body = f"Hi {user_name},\n\nWe have received your support ticket #{ticket_short_id}.\nSubject: {subject_text}\n\nTrack ticket: {cta_url}\n\n— CareerSphere Support Team"
     html_email = build_between_email_html(
         title=title,
         subtitle=subtitle,
@@ -669,10 +669,10 @@ def send_round_unlocked_to_seeker(
         </table>
     </div>
 
-    <p>Please log in to your Between Seeker Dashboard or click the button below to start your assessment. Complete it before the deadline to stay in the running.</p>
+    <p>Please log in to your CareerSphere Seeker Dashboard or click the button below to start your assessment. Complete it before the deadline to stay in the running.</p>
     """
 
-    text_body = f"Hi {seeker_name},\n\nYour new assessment round '{round_name}' for {job_title} at {company_name} has been unlocked!\n\nStart now: {cta_url}\n\n— Between AI Platform"
+    text_body = f"Hi {seeker_name},\n\nYour new assessment round '{round_name}' for {job_title} at {company_name} has been unlocked!\n\nStart now: {cta_url}\n\n— CareerSphere AI Platform"
     html_email = build_between_email_html(
         title=title,
         subtitle=subtitle,
@@ -750,10 +750,10 @@ def send_round_completed_to_recruiter(
         </table>
     </div>
 
-    <p>Log in to your Between Recruiter Dashboard to review the full submission, scores, and decide whether to advance or reject this candidate.</p>
+    <p>Log in to your CareerSphere Recruiter Dashboard to review the full submission, scores, and decide whether to advance or reject this candidate.</p>
     """
 
-    text_body = f"Hi {company_name},\n\n{candidate_name} has submitted their {round_name} for {job_title}.\n\nReview now: {cta_url}\n\n— Between AI Platform"
+    text_body = f"Hi {company_name},\n\n{candidate_name} has submitted their {round_name} for {job_title}.\n\nReview now: {cta_url}\n\n— CareerSphere AI Platform"
     html_email = build_between_email_html(
         title=title,
         subtitle=subtitle,
@@ -828,7 +828,7 @@ def send_high_match_alert_to_recruiter(
     <p>This candidate's profile is highly aligned with your job requirements. Log in to review their full resume, ATS score breakdown, and take action immediately.</p>
     """
 
-    text_body = f"Hi {company_name},\n\nHigh-Match Alert: {seeker_name} applied for {job_title} with a {int(match_score)}% match score.\n\nReview now: {cta_url}\n\n— Between AI Platform"
+    text_body = f"Hi {company_name},\n\nHigh-Match Alert: {seeker_name} applied for {job_title} with a {int(match_score)}% match score.\n\nReview now: {cta_url}\n\n— CareerSphere AI Platform"
     html_email = build_between_email_html(
         title=title,
         subtitle=subtitle,
@@ -931,10 +931,10 @@ def send_round_score_to_seeker(
         </table>
     </div>
 
-    <p>Your result has been submitted to the hiring team. You can track your application status anytime from your Between Seeker Dashboard.</p>
+    <p>Your result has been submitted to the hiring team. You can track your application status anytime from your CareerSphere Seeker Dashboard.</p>
     """
 
-    text_body = f"Hi {seeker_name},\n\nYour {round_name} result for {job_title} at {company_name}: {score_int}% ({score_label})\n\nTrack application: {cta_url}\n\n— Between AI Platform"
+    text_body = f"Hi {seeker_name},\n\nYour {round_name} result for {job_title} at {company_name}: {score_int}% ({score_label})\n\nTrack application: {cta_url}\n\n— CareerSphere AI Platform"
     html_email = build_between_email_html(
         title=title,
         subtitle=subtitle,
@@ -1010,7 +1010,7 @@ def send_parse_quota_warning_to_recruiter(
     <p>To avoid disruption to your hiring workflow, consider upgrading your plan for higher monthly parse limits and additional features.</p>
     """
 
-    text_body = f"Hi {company_name},\n\nWarning: You have used {used}/{limit} ({percent_used}%) of your monthly parse quota on the {tier.title()} plan.\n\nUpgrade plan: {cta_url}\n\n— Between AI Platform"
+    text_body = f"Hi {company_name},\n\nWarning: You have used {used}/{limit} ({percent_used}%) of your monthly parse quota on the {tier.title()} plan.\n\nUpgrade plan: {cta_url}\n\n— CareerSphere AI Platform"
     html_email = build_between_email_html(
         title=title,
         subtitle=subtitle,
@@ -1033,7 +1033,7 @@ def send_new_review_notification_to_company(
     """
     Notify a company recruiter via email that a job seeker has submitted a new review for their company.
     """
-    subject = f"New {rating}-Star Company Review from {seeker_name} — Between AI"
+    subject = f"New {rating}-Star Company Review from {seeker_name} — CareerSphere AI"
     title = "New Review Received"
     subtitle = f"Company: {company_name}"
     badge = "New Company Review"
@@ -1048,7 +1048,7 @@ def send_new_review_notification_to_company(
 
     body_html = f"""
     <p>Hi <strong>{company_name}</strong>,</p>
-    <p>A candidate on Between has just submitted a new review for your company.</p>
+    <p>A candidate on CareerSphere has just submitted a new review for your company.</p>
 
     <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 22px; margin: 20px 0;">
         <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0">
@@ -1076,7 +1076,7 @@ def send_new_review_notification_to_company(
     </p>
     """
 
-    text_body = f"Hi {company_name},\n\n{seeker_name} left a {rating}-star review for your company:\n\n\"{review_text}\"\n\nView and respond: {cta_url}\n\n— Between AI Platform"
+    text_body = f"Hi {company_name},\n\n{seeker_name} left a {rating}-star review for your company:\n\n\"{review_text}\"\n\nView and respond: {cta_url}\n\n— CareerSphere AI Platform"
     
     html_email = build_between_email_html(
         title=title,

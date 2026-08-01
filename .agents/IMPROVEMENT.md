@@ -1,4 +1,4 @@
-# 🏭 Vishleshan — Production Readiness Improvement Plan
+# 🏭 CareerSphere — Production Readiness Improvement Plan
 
 > **Audit Date:** June 27, 2026  
 > **Scope:** Full codebase review — backend settings, models, views, agents, middleware, frontend stores, API client, routing, dependencies.
@@ -8,7 +8,7 @@
 ## 🔴 CRITICAL — Security Vulnerabilities (Fix Immediately)
 
 ### 1. `DEBUG = True` & `ALLOWED_HOSTS = ["*"]` in Production Settings
-**File:** `backend/vishleshan_backend/settings.py` (Line 13-15)
+**File:** `backend/careersphere_backend/settings.py` (Line 13-15)
 
 This is the **#1 most dangerous issue**. Django's DEBUG mode exposes full stack traces, database queries, and environment variables to anyone who triggers a 500 error.
 
@@ -22,7 +22,7 @@ This is the **#1 most dangerous issue**. Django's DEBUG mode exposes full stack 
 ---
 
 ### 2. `CORS_ALLOW_ALL_ORIGINS = True` — Wide Open CORS
-**File:** `backend/vishleshan_backend/settings.py` (Line 58)
+**File:** `backend/careersphere_backend/settings.py` (Line 58)
 
 Any website on the internet can make authenticated API requests to your backend. This enables CSRF-like attacks.
 
@@ -35,7 +35,7 @@ Any website on the internet can make authenticated API requests to your backend.
 ---
 
 ### 3. Hardcoded Fallback Secret Keys
-**Files:** `backend/vishleshan_backend/settings.py` (Line 11) and `backend/api/decorators.py` (Line 24)
+**Files:** `backend/careersphere_backend/settings.py` (Line 11) and `backend/api/decorators.py` (Line 24)
 
 ```python
 SECRET_KEY = os.getenv("JWT_SECRET", "django-insecure-supersecretkey-change-this")
@@ -76,7 +76,7 @@ if len(password) < 8:
 ---
 
 ### 6. SQLite in Production
-**File:** `backend/vishleshan_backend/settings.py` (Line 38-43)
+**File:** `backend/careersphere_backend/settings.py` (Line 38-43)
 
 SQLite cannot handle concurrent writes (which your Celery workers produce), doesn't support real connection pooling, and locks the entire database on writes. Your README says "PostgreSQL via Supabase" but your actual config uses SQLite.
 
@@ -179,7 +179,7 @@ Your README claims "Docker-ready" but no Docker files exist. Create:
 ## 🟡 MEDIUM — Operational & Performance Issues
 
 ### 13. No Logging Configuration
-**File:** `backend/vishleshan_backend/settings.py`
+**File:** `backend/careersphere_backend/settings.py`
 
 No `LOGGING` dict in settings. All `logger.error()` calls in your agents and views go nowhere. Add structured logging:
 
@@ -209,7 +209,7 @@ LOGGING = {
 ---
 
 ### 14. No `STATIC_ROOT` / `collectstatic` Setup
-**File:** `backend/vishleshan_backend/settings.py` (Line 52)
+**File:** `backend/careersphere_backend/settings.py` (Line 52)
 
 Only `STATIC_URL` is set — no `STATIC_ROOT`. Django's `collectstatic` will fail, so static file serving won't work in production (e.g., behind Nginx/Gunicorn).
 
@@ -288,7 +288,7 @@ Your project uses **Vite**, not Next.js. Vite uses `import.meta.env.VITE_*` pref
 + localStorage.removeItem("vish_jwt")
 + localStorage.removeItem("vish_api_key")
 + localStorage.removeItem("vish_company")
-+ localStorage.removeItem("vishleshan_user")
++ localStorage.removeItem("careersphere_user")
 ```
 
 ---

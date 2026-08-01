@@ -1,1 +1,1 @@
-# Vishleshan Backend - Models Package
+# CareerSphere Backend - Models Package

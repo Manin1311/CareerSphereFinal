@@ -194,7 +194,7 @@ export default function SettingsPage() {
       const rzp = new window.Razorpay({
         key: orderData.razorpay_key_id || "rzp_test_mock",
         order_id: orderData.order_id,
-        name: "Between",
+        name: "CareerSphere",
         description: `Upgrade to ${planId.toUpperCase()} Plan`,
         theme: { color: "#111111" },
         handler: async function(response) {

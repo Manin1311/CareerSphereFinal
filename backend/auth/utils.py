@@ -1,5 +1,5 @@
 """
-Vishleshan Auth Utilities
+CareerSphere Auth Utilities
 ─────────────────────────
 API-key generation, bcrypt hashing/verification, and short-lived JWT creation
 for the dashboard_login flow.

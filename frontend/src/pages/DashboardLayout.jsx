@@ -34,7 +34,7 @@ import ThemeToggle from '../components/ThemeToggle';
 const RECRUITER_TOUR_STEPS = [
   {
     id: 'welcome',
-    title: 'Welcome to Between',
+    title: 'Welcome to CareerSphere',
     content: 'Your AI-powered recruitment platform. Take a quick tour to get started hiring smarter and faster.',
     icon: LayoutDashboard,
     target: null,
@@ -320,7 +320,7 @@ export default function DashboardLayout() {
             </svg>
           </div>
           <span className="font-display text-[20px] sm:text-[22px] text-foreground tracking-tight hidden xs:inline sm:inline">
-            Between
+            CareerSphere
           </span>
           <span className="text-muted-foreground text-sm hidden lg:inline ml-1 font-medium">Workspace</span>
         </Link>
@@ -527,7 +527,7 @@ export default function DashboardLayout() {
                   className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm skeuo-dropdown-item font-semibold text-foreground"
                 >
                   <LayoutDashboard size={14} className="text-muted-foreground shrink-0 transition-colors" />
-                  <span className="transition-colors">Between Recruiter</span>
+                  <span className="transition-colors">CareerSphere Recruiter</span>
                 </a>
                 <a
                   href="/jobs"
@@ -535,7 +535,7 @@ export default function DashboardLayout() {
                   className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm skeuo-dropdown-item text-muted-foreground"
                 >
                   <Home size={14} className="text-muted-foreground shrink-0 transition-colors" />
-                  <span className="transition-colors">Between Jobs</span>
+                  <span className="transition-colors">CareerSphere Jobs</span>
                 </a>
                 <a
                   href="/developer"
@@ -543,7 +543,7 @@ export default function DashboardLayout() {
                   className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm skeuo-dropdown-item text-muted-foreground"
                 >
                   <Bot size={14} className="text-muted-foreground shrink-0 transition-colors" />
-                  <span className="transition-colors">Between Developer</span>
+                  <span className="transition-colors">CareerSphere Developer</span>
                 </a>
               </div>
             )}

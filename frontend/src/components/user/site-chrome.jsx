@@ -11,7 +11,7 @@ import { useSeekerAuthStore } from "../../stores/seekerAuthStore";
 const SEEKER_TOUR_STEPS = [
   {
     id: 'welcome',
-    title: 'Welcome to Between',
+    title: 'Welcome to CareerSphere',
     content: 'A calmer, AI-powered job search experience. Take a quick tour to get started and make the most of every feature.',
     icon: Sparkles,
     target: null,
@@ -199,7 +199,7 @@ export function Header() {
             </svg>
           </div>
           <span className="font-display text-[22px] text-foreground tracking-tight font-semibold">
-            Between
+            CareerSphere
           </span>
         </Link>
 
@@ -291,9 +291,9 @@ export function Header() {
           <div className="relative" ref={appsDropdownRef}>
             <button
               onClick={() => setAppsOpen(!appsOpen)}
-              aria-label="Between Applications"
+              aria-label="CareerSphere Applications"
               className="pill p-2 text-muted-foreground hover:bg-muted hover:text-foreground flex items-center justify-center transition shrink-0 rounded-full"
-              title="Between Applications"
+              title="CareerSphere Applications"
             >
               <Grid3x3 className="h-4 w-4" />
             </button>
@@ -306,7 +306,7 @@ export function Header() {
                   className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm skeuo-dropdown-item font-semibold text-foreground hover:bg-muted/80 transition"
                 >
                   <Home size={14} className="text-blue-500 shrink-0" />
-                  <span>Between Jobs</span>
+                  <span>CareerSphere Jobs</span>
                 </Link>
                 <a
                   href="/dashboard"
@@ -314,7 +314,7 @@ export function Header() {
                   className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm skeuo-dropdown-item text-muted-foreground hover:bg-muted/80 hover:text-foreground transition"
                 >
                   <LayoutDashboard size={14} className="text-muted-foreground shrink-0" />
-                  <span>Between Recruiter</span>
+                  <span>CareerSphere Recruiter</span>
                 </a>
                 <a
                   href="/developer"
@@ -322,7 +322,7 @@ export function Header() {
                   className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm skeuo-dropdown-item text-muted-foreground hover:bg-muted/80 hover:text-foreground transition"
                 >
                   <Bot size={14} className="text-muted-foreground shrink-0" />
-                  <span>Between Developer</span>
+                  <span>CareerSphere Developer</span>
                 </a>
                 <Link
                   to="/support"
@@ -553,7 +553,7 @@ export function Footer() {
                 ? "text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-blue-600" 
                 : "text-foreground"
             }`}>
-              Between
+              CareerSphere
             </span>
           </Link>
           <p className="text-sm text-muted-foreground leading-relaxed">
@@ -582,7 +582,7 @@ export function Footer() {
       </div>
 
       <div className="border-t border-border/60 py-6 text-center text-xs text-muted-foreground relative z-10 bg-background/80 backdrop-blur-sm">
-        © {new Date().getFullYear()} Between Platform · Built for smarter hiring.
+        © {new Date().getFullYear()} CareerSphere Platform · Built for smarter hiring.
       </div>
     </footer>
   );

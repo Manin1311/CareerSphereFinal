@@ -1,9 +1,9 @@
 # Complete Project Verification & Testing Flow (Production Hosted)
 
-Use this guide to verify that all modules of the **Vishleshan** platform are functioning properly on the hosted production environments.
+Use this guide to verify that all modules of the **CareerSphere** platform are functioning properly on the hosted production environments.
 
-* **Frontend**: `https://between.indevs.in`
-* **Backend API**: `https://api.between.indevs.in`
+* **Frontend**: `https://careersphere.indevs.in`
+* **Backend API**: `https://api.careersphere.indevs.in`
 * **Sample Resume PDF**: [sample_peter_parker_resume.pdf](file:///c:/Users/parul/Desktop/Resume%20Project/DAIICT_Hackathon-26/testing/sample_peter_parker_resume.pdf)
 * **Sample Offer Letter PDF**: [stark_enterprises_offer_letter.pdf](file:///c:/Users/parul/Desktop/Resume%20Project/DAIICT_Hackathon-26/testing/stark_enterprises_offer_letter.pdf)
 * **Sample Company Logo**: [stark_logo.png](file:///c:/Users/parul/Desktop/Resume%20Project/DAIICT_Hackathon-26/testing/stark_logo.png)
@@ -16,7 +16,7 @@ Use this guide to verify that all modules of the **Vishleshan** platform are fun
 This flow tests company registration, job posting creation, and candidate management.
 
 ### Step 1.1: Recruiter Signup & Login
-1. Navigate to: `https://between.indevs.in/register`.
+1. Navigate to: `https://careersphere.indevs.in/register`.
 2. Register a new recruiter account with the following values:
    - **Company Name**: `Stark Enterprises`
    - **Company Email**: `hr@starkenterprises.com`
@@ -27,7 +27,7 @@ This flow tests company registration, job posting creation, and candidate manage
    - **Founded Year**: `1967`
    - **Website URL**: `https://starkenterprises.com`
    - **About**: `Stark Enterprises is a global leader in advanced technology, engineering, and aerospace development.`
-3. Log in with the registered credentials at `https://between.indevs.in/login`.
+3. Log in with the registered credentials at `https://careersphere.indevs.in/login`.
 4. Go to **Company Settings** and upload [stark_logo.png](file:///c:/Users/parul/Desktop/Resume%20Project/DAIICT_Hackathon-26/testing/stark_logo.png) as your corporate brand identity.
 
 ### Step 1.2: Create a Job Posting
@@ -78,7 +78,7 @@ This flow tests company registration, job posting creation, and candidate manage
 This flow tests profile setup, uploading the tailored resume, Job Search, AI Cover Letter, and Application Submission.
 
 ### Step 2.1: Job Seeker Signup & Login
-1. Navigate to: `https://between.indevs.in/jobs/register`.
+1. Navigate to: `https://careersphere.indevs.in/jobs/register`.
 2. Register a job seeker account:
    - **Full Name**: `Peter Parker`
    - **Email**: `peter.parker@dailybugle.com`
@@ -94,7 +94,7 @@ This flow tests profile setup, uploading the tailored resume, Job Search, AI Cov
 3. This resume contains the exact skills required (Python, Django, FastAPI, Celery, Redis, PostgreSQL, PyMuPDF, pdfplumber) and matching experience at Daily Bugle and Midtown Tech.
 
 ### Step 2.3: Job Search & Hiring Safety Check
-1. Navigate to the Job Search page: `https://between.indevs.in/jobs/search`.
+1. Navigate to the Job Search page: `https://careersphere.indevs.in/jobs/search`.
 2. Search using parameters:
    - **Keywords**: `Python`
    - **Location**: `New York`
@@ -146,7 +146,7 @@ Verify candidate advancement through session rounds and proctored test mock tool
 ### Step 4.1: Candidate Advancement (Round 1 -> Round 2)
 1. In the Recruiter Dashboard, view **Peter Parker**'s candidate details.
 2. Under the actions panel, click **Forward** to move the candidate to the next round (*Round 2: System Design Interview*).
-3. Log back in as Job Seeker **Peter Parker** (or open the tab at `https://between.indevs.in/jobs/applications`).
+3. Log back in as Job Seeker **Peter Parker** (or open the tab at `https://careersphere.indevs.in/jobs/applications`).
 4. Click **My Applications** from the header:
    - Under your application status for Stark Enterprises, you will see a newly generated **Start System Design Interview →** test button.
    - Below it, verify that the developer mock controls (`Mock Pass` and `Mock Fail`) are visible.
@@ -167,7 +167,7 @@ Verify candidate advancement through session rounds and proctored test mock tool
    - Click **Save / Hire Candidate**.
 
 ### Step 4.4: Seeker Accepts Offer
-1. Log back in as Job Seeker **Peter Parker** and navigate to `https://between.indevs.in/jobs/applications`.
+1. Log back in as Job Seeker **Peter Parker** and navigate to `https://careersphere.indevs.in/jobs/applications`.
 2. Observe that your application status has updated to **Hired! 🎉**
 3. Click the download link next to **Download Offer Letter** to retrieve the uploaded letter.
 4. Click **Accept Offer** to complete the recruitment lifecycle.
@@ -179,12 +179,12 @@ Verify candidate advancement through session rounds and proctored test mock tool
 This flow tests the developer portal integrations, billing, and keys.
 
 ### Step 5.1: Developer Registration
-1. Navigate to: `https://between.indevs.in/developer/register`.
+1. Navigate to: `https://careersphere.indevs.in/developer/register`.
 2. Create a developer account:
    - **Company Name**: `Oscorp Tech`
    - **Developer Email**: `dev@oscorp.com`
    - **Password**: `GoblinFormula99!`
-3. Log in at `https://between.indevs.in/developer/login`.
+3. Log in at `https://careersphere.indevs.in/developer/login`.
 
 ### Step 5.2: API Key Rotation & Usage
 1. Click **API Keys** -> **Generate New Key**.

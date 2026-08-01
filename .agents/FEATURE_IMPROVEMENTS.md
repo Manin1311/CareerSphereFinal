@@ -1,4 +1,4 @@
-# 🚀 Vishleshan — Feature Improvements & Updates
+# 🚀 CareerSphere — Feature Improvements & Updates
 
 > **Date:** June 27, 2026  
 > **Focus:** New features, enhancements, and UX upgrades for both Frontend and Backend

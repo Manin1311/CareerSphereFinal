@@ -65,7 +65,7 @@ const Navbar = ({ onSignIn, isLoggedIn }) => {
           </svg>
         </div>
         <span className="font-display text-[22px] text-foreground tracking-tight font-semibold">
-          Between
+          CareerSphere
         </span>
       </Link>
 
@@ -163,7 +163,7 @@ const Navbar = ({ onSignIn, isLoggedIn }) => {
                 className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-blue-600 dark:text-blue-400 hover:bg-slate-100 dark:hover:bg-zinc-800 transition"
               >
                 <Home size={14} className="text-blue-500 shrink-0" />
-                <span>Between Jobs</span>
+                <span>CareerSphere Jobs</span>
               </a>
               <a
                 href="/dashboard"
@@ -171,7 +171,7 @@ const Navbar = ({ onSignIn, isLoggedIn }) => {
                 className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 transition"
               >
                 <LayoutDashboard size={14} className="text-slate-400 shrink-0" />
-                <span>Between Recruiter</span>
+                <span>CareerSphere Recruiter</span>
               </a>
               <a
                 href="/developer"
@@ -179,7 +179,7 @@ const Navbar = ({ onSignIn, isLoggedIn }) => {
                 className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 transition"
               >
                 <Bot size={14} className="text-slate-400 shrink-0" />
-                <span>Between Developer</span>
+                <span>CareerSphere Developer</span>
               </a>
               <a
                 href="/support"

@@ -2,9 +2,9 @@
 Reviews & Testimonials Views
 ─────────────────────────────
 Public endpoints for reading reviews/testimonials.
-Job Seekers: Can review Companies AND Between Platform (must be verified email + phone).
-Developers: Can ONLY review Between Platform (must be verified developer).
-Recruiters: Can ONLY review Between Platform (must be verified email/company).
+Job Seekers: Can review Companies AND CareerSphere Platform (must be verified email + phone).
+Developers: Can ONLY review CareerSphere Platform (must be verified developer).
+Recruiters: Can ONLY review CareerSphere Platform (must be verified email/company).
 """
 
 import json
@@ -507,7 +507,7 @@ def developer_reviews_root(request):
         company_id = body.get("company_id")
 
         if company_id:
-            return JsonResponse(error_response("Developers can only submit Between platform reviews."), status=400)
+            return JsonResponse(error_response("Developers can only submit CareerSphere platform reviews."), status=400)
 
         if not rating or not isinstance(rating, int) or rating < 1 or rating > 5:
             return JsonResponse(error_response("Rating must be an integer from 1 to 5"), status=400)
@@ -563,7 +563,7 @@ def recruiter_reviews_root(request):
         company_id = body.get("company_id")
 
         if company_id:
-            return JsonResponse(error_response("Recruiters can only submit Between platform reviews."), status=400)
+            return JsonResponse(error_response("Recruiters can only submit CareerSphere platform reviews."), status=400)
 
         if not rating or not isinstance(rating, int) or rating < 1 or rating > 5:
             return JsonResponse(error_response("Rating must be an integer from 1 to 5"), status=400)

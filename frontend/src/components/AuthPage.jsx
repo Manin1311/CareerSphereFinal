@@ -408,7 +408,7 @@ const AuthPage = ({ isLogin: initialIsLogin = true }) => {
                     localStorage.removeItem("vish_jwt");
                     localStorage.removeItem("vish_api_key");
                     localStorage.removeItem("vish_company");
-                    localStorage.removeItem("between_user");
+                    localStorage.removeItem("careersphere_user");
                     sessionStorage.setItem('temp_oauth_data', JSON.stringify({ role: 'recruiter', data }));
                     navigate('/auth/complete-profile');
                     return;
@@ -586,7 +586,7 @@ const AuthPage = ({ isLogin: initialIsLogin = true }) => {
           seekerAuth.setAuth(data);
           localStorage.setItem('vish_seeker_token', data.seeker_token);
           localStorage.setItem('vish_seeker_data', JSON.stringify(data.seeker));
-          toast.success('Account created! Welcome to Between!');
+          toast.success('Account created! Welcome to CareerSphere!');
           navigate('/jobs/dashboard');
         }
       }
@@ -780,7 +780,7 @@ const AuthPage = ({ isLogin: initialIsLogin = true }) => {
         )}
 
         <div className="auth-header" style={{ transform: "translateZ(50px)" }}>
-          <span className="auth-logo">Between</span>
+          <span className="auth-logo">CareerSphere</span>
           <h2 className="auth-title">
             {isLogin ? 'Sign In' : 'Create Account'}
           </h2>
@@ -1447,7 +1447,7 @@ const AuthPage = ({ isLogin: initialIsLogin = true }) => {
         {/* Footer Actions (Only visible in Step 1) */}
         {step === 1 && (
           <div className="auth-footer" style={{ transform: "translateZ(10px)" }}>
-            {isLogin ? "New to Between?" : "Have an account?"}
+            {isLogin ? "New to CareerSphere?" : "Have an account?"}
             <button 
               className="auth-toggle-link" 
               onClick={() => {

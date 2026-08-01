@@ -1,7 +1,7 @@
 [
     {
         "name": "Daksh Bhavsar",
-        "email": "daksh@vishleshan.com",
+        "email": "daksh@careersphere.com",
         "phone": "+91 98765 43210",
         "location": "Gandhinagar, India",
         "skills": "Python;Django;React;HTML;CSS;PostgreSQL;Git",
@@ -9,7 +9,7 @@
     },
     {
         "name": "Parul Sharma",
-        "email": "parul@vishleshan.com",
+        "email": "parul@careersphere.com",
         "phone": "+91 87654 32109",
         "location": "Ahmedabad, India",
         "skills": "Java;Spring Boot;MySQL;Docker;Kubernetes;REST APIs",

@@ -103,7 +103,7 @@ const HowItWorks = () => {
     },
     {
       title: "AI Analysis",
-      desc: "Between analyzes resumes against your criteria, ranking candidates by match score and skills automatically.",
+      desc: "CareerSphere analyzes resumes against your criteria, ranking candidates by match score and skills automatically.",
       id: "03",
       image: step3Img
     },

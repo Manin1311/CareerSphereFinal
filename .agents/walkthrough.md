@@ -5,7 +5,7 @@ Sare requirements ke mutabik saare bug fixes aur optimization badlav kar diye ga
 ## Key Changes Made
 
 ### 1. Dynamic API Base URL Setup
-- [api.js](file:///c:/Users/parul/Desktop/Resume%20Project/DAIICT_Hackathon-26/frontend/src/lib/api.js#L1-L20) me static API URLs (`http://127.0.0.1:8000`) ke badle dynamic matcher lagaya jo custom domain (jaise `between.indevs.in`) par host hone par dynamic fallback support karegi, jis se connection failures resolved hain.
+- [api.js](file:///c:/Users/parul/Desktop/Resume%20Project/DAIICT_Hackathon-26/frontend/src/lib/api.js#L1-L20) me static API URLs (`http://127.0.0.1:8000`) ke badle dynamic matcher lagaya jo custom domain (jaise `careersphere.indevs.in`) par host hone par dynamic fallback support karegi, jis se connection failures resolved hain.
 
 ### 2. Premium Warnings, Emojis Replacement & Color Matching
 - Emojis (jaise `✨`, `🔍`, `👥`, `🚀`, `🛡️`, `📂`) ko pure application pages se nikal kar proper Lucide icons se replace kiya in `DashboardLayout.jsx`, `ResumeBuilderLanding.jsx`, and `ResumeEditor.jsx`.
@@ -34,7 +34,7 @@ Sare requirements ke mutabik saare bug fixes aur optimization badlav kar diye ga
 - **PATCH multipart/form-data parser bug**: Django's default request parser only populates `request.POST` and `request.FILES` automatically on POST requests. For PATCH requests, they are empty. We resolved this inside [candidates.py](file:///c:/Users/parul/Desktop/Resume%20Project/DAIICT_Hackathon-26/backend/api/views/candidates.py) by dynamically spoofing the request method to trigger Django's `_load_post_and_files()` parser, restoring it afterwards. This allows PATCH multipart uploads to succeed.
 - **Increased File size limit to 10MB**:
   - Frontend: [CandidateCard.jsx](file:///c:/Users/parul/Desktop/Resume%20Project/DAIICT_Hackathon-26/frontend/src/components/CandidateCard.jsx) me drag zone labels ko "Max 10MB" me update kiya aur client-side validation logic add kiya jo 10MB block limits checks par helpful error toast notify karegi.
-  - Backend settings: [settings.py](file:///c:/Users/parul/Desktop/Resume%20Project/DAIICT_Hackathon-26/backend/vishleshan_backend/settings.py) me Django limits configurations properties: `DATA_UPLOAD_MAX_MEMORY_SIZE` and `FILE_UPLOAD_MAX_MEMORY_SIZE` ko 10MB (`10485760` bytes) scale kiya.
+  - Backend settings: [settings.py](file:///c:/Users/parul/Desktop/Resume%20Project/DAIICT_Hackathon-26/backend/careersphere_backend/settings.py) me Django limits configurations properties: `DATA_UPLOAD_MAX_MEMORY_SIZE` and `FILE_UPLOAD_MAX_MEMORY_SIZE` ko 10MB (`10485760` bytes) scale kiya.
   - Backend validation: `candidate_action` view logic me offer file size bounds validation check add kiya.
 
 ### 8. Contact Sales Button Routing Fix
@@ -50,7 +50,7 @@ Sare requirements ke mutabik saare bug fixes aur optimization badlav kar diye ga
 - **Logo Serialization Added**: [jobs.py](file:///c:/Users/parul/Desktop/Resume%20Project/DAIICT_Hackathon-26/backend/api/views/jobs.py) and [seeker_jobs.py](file:///c:/Users/parul/Desktop/Resume%20Project/DAIICT_Hackathon-26/backend/api/views/seeker_jobs.py) me serialized output fields list me `company_logo_path` field append kiya hai. Is se jobs search list cards me company initials circle placeholders ke badle correct corporate logos fetch aur render honge.
 
 ### 12. Aligned Developer Layout to match Recruiter Workspace Sidebar
-- **Unified Portal Layouts**: [DeveloperPortalLayout.jsx](file:///c:/Users/parul/Desktop/Resume%20Project/DAIICT_Hackathon-26/frontend/src/pages/developer/DeveloperPortalLayout.jsx) layout structure ko full redesign kiya hai. Ab isme top fixed header bar render hoga jisme top-left hamburger menu circular toggle button, inline premium gradient blue SVG Between logo, aur standard gray border line (`border-gray-250`) configured hain, jo exact workspace dashboard style aur width transitions follow karega.
+- **Unified Portal Layouts**: [DeveloperPortalLayout.jsx](file:///c:/Users/parul/Desktop/Resume%20Project/DAIICT_Hackathon-26/frontend/src/pages/developer/DeveloperPortalLayout.jsx) layout structure ko full redesign kiya hai. Ab isme top fixed header bar render hoga jisme top-left hamburger menu circular toggle button, inline premium gradient blue SVG CareerSphere logo, aur standard gray border line (`border-gray-250`) configured hain, jo exact workspace dashboard style aur width transitions follow karega.
 
 ### 13. Hover-Activated Product Dropdown & Visible New Badge
 - **Product Dropdown implementation**: [Navbar.jsx](file:///c:/Users/parul/Desktop/Resume%20Project/DAIICT_Hackathon-26/frontend/src/components/Navbar.jsx) me "Product" link ko hover-activated dynamic dropdown panel me wrap kiya hai. CSS details [Navbar.css](file:///c:/Users/parul/Desktop/Resume%20Project/DAIICT_Hackathon-26/frontend/src/components/Navbar.css) append kiye hain jo white card background, soft shadows, aur direct feature scroll links (AI Recruiter, Smart Analyzer, Fraud Protection) style karte hain.

@@ -359,7 +359,7 @@ export default function SeekerBillingPage() {
         setCurrentPlan(planId);
         localStorage.setItem('seeker_tier', planId);
         updateSeeker({ tier: planId });
-        toast.success('Welcome to Between Premium!');
+        toast.success('Welcome to CareerSphere Premium!');
         setLoading(null);
         return;
       }
@@ -368,7 +368,7 @@ export default function SeekerBillingPage() {
       const rzp = new window.Razorpay({
         key: orderData.razorpay_key_id,
         order_id: orderData.order_id,
-        name: 'Between',
+        name: 'CareerSphere',
         description: `Upgrade to ${planId.charAt(0).toUpperCase() + planId.slice(1)} Plan`,
         amount: orderData.amount,
         currency: 'INR',
@@ -385,7 +385,7 @@ export default function SeekerBillingPage() {
             setCurrentPlan(planId);
             localStorage.setItem('seeker_tier', planId);
             updateSeeker({ tier: planId });
-            toast.success('Welcome to Between Premium!');
+            toast.success('Welcome to CareerSphere Premium!');
           } catch {
             toast.error('Payment verification failed. Please contact support.');
           } finally {

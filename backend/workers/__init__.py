@@ -1,1 +1,1 @@
-# Vishleshan Backend - Workers Package
+# CareerSphere Backend - Workers Package

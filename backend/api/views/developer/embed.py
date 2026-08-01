@@ -60,12 +60,12 @@ def tokens_root(request):
                 is_active=True
             )
 
-            html_snippet = f"""<div id="vishleshan-panel"></div>
-<script src="https://cdn.vishleshan.ai/embed.js"></script>
+            html_snippet = f"""<div id="careersphere-panel"></div>
+<script src="https://cdn.careersphere.ai/embed.js"></script>
 <script>
-Vishleshan.init({{
+CareerSphere.init({{
   token: "{token_value}",
-  container: "#vishleshan-panel",
+  container: "#careersphere-panel",
   theme: "light"
 }});
 </script>"""

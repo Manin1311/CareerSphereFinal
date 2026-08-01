@@ -380,7 +380,7 @@ def health_check(request):
     from django.utils import timezone
     return JsonResponse({
         "status": "healthy",
-        "service": "Between AI Engine API",
+        "service": "CareerSphere AI Engine API",
         "timestamp": timezone.now().isoformat()
     }, status=200)
 

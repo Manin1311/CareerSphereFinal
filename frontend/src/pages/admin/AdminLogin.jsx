@@ -100,7 +100,7 @@ export default function AdminLogin() {
             <Shield className="w-8 h-8 text-white" />
           </div>
           <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-2">
-            Between Admin
+            CareerSphere Admin
           </h2>
           <p className="text-xs text-slate-500 dark:text-zinc-400">
             Enter your credentials to access the moderation console.

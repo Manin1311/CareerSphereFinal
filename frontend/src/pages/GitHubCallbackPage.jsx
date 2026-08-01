@@ -69,7 +69,7 @@ export default function GitHubCallbackPage() {
             localStorage.removeItem("vish_jwt");
             localStorage.removeItem("vish_api_key");
             localStorage.removeItem("vish_company");
-            localStorage.removeItem("between_user");
+            localStorage.removeItem("careersphere_user");
             sessionStorage.setItem('temp_oauth_data', JSON.stringify({ role: 'recruiter', data }));
             navigate('/auth/complete-profile');
             return;

@@ -78,12 +78,12 @@ export default function AboutPage() {
         {/* Detailed Story Section */}
         <div className="mt-16 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-3xl p-8 sm:p-12">
           <div className="max-w-3xl mx-auto space-y-6">
-            <h2 className="font-display text-2xl sm:text-3xl font-black text-gray-900 dark:text-white">Why Between?</h2>
+            <h2 className="font-display text-2xl sm:text-3xl font-black text-gray-900 dark:text-white">Why CareerSphere?</h2>
             <p className="text-gray-500 dark:text-zinc-400 leading-relaxed text-sm sm:text-base">
               The modern recruitment space is broken. Candidates send hundreds of applications into the void, while recruiters get overwhelmed by spam and fraudulent resumes. 
             </p>
             <p className="text-gray-500 dark:text-zinc-400 leading-relaxed text-sm sm:text-base">
-              Between acts as the peaceful interface — the bridge where candidates receive accurate AI ATS evaluations and safety check ratings on listings, and recruiters get genuine, highly-relevant candidate profiles.
+              CareerSphere acts as the peaceful interface — the bridge where candidates receive accurate AI ATS evaluations and safety check ratings on listings, and recruiters get genuine, highly-relevant candidate profiles.
             </p>
             <div className="pt-4">
               <Link to="/jobs/search" className="inline-flex items-center gap-2 py-3 px-6 bg-[#111111] dark:bg-zinc-100 hover:bg-gray-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-950 font-bold rounded-xl text-sm transition-all shadow-md">

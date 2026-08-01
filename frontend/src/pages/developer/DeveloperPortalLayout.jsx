@@ -13,7 +13,7 @@ const DEVELOPER_TOUR_STEPS = [
   {
     id: 'welcome',
     title: 'Welcome to the Dev Portal',
-    content: 'Build powerful recruitment tools using the Between API. Take a quick tour to explore what you can do here.',
+    content: 'Build powerful recruitment tools using the CareerSphere API. Take a quick tour to explore what you can do here.',
     icon: Code,
     target: null,
   },
@@ -28,7 +28,7 @@ const DEVELOPER_TOUR_STEPS = [
   {
     id: 'keys',
     title: 'API Keys',
-    content: 'Generate and manage your API keys. Use them to authenticate all API calls to Between.',
+    content: 'Generate and manage your API keys. Use them to authenticate all API calls to CareerSphere.',
     icon: Key,
     target: '[data-tour="dev-nav-keys"]',
     placement: 'right',
@@ -158,7 +158,7 @@ export default function DeveloperPortalLayout() {
             </svg>
           </div>
           <span className="font-display text-[22px] text-foreground tracking-tight font-semibold">
-            Between
+            CareerSphere
           </span>
           <span className="text-muted-foreground text-sm hidden sm:inline ml-1 font-medium">Developer Portal</span>
         </div>
@@ -184,7 +184,7 @@ export default function DeveloperPortalLayout() {
                 className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-blue-600 dark:text-blue-400 hover:bg-gray-100 dark:hover:bg-zinc-800 transition"
               >
                 <Bot size={14} className="text-blue-500 shrink-0" />
-                <span>Between Developer</span>
+                <span>CareerSphere Developer</span>
               </a>
               <a
                 href="/jobs"
@@ -192,7 +192,7 @@ export default function DeveloperPortalLayout() {
                 className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-800 transition"
               >
                 <Home size={14} className="text-gray-400 shrink-0" />
-                <span>Between Jobs</span>
+                <span>CareerSphere Jobs</span>
               </a>
               <a
                 href="/dashboard"
@@ -200,7 +200,7 @@ export default function DeveloperPortalLayout() {
                 className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-800 transition"
               >
                 <LayoutDashboard size={14} className="text-gray-400 shrink-0" />
-                <span>Between Recruiter</span>
+                <span>CareerSphere Recruiter</span>
               </a>
               <a
                 href="/support"

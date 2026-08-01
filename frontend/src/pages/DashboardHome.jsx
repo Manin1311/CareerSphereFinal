@@ -228,7 +228,7 @@ export default function DashboardHome() {
           customSubmit={recruiterAPI.createReview}
           onSubmit={() => {
             setShowReviewModal(false);
-            toast.success("Thank you for reviewing Between Platform!");
+            toast.success("Thank you for reviewing CareerSphere Platform!");
           }}
         />
       )}

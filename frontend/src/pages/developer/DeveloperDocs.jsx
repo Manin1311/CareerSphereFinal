@@ -32,14 +32,14 @@ const SECTIONS = [
 export default function DeveloperDocs() {
   const [docSections, setDocSections] = useState(SECTIONS);
   const [sdksData, setSdksData] = useState([
-    { lang: "Python", pkg: "between-py", icon: "🐍", install: "pip install between-py" },
-    { lang: "JavaScript", pkg: "between-js", icon: "🟨", install: "npm install between-js" },
-    { lang: "Go", pkg: "go-between", icon: "🐹", install: "go get between.indevs.in/go-between" }
+    { lang: "Python", pkg: "careersphere-py", icon: "🐍", install: "pip install careersphere-py" },
+    { lang: "JavaScript", pkg: "careersphere-js", icon: "🟨", install: "npm install careersphere-js" },
+    { lang: "Go", pkg: "go-careersphere", icon: "🐹", install: "go get careersphere.indevs.in/go-careersphere" }
   ]);
   const [templates, setTemplates] = useState({
-    match_request: `curl -X POST "https://api.between.indevs.in/api/v1/match" \\\n  -H "X-API-Key: YOUR_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "job_title": "Senior React Developer",\n    "job_description": "5+ years React, TypeScript...",\n    "top_k": 5\n  }'`,
+    match_request: `curl -X POST "https://api.careersphere.indevs.in/api/v1/match" \\\n  -H "X-API-Key: YOUR_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "job_title": "Senior React Developer",\n    "job_description": "5+ years React, TypeScript...",\n    "top_k": 5\n  }'`,
     match_response: `{\n  "success": true,\n  "data": {\n    "matches": [\n      {\n        "candidate_id": "cnd_12345",\n        "name": "Jane Doe",\n        "match_score": 94.2,\n        "matched_skills": ["React","TypeScript"]\n      }\n    ]\n  }\n}`,
-    chat_request: `curl -X POST "https://api.between.indevs.in/api/v1/chat" \\\n  -H "X-API-Key: YOUR_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "message": "Find React devs with 3+ years experience",\n    "session_id": "ses_abc123"\n  }'`,
+    chat_request: `curl -X POST "https://api.careersphere.indevs.in/api/v1/chat" \\\n  -H "X-API-Key: YOUR_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "message": "Find React devs with 3+ years experience",\n    "session_id": "ses_abc123"\n  }'`,
     chat_response: `{\n  "success": true,\n  "data": {\n    "answer": "Found 3 matching candidates.",\n    "candidates": [\n      {"candidate_id": "cnd_12345", "name": "Jane Doe"}\n    ],\n    "tokens_used": 180\n  }\n}`
   });
 
@@ -170,8 +170,8 @@ export default function DeveloperDocs() {
       if (!viteApiUrl && typeof window !== "undefined") {
         const host = window.location.origin;
         if (!host.includes("localhost") && !host.includes("127.0.0.1")) {
-          if (host.includes("between.indevs.in")) {
-            rawBase = "https://api.between.indevs.in/api/v1";
+          if (host.includes("careersphere.indevs.in")) {
+            rawBase = "https://api.careersphere.indevs.in/api/v1";
           } else {
             rawBase = `${host}/api/v1`;
           }
@@ -274,7 +274,7 @@ export default function DeveloperDocs() {
           <section id="getting-started" className="mb-16 pt-8">
             <h1 className="text-4xl font-black text-charcoal dark:text-zinc-100 mb-4">Getting Started</h1>
             <p className="text-gray-600 font-medium mb-6 leading-relaxed">
-              Welcome to the Between Developer API. Our REST API allows you to programmatically ingest resumes, match candidate skills to job descriptions, interact with our AI-powered candidate querying chatbot, and stream structural entity extraction securely into your HR infrastructure.
+              Welcome to the CareerSphere Developer API. Our REST API allows you to programmatically ingest resumes, match candidate skills to job descriptions, interact with our AI-powered candidate querying chatbot, and stream structural entity extraction securely into your HR infrastructure.
             </p>
             <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 mb-6">
               <h3 className="font-bold text-charcoal mb-4">Quick Start</h3>
@@ -295,7 +295,7 @@ export default function DeveloperDocs() {
                Test keys have the prefix <code>vish_test_</code> and do not incur billing charges, but are tightly rate-limited. Production keys use <code>vish_live_</code>.
             </div>
             <SyntaxHighlighter language="bash" style={vs2015} customStyle={{ borderRadius: "12px", padding: "16px", fontSize: "13px" }}>
-{`curl -X GET "https://api.between.indevs.in/api/v1/sessions" \\
+{`curl -X GET "https://api.careersphere.indevs.in/api/v1/sessions" \\
   -H "X-API-Key: vish_live_xxxxxxxx"`}
             </SyntaxHighlighter>
           </section>
@@ -313,7 +313,7 @@ export default function DeveloperDocs() {
             </div>
             <p className="text-gray-600 font-medium text-sm mb-4">List all active sessions for your account.</p>
             <SyntaxHighlighter language="bash" style={vs2015} customStyle={{ borderRadius: "12px", padding: "16px", fontSize: "12px", marginBottom: "24px" }}>
-{`curl -X GET "https://api.between.indevs.in/api/v1/sessions" \
+{`curl -X GET "https://api.careersphere.indevs.in/api/v1/sessions" \
   -H "X-API-Key: YOUR_KEY"`}
             </SyntaxHighlighter>
             <div className="flex items-center gap-3 mb-4">
@@ -326,7 +326,7 @@ export default function DeveloperDocs() {
                <div>
                  <span className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 pl-1 block">Request</span>
                  <SyntaxHighlighter language="bash" style={vs2015} customStyle={{ borderRadius: "12px", padding: "16px", fontSize: "12px" }}>
-{`curl -X POST "https://api.between.indevs.in/api/v1/sessions" \
+{`curl -X POST "https://api.careersphere.indevs.in/api/v1/sessions" \
   -H "X-API-Key: YOUR_KEY" \
   -H "Content-Type: application/json" \
   -d '{"name": "Q3 Engineering Hire"}'`}
@@ -390,7 +390,7 @@ export default function DeveloperDocs() {
                  <div className="flex flex-col">
                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 pl-1">Request</span>
                    <SyntaxHighlighter language="bash" style={vs2015} customStyle={{ borderRadius: "12px", padding: "16px", fontSize: "12px", flex: 1, margin: 0 }}>
-{`curl -X POST "https://api.between.indevs.in/api/v1/parse" \\
+{`curl -X POST "https://api.careersphere.indevs.in/api/v1/parse" \\
   -H "X-API-Key: YOUR_KEY" \\
   -F "file=@resume.pdf"`}
                    </SyntaxHighlighter>
@@ -422,7 +422,7 @@ export default function DeveloperDocs() {
               </div>
               <p className="text-gray-600 font-medium text-sm mb-4">Sync resumes directly from a Gmail inbox using OAuth credentials.</p>
               <SyntaxHighlighter language="bash" style={vs2015} customStyle={{ borderRadius: "12px", padding: "16px", fontSize: "12px" }}>
-{`curl -X POST "https://api.between.indevs.in/api/v1/ingest/gmail" \
+{`curl -X POST "https://api.careersphere.indevs.in/api/v1/ingest/gmail" \
   -H "X-API-Key: YOUR_KEY" \
   -H "Content-Type: application/json" \
   -d '{"oauth_token": "ya29.xxx", "label": "HR/Resumes"}'`}
@@ -437,7 +437,7 @@ export default function DeveloperDocs() {
               </div>
               <p className="text-gray-600 font-medium text-sm mb-4">Ingest resumes from a Google Drive folder. Supports recursive folder scanning and deduplication.</p>
               <SyntaxHighlighter language="bash" style={vs2015} customStyle={{ borderRadius: "12px", padding: "16px", fontSize: "12px" }}>
-{`curl -X POST "https://api.between.indevs.in/api/v1/ingest/drive" \
+{`curl -X POST "https://api.careersphere.indevs.in/api/v1/ingest/drive" \
   -H "X-API-Key: YOUR_KEY" \
   -H "Content-Type: application/json" \
   -d '{"oauth_token": "ya29.xxx", "folder_id": "1BxiMVs0XRA...", "recursive": true}'`}
@@ -452,7 +452,7 @@ export default function DeveloperDocs() {
               </div>
               <p className="text-gray-600 font-medium text-sm mb-4">Import candidates from ATS platforms (Greenhouse, Lever, Workday). Requires ATS credentials configured in developer portal settings.</p>
               <SyntaxHighlighter language="bash" style={vs2015} customStyle={{ borderRadius: "12px", padding: "16px", fontSize: "12px" }}>
-{`curl -X POST "https://api.between.indevs.in/api/v1/ingest/ats" \
+{`curl -X POST "https://api.careersphere.indevs.in/api/v1/ingest/ats" \
   -H "X-API-Key: YOUR_KEY" \
   -H "Content-Type: application/json" \
   -d '{"platform": "greenhouse", "job_id": "7291028"}'`}
@@ -474,7 +474,7 @@ export default function DeveloperDocs() {
                <div>
                  <span className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 pl-1 block">Request</span>
                  <SyntaxHighlighter language="bash" style={vs2015} customStyle={{ borderRadius: "12px", padding: "16px", fontSize: "12px" }}>
-{`curl "https://api.between.indevs.in/api/v1/candidates?page=1&limit=20" \
+{`curl "https://api.careersphere.indevs.in/api/v1/candidates?page=1&limit=20" \
   -H "X-API-Key: YOUR_KEY"`}
                  </SyntaxHighlighter>
                </div>
@@ -501,7 +501,7 @@ export default function DeveloperDocs() {
             </div>
             <p className="text-gray-600 font-medium text-sm mb-4">Retrieve a single candidate's full structured profile.</p>
             <SyntaxHighlighter language="bash" style={vs2015} customStyle={{ borderRadius: "12px", padding: "16px", fontSize: "12px" }}>
-{`curl "https://api.between.indevs.in/api/v1/candidates/cnd_12345" \
+{`curl "https://api.careersphere.indevs.in/api/v1/candidates/cnd_12345" \
   -H "X-API-Key: YOUR_KEY"`}
             </SyntaxHighlighter>
           </section>
@@ -521,7 +521,7 @@ export default function DeveloperDocs() {
                <div>
                  <span className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 pl-1 block">Request</span>
                  <SyntaxHighlighter language="bash" style={vs2015} customStyle={{ borderRadius: "12px", padding: "16px", fontSize: "12px" }}>
-{`curl "https://api.between.indevs.in/api/v1/sessions/ses_abc123/candidate-clusters" \
+{`curl "https://api.careersphere.indevs.in/api/v1/sessions/ses_abc123/candidate-clusters" \
   -H "X-API-Key: YOUR_KEY"`}
                  </SyntaxHighlighter>
                </div>
@@ -611,7 +611,7 @@ export default function DeveloperDocs() {
           <section id="webhooks" className="mb-16 pt-8 border-t border-gray-200">
             <h2 className="text-3xl font-black text-charcoal mb-4">Webhooks</h2>
             <p className="text-gray-600 font-medium mb-6 leading-relaxed">
-              Between sends webhook events to notify your application when async tasks complete. Register your endpoint URL in the developer portal or pass <code className="bg-gray-100 rounded px-1">webhook_url</code> inline with any request.
+              CareerSphere sends webhook events to notify your application when async tasks complete. Register your endpoint URL in the developer portal or pass <code className="bg-gray-100 rounded px-1">webhook_url</code> inline with any request.
             </p>
             <h4 className="font-bold text-charcoal text-sm uppercase mb-3 text-gray-400">Event Types</h4>
             <div className="overflow-x-auto mb-6 border border-gray-200 rounded-xl">
@@ -644,13 +644,13 @@ export default function DeveloperDocs() {
 }`}
             </SyntaxHighlighter>
             <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl text-sm text-blue-800 font-semibold">
-              <strong>Signature Verification:</strong> Each webhook includes a <code>X-Between-Signature</code> header. Verify it using your webhook secret to ensure authenticity.
+              <strong>Signature Verification:</strong> Each webhook includes a <code>X-CareerSphere-Signature</code> header. Verify it using your webhook secret to ensure authenticity.
             </div>
           </section>
 <section id="rate-limits" className="mb-16 pt-8 border-t border-gray-200">
             <h2 className="text-3xl font-black text-charcoal mb-4">Rate Limits & Errors</h2>
             <p className="text-gray-600 font-medium mb-6 leading-relaxed">
-              Between uses standard HTTP response codes to indicate the success or failure of an API request.
+              CareerSphere uses standard HTTP response codes to indicate the success or failure of an API request.
             </p>
             
             <h4 className="font-bold text-charcoal text-sm uppercase mb-3 text-gray-400">Plan Quotas</h4>
@@ -722,7 +722,7 @@ export default function DeveloperDocs() {
           <section id="sdks" className="mb-16 pt-8 border-t border-gray-200">
             <h2 className="text-3xl font-black text-charcoal mb-4">SDKs &amp; Examples</h2>
             <p className="text-gray-600 font-medium mb-6 leading-relaxed">
-              Official client libraries and code examples to help you integrate Between into your stack quickly.
+              Official client libraries and code examples to help you integrate CareerSphere into your stack quickly.
             </p>
             <div className="grid md:grid-cols-3 gap-4 mb-8">
               {sdksData.map(sdk => (
@@ -754,8 +754,8 @@ for m in matches:
             </SyntaxHighlighter>
             <h4 className="font-bold text-charcoal text-sm uppercase mb-3 text-gray-400">JavaScript / Node.js Example</h4>
             <SyntaxHighlighter language="javascript" style={vs2015} customStyle={{ borderRadius: "12px", padding: "16px", fontSize: "12px" }}>
-{`import { BetweenClient } from 'between-js';
-const client = new BetweenClient({ apiKey: 'vish_live_xxxxxxxx' });
+{`import { CareerSphereClient } from 'careersphere-js';
+const client = new CareerSphereClient({ apiKey: 'vish_live_xxxxxxxx' });
 
 // Parse a resume
 const { data } = await client.parse({ file: fs.createReadStream('resume.pdf') });

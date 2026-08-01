@@ -137,7 +137,7 @@ class SecurityHeadersMiddleware:
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
             "font-src 'self' https://fonts.gstatic.com; "
             "img-src 'self' data: https:; "
-            "connect-src 'self' http://127.0.0.1:8000 https://api.between.indevs.in http://localhost:8000;"
+            "connect-src 'self' http://127.0.0.1:8000 https://api.careersphere.indevs.in http://localhost:8000;"
         )
         return response
 
