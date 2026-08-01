@@ -352,7 +352,7 @@ export default function DeveloperRegisterPage() {
                   <div>
                     <span className="text-xs font-bold text-gray-400 uppercase tracking-widest pl-1">Public Key</span>
                     <div className="flex items-center gap-2 mt-1 bg-white border border-gray-200 rounded-lg p-2 px-3">
-                      <code className="text-sm flex-1 text-gray-600 font-mono truncate">{apiKeysData?.test_public_key || "vish_pub_test_..."}</code>
+                      <code className="text-sm flex-1 text-gray-600 font-mono truncate">{apiKeysData?.test_public_key || "cs_pub_test_..."}</code>
                       <button onClick={()=>copyToClipboard(apiKeysData?.test_public_key)} className="text-gray-400 hover:text-charcoal"><Copy size={16}/></button>
                     </div>
                   </div>
@@ -360,7 +360,7 @@ export default function DeveloperRegisterPage() {
                     <span className="text-xs font-bold text-gray-400 uppercase tracking-widest pl-1">Secret Key</span>
                     <div className="flex items-center gap-2 mt-1 bg-white border border-gray-200 rounded-lg p-2 px-3">
                       <code className="text-sm flex-1 text-gray-600 font-mono truncate">
-                        {showTestSecret ? (apiKeysData?.test_secret_key || "vish_test_...") : "••••••••••••••••••••••••"}
+                        {showTestSecret ? (apiKeysData?.test_secret_key || "cs_test_...") : "••••••••••••••••••••••••"}
                       </code>
                       <button onClick={()=>setShowTestSecret(!showTestSecret)} className="text-gray-400 hover:text-charcoal mr-1">{showTestSecret ? <EyeOff size={16}/> : <Eye size={16}/>}</button>
                       <button onClick={()=>copyToClipboard(apiKeysData?.test_secret_key)} className="text-gray-400 hover:text-charcoal"><Copy size={16}/></button>
@@ -378,7 +378,7 @@ export default function DeveloperRegisterPage() {
                   <div>
                     <span className="text-xs font-bold text-accent uppercase tracking-widest pl-1">Public Key</span>
                     <div className="flex items-center gap-2 mt-1 bg-white border border-accent/20 rounded-lg p-2 px-3">
-                      <code className="text-sm flex-1 text-gray-700 font-mono truncate">{apiKeysData?.public_key || apiKeysData?.api_key || "vish_pub_..."}</code>
+                      <code className="text-sm flex-1 text-gray-700 font-mono truncate">{apiKeysData?.public_key || apiKeysData?.api_key || "cs_pub_..."}</code>
                       <button onClick={()=>copyToClipboard(apiKeysData?.public_key || apiKeysData?.api_key)} className="text-gray-400 hover:text-charcoal"><Copy size={16}/></button>
                     </div>
                   </div>

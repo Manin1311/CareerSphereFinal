@@ -72,8 +72,8 @@ def register(request):
             phone_verified=bool(is_phone_verified)
         )
 
-        secret = "vish_live_" + secrets.token_urlsafe(24)
-        public = "vish_pub_" + secrets.token_urlsafe(24)
+        secret = "cs_live_" + secrets.token_urlsafe(24)
+        public = "cs_pub_" + secrets.token_urlsafe(24)
 
         new_key = APIKey.objects.create(
             company=new_company,
@@ -251,8 +251,8 @@ def generate_api_key(request):
                 pass
         
         resolved_key_name = data.get("name") or data.get("key_name") or "Unnamed Key"
-        secret = "vish_live_" + secrets.token_urlsafe(24)
-        public = "vish_pub_" + secrets.token_urlsafe(24)
+        secret = "cs_live_" + secrets.token_urlsafe(24)
+        public = "cs_pub_" + secrets.token_urlsafe(24)
 
         new_key = APIKey.objects.create(
             company=request.company,
@@ -682,8 +682,8 @@ def cross_portal_login(request):
                         APIKey.objects.create(
                             company=company,
                             key_name="Default Key",
-                            secret_key="vish_live_" + secrets.token_urlsafe(24),
-                            public_key="vish_pub_" + secrets.token_urlsafe(24),
+                            secret_key="cs_live_" + secrets.token_urlsafe(24),
+                            public_key="cs_pub_" + secrets.token_urlsafe(24),
                             environment="production"
                         )
                     except Exception as key_err:
@@ -733,10 +733,10 @@ def cross_portal_login(request):
                         is_verified=True
                     )
                     try:
-                        test_secret = "vish_test_" + secrets.token_urlsafe(24)
-                        test_public = "vish_pub_test_" + secrets.token_urlsafe(24)
-                        live_secret = "vish_live_" + secrets.token_urlsafe(24)
-                        live_public = "vish_pub_" + secrets.token_urlsafe(24)
+                        test_secret = "cs_test_" + secrets.token_urlsafe(24)
+                        test_public = "cs_pub_test_" + secrets.token_urlsafe(24)
+                        live_secret = "cs_live_" + secrets.token_urlsafe(24)
+                        live_public = "cs_pub_" + secrets.token_urlsafe(24)
 
                         DeveloperAPIKey.objects.create(
                             developer=dev,
@@ -1083,154 +1083,6 @@ def delete_account(request):
         company = request.company
         company.delete()
         return JsonResponse(success_response({"message": "Recruiter account deleted successfully"}))
-    except Exception as e:
-        return JsonResponse(error_response(f"Server error: {str(e)}"), status=500)
-
-
-@csrf_exempt
-def cross_portal_login(request):
-    """POST /api/v1/auth/cross-login - Cross-portal authentication."""
-    if request.method != "POST":
-        return JsonResponse(error_response("Method not allowed"), status=405)
-    try:
-        data = json.loads(request.body)
-        token = data.get("token")
-        target_role = data.get("target_role")
-        if not token or not target_role:
-            return JsonResponse(error_response("token and target_role are required"), status=400)
-
-        # Decode token to find email
-        try:
-            payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
-        except Exception:
-            try:
-                payload = jwt.decode(token, '', options={"verify_signature": False})
-            except Exception as jwt_err:
-                return JsonResponse(error_response(f"Invalid token: {str(jwt_err)}"), status=401)
-
-        email = payload.get("email")
-        if not email:
-            return JsonResponse(error_response("Invalid token payload"), status=400)
-
-        email = email.strip().lower()
-        if target_role == "recruiter":
-            company = Company.objects.filter(email=email).first()
-            if not company:
-                company = Company.objects.create(
-                    name=email.split("@")[0].capitalize(),
-                    email=email,
-                    password_hash=pwd_context.hash(secrets.token_urlsafe(16)),
-                    tier="free"
-                )
-                APIKey.objects.create(
-                    company=company,
-                    key_name="Default Key",
-                    secret_key="vish_live_" + secrets.token_urlsafe(24),
-                    public_key="vish_pub_" + secrets.token_urlsafe(24),
-                    environment="production"
-                )
-            
-            api_key_obj = APIKey.objects.filter(company_id=company.id, is_active=True).first()
-            masked_secret = api_key_obj.secret_key[:12] + "••••" if api_key_obj else None
-
-            new_payload = {
-                "company_id": str(company.id),
-                "email": company.email,
-                "tier": company.tier,
-                "exp": datetime.utcnow() + timedelta(days=7)
-            }
-            new_token = jwt.encode(new_payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
-            return JsonResponse(success_response({
-                "jwt_token": new_token,
-                "company_id": str(company.id),
-                "name": company.name,
-                "email": company.email,
-                "tier": company.tier,
-                "api_key": masked_secret
-            }))
-
-        elif target_role == "developer":
-            from api.models import DeveloperAccount, DeveloperAPIKey, BillingSubscription
-            dev = DeveloperAccount.objects.filter(email=email).first()
-            if not dev:
-                dev = DeveloperAccount.objects.create(
-                    company_name=email.split("@")[0].capitalize() + " Dev",
-                    email=email,
-                    password_hash=pwd_context.hash(secrets.token_urlsafe(16)),
-                    tier="free",
-                    is_verified=True
-                )
-                test_secret = "vish_test_" + secrets.token_urlsafe(24)
-                test_public = "vish_pub_test_" + secrets.token_urlsafe(24)
-                live_secret = "vish_live_" + secrets.token_urlsafe(24)
-                live_public = "vish_pub_live_" + secrets.token_urlsafe(24)
-
-                DeveloperAPIKey.objects.create(
-                    developer=dev, key_name="Default Test Key", secret_key=test_secret,
-                    public_key=test_public, environment="sandbox"
-                )
-                DeveloperAPIKey.objects.create(
-                    developer=dev, key_name="Default Live Key", secret_key=live_secret,
-                    public_key=live_public, environment="production"
-                )
-                BillingSubscription.objects.create(
-                    developer=dev, plan="free", status="active"
-                )
-
-            dev_payload = {
-                "developer_id": str(dev.id),
-                "email": dev.email,
-                "tier": dev.tier,
-                "exp": datetime.utcnow() + timedelta(days=7)
-            }
-            dev_token = jwt.encode(dev_payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
-
-            test_key_obj = DeveloperAPIKey.objects.filter(developer=dev, environment="sandbox").first()
-            live_key_obj = DeveloperAPIKey.objects.filter(developer=dev, environment="production").first()
-
-            return JsonResponse(success_response({
-                "jwt_token": dev_token,
-                "developer_id": str(dev.id),
-                "company_name": dev.company_name,
-                "email": dev.email,
-                "tier": dev.tier,
-                "test_key": test_key_obj.secret_key if test_key_obj else None,
-                "live_key": live_key_obj.secret_key if live_key_obj else None
-            }))
-
-        elif target_role == "seeker":
-            from api.models import JobSeekerAccount
-            seeker = JobSeekerAccount.objects.filter(email=email).first()
-            if not seeker:
-                seeker = JobSeekerAccount.objects.create(
-                    email=email,
-                    full_name=email.split("@")[0].capitalize(),
-                    password_hash=pwd_context.hash(secrets.token_urlsafe(16)),
-                    email_verified=True
-                )
-
-            seeker_payload = {
-                "seeker_id": str(seeker.id),
-                "email": seeker.email,
-                "exp": datetime.utcnow() + timedelta(days=7)
-            }
-            seeker_token = jwt.encode(seeker_payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
-            return JsonResponse(success_response({
-                "seeker_token": seeker_token,
-                "seeker": {
-                    "id": str(seeker.id),
-                    "email": seeker.email,
-                    "full_name": seeker.full_name,
-                    "phone": seeker.phone,
-                    "target_role": seeker.target_role,
-                    "location": seeker.location,
-                    "bio": seeker.bio,
-                    "skills": seeker.skills,
-                    "experience_years": seeker.experience_years
-                }
-            }))
-
-        return JsonResponse(error_response("Invalid target_role"), status=400)
     except Exception as e:
         return JsonResponse(error_response(f"Server error: {str(e)}"), status=500)
 

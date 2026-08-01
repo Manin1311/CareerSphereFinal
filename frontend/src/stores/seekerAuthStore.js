@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
-const SEEKER_TOKEN_KEY = 'vish_seeker_token';
-const SEEKER_DATA_KEY = 'vish_seeker_data';
+const SEEKER_TOKEN_KEY = 'cs_seeker_token';
+const SEEKER_DATA_KEY = 'cs_seeker_data';
 
 export const useSeekerAuthStore = create((set, get) => ({
   seeker: null,

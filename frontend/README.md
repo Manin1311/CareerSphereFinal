@@ -20,7 +20,7 @@ npm run dev
 - `src/App.jsx`          → App routing and setup.
 
 ## Session Management & Backend Connection
-- **Session Redirection**: Logged-in users (detected by `vish_jwt` in `localStorage`) are automatically redirected to `/dashboard` when visiting `/login` or clicking Call-To-Action buttons on the landing page `/`.
+- **Session Redirection**: Logged-in users (detected by `cs_jwt` in `localStorage`) are automatically redirected to `/dashboard` when visiting `/login` or clicking Call-To-Action buttons on the landing page `/`.
 - **API Headers**: All backend requests fetch the `X-API-Key` and `Authorization` Bearer tokens from `localStorage`.
 - **Automatic Logout**: If an API call receives a `401 Unauthorized` status code, the application automatically clears storage and redirects to `/login`.
 

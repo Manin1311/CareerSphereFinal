@@ -9,7 +9,7 @@ import { authAPI, API_HOST } from '../lib/api';
 export default function Sidebar() {
   const pathname = useLocation().pathname;
   const { company, clearAuth } = useAuthStore();
-  const [logo, setLogo] = useState(localStorage.getItem('vish_company_logo') || '');
+  const [logo, setLogo] = useState(localStorage.getItem('cs_company_logo') || '');
 
   const getFullUrl = (path) => {
     if (!path) return "";
@@ -21,7 +21,7 @@ export default function Sidebar() {
 
   useEffect(() => {
     const updateLogo = () => {
-      setLogo(localStorage.getItem('vish_company_logo') || '');
+      setLogo(localStorage.getItem('cs_company_logo') || '');
     };
     window.addEventListener('company_logo_updated', updateLogo);
     return () => window.removeEventListener('company_logo_updated', updateLogo);

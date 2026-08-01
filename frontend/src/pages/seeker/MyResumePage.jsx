@@ -86,7 +86,7 @@ export default function MyResumePage() {
 
   const handleDownloadFile = async (format) => {
     try {
-      const token = localStorage.getItem('vish_seeker_token');
+      const token = localStorage.getItem('cs_seeker_token');
       const headers = {};
       if (token) headers['Authorization'] = `Bearer ${token}`;
       

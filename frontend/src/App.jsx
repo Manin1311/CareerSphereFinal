@@ -152,7 +152,7 @@ export default function App() {
   useEffect(() => {
     const handleStorageChange = (e) => {
       // e.key is null when localStorage.clear() is called
-      if (e.key === null || e.key === 'vish_jwt' || e.key === 'admin_jwt') {
+      if (e.key === null || e.key === 'cs_jwt' || e.key === 'admin_jwt') {
         // Clear recruiter/company auth
         useAuthStore.getState().setAuth(null);
         // Clear seeker auth

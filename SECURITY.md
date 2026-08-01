@@ -49,7 +49,7 @@ CareerSphere processes and stores the following sensitive information. Any vulne
 
 - **PII** — Candidate names, email addresses, phone numbers, LinkedIn/GitHub profiles
 - **Resume Contents** — Employment history, education records, project details
-- **API Keys** — Developer-issued `vish_live_*` and `vish_test_*` keys
+- **API Keys** — Developer-issued `cs_live_*` and `cs_test_*` keys
 - **JWT Tokens** — Recruiter, seeker, and admin session tokens
 - **Admin Credentials** — Admin email and password stored exclusively in environment variables
 - **Fraud Analysis Audits** — Detailed scan logs, website validation outcomes, recruiter email verification metadata
@@ -118,7 +118,7 @@ If you are running CareerSphere locally or in your own infrastructure, follow th
 - Wrap `.env` values containing `#` in double quotes (e.g., `ADMIN_PASSWORD="Pass#word"`) to prevent comment truncation.
 
 ### API Keys
-- Generate separate `vish_test_*` keys for development — never use production keys in testing.
+- Generate separate `cs_test_*` keys for development — never use production keys in testing.
 - Revoke unused developer API keys from the Developer Portal dashboard.
 - Set appropriate monthly quotas on all API keys to limit blast radius.
 

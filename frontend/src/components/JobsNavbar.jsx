@@ -26,7 +26,7 @@ export default function JobsNavbar({ onUploadClick }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const isSeekerLoggedIn = !!localStorage.getItem('vish_seeker_token');
+  const isSeekerLoggedIn = !!localStorage.getItem('cs_seeker_token');
 
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -60,7 +60,7 @@ export default function JobsNavbar({ onUploadClick }) {
 
   // Sync profile from local storage
   const syncProfile = () => {
-    const seekerData = localStorage.getItem('vish_seeker_data');
+    const seekerData = localStorage.getItem('cs_seeker_data');
     if (seekerData) {
       try {
         const parsed = JSON.parse(seekerData);
@@ -73,7 +73,7 @@ export default function JobsNavbar({ onUploadClick }) {
       } catch (e) {}
     }
 
-    const saved = localStorage.getItem('vish_seeker_profile');
+    const saved = localStorage.getItem('cs_seeker_profile');
     if (saved) {
       try {
         setProfile(JSON.parse(saved));
@@ -93,10 +93,10 @@ export default function JobsNavbar({ onUploadClick }) {
   }, []);
 
   const handleClearProfile = () => {
-    localStorage.removeItem('vish_seeker_profile');
-    localStorage.removeItem('vish_applied_jobs');
-    localStorage.removeItem('vish_seeker_token');
-    localStorage.removeItem('vish_seeker_data');
+    localStorage.removeItem('cs_seeker_profile');
+    localStorage.removeItem('cs_applied_jobs');
+    localStorage.removeItem('cs_seeker_token');
+    localStorage.removeItem('cs_seeker_data');
     setProfile(null);
     setDropdownOpen(false);
     window.dispatchEvent(new Event('seeker_profile_updated'));

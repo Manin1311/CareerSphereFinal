@@ -130,7 +130,7 @@ const FeaturesList = () => {
       title: "Developer API", 
       description: "Full REST API with tiered subscriptions, rate limiting, and interactive documentation.", 
       iconSVG: <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>,
-      color: "#8b5cf6", tag: "API & DEV", size: "small",
+      color: "#8b5cf6", tag: "API & DEV", size: "wide",
       link: "/developer/portal",
       details: (
         <div className="space-y-4">
@@ -138,7 +138,7 @@ const FeaturesList = () => {
             Integrate our multi-agent AI resume parser and candidate ranking endpoints directly into your career site, ATS software, or internal recruitment pipeline.
           </p>
           <div className="p-3 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-xs font-mono text-purple-700 dark:text-purple-300">
-            POST /api/v1/parse -H "X-API-Key: vish_pub_xxx"
+            POST /api/v1/parse -H "X-API-Key: cs_pub_xxx"
           </div>
         </div>
       )

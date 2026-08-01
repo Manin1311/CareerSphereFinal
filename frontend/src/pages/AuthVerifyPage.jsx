@@ -42,9 +42,9 @@ export default function AuthVerifyPage() {
         localStorage.setItem("careersphere_user", JSON.stringify(userData));
 
         // Also populate the existing auth stores so the dashboard works seamlessly
-        localStorage.setItem("vish_jwt", token);
+        localStorage.setItem("cs_jwt", token);
         localStorage.setItem(
-          "vish_company",
+          "cs_company",
           JSON.stringify({
             id: userData.user_id,
             email: userData.email,

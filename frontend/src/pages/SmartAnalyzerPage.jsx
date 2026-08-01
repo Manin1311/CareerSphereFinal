@@ -28,9 +28,9 @@ export default function SmartAnalyzerPage() {
     // using imported BASE
     try {
       const headers = {};
-      const apiKey = localStorage.getItem("vish_api_key");
+      const apiKey = localStorage.getItem("cs_api_key");
       if (apiKey) headers["X-API-Key"] = String(apiKey).replace(/[^\x20-\x7E]/g, "");
-      const jwt = localStorage.getItem("vish_jwt");
+      const jwt = localStorage.getItem("cs_jwt");
       if (jwt && jwt !== "undefined") headers["Authorization"] = `Bearer ${jwt}`;
 
       const res = await fetch(`${BASE}/sessions?status=analysis`, { headers });
@@ -58,9 +58,9 @@ export default function SmartAnalyzerPage() {
     // using imported BASE
     try {
       const headers = {};
-      const apiKey = localStorage.getItem("vish_api_key");
+      const apiKey = localStorage.getItem("cs_api_key");
       if (apiKey) headers["X-API-Key"] = String(apiKey).replace(/[^\x20-\x7E]/g, "");
-      const jwt = localStorage.getItem("vish_jwt");
+      const jwt = localStorage.getItem("cs_jwt");
       if (jwt && jwt !== "undefined") headers["Authorization"] = `Bearer ${jwt}`;
 
       setProgress(50);
@@ -102,9 +102,9 @@ export default function SmartAnalyzerPage() {
     // using imported BASE
     try {
       const headers = { "Content-Type": "application/json" };
-      const apiKey = localStorage.getItem("vish_api_key");
+      const apiKey = localStorage.getItem("cs_api_key");
       if (apiKey) headers["X-API-Key"] = String(apiKey).replace(/[^\x20-\x7E]/g, "");
-      const jwt = localStorage.getItem("vish_jwt");
+      const jwt = localStorage.getItem("cs_jwt");
       if (jwt && jwt !== "undefined") headers["Authorization"] = `Bearer ${jwt}`;
 
       // DELETE request with delete_candidates and hard_delete
@@ -154,9 +154,9 @@ export default function SmartAnalyzerPage() {
 
     try {
       const headers = {};
-      const apiKey = localStorage.getItem("vish_api_key");
+      const apiKey = localStorage.getItem("cs_api_key");
       if (apiKey) headers["X-API-Key"] = String(apiKey).replace(/[^\x20-\x7E]/g, "");
-      const jwt = localStorage.getItem("vish_jwt");
+      const jwt = localStorage.getItem("cs_jwt");
       if (jwt && jwt !== "undefined") headers["Authorization"] = `Bearer ${jwt}`;
 
       // Create session

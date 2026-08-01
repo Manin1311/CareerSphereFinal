@@ -46,11 +46,11 @@ def register(request):
             website_url=data.get("website_url")
         )
 
-        test_secret = "vish_test_" + secrets.token_urlsafe(24)
-        test_public = "vish_pub_test_" + secrets.token_urlsafe(24)
+        test_secret = "cs_test_" + secrets.token_urlsafe(24)
+        test_public = "cs_pub_test_" + secrets.token_urlsafe(24)
         
-        live_secret = "vish_live_" + secrets.token_urlsafe(24)
-        live_public = "vish_pub_" + secrets.token_urlsafe(24)
+        live_secret = "cs_live_" + secrets.token_urlsafe(24)
+        live_public = "cs_pub_" + secrets.token_urlsafe(24)
 
         DeveloperAPIKey.objects.create(
             developer=new_dev,

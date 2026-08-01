@@ -90,8 +90,8 @@ export function Header() {
 
   const { pathname } = useLocation();
   const [seekerData, setSeekerData] = useState(() => {
-    const token = localStorage.getItem('vish_seeker_token');
-    const data = localStorage.getItem('vish_seeker_data');
+    const token = localStorage.getItem('cs_seeker_token');
+    const data = localStorage.getItem('cs_seeker_data');
     if (token && data) {
       try { return JSON.parse(data); } catch {}
     }
@@ -101,7 +101,7 @@ export function Header() {
 
   useEffect(() => {
     const handleProfileUpdate = () => {
-      const data = localStorage.getItem('vish_seeker_data');
+      const data = localStorage.getItem('cs_seeker_data');
       if (data) {
         try { setSeekerData(JSON.parse(data)); } catch {}
       } else {
@@ -122,16 +122,16 @@ export function Header() {
       seekerAPI.getMe()
         .then((profile) => {
           setSeekerData(profile);
-          localStorage.setItem('vish_seeker_data', JSON.stringify(profile));
-          useSeekerAuthStore.getState().setAuth({ seeker_token: localStorage.getItem('vish_seeker_token'), seeker: profile });
+          localStorage.setItem('cs_seeker_data', JSON.stringify(profile));
+          useSeekerAuthStore.getState().setAuth({ seeker_token: localStorage.getItem('cs_seeker_token'), seeker: profile });
         })
         .catch((err) => console.error("Error syncing profile to navbar:", err));
     }
   }, [isLoggedIn]);
 
   const handleLogout = () => {
-    localStorage.removeItem('vish_seeker_token');
-    localStorage.removeItem('vish_seeker_data');
+    localStorage.removeItem('cs_seeker_token');
+    localStorage.removeItem('cs_seeker_data');
     window.location.href = '/jobs';
   };
 

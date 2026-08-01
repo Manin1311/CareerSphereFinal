@@ -27,14 +27,14 @@ export const API_HOST = BASE.replace("/api/v1", "");
 
 function getHeaders(isFile=false) {
   const h = {};
-  const apiKey = localStorage.getItem("vish_api_key");
+  const apiKey = localStorage.getItem("cs_api_key");
   if (apiKey) h["X-API-Key"] = String(apiKey).replace(/[^\x20-\x7E]/g, "");
   if (!isFile) h["Content-Type"] = "application/json";
-  const jwt = localStorage.getItem("vish_jwt");
+  const jwt = localStorage.getItem("cs_jwt");
   if (jwt && jwt !== "undefined" && jwt !== "null") {
     h["Authorization"] = `Bearer ${String(jwt).replace(/[^\x20-\x7E]/g, "")}`;
   }
-  const seekerToken = localStorage.getItem("vish_seeker_token");
+  const seekerToken = localStorage.getItem("cs_seeker_token");
   if (seekerToken && seekerToken !== "undefined" && seekerToken !== "null") {
     h["X-Seeker-Token"] = String(seekerToken).replace(/[^\x20-\x7E]/g, "");
   }
@@ -75,17 +75,17 @@ async function req(method, path, body=null, isFile=false) {
     let email = "";
     try {
       const u = localStorage.getItem("careersphere_user");
-      const s = localStorage.getItem("vish_seeker_data");
+      const s = localStorage.getItem("cs_seeker_data");
       if (u) email = JSON.parse(u).email || "";
       else if (s) email = JSON.parse(s).email || "";
     } catch(e) {}
     
-    localStorage.removeItem("vish_jwt");
-    localStorage.removeItem("vish_api_key");
-    localStorage.removeItem("vish_company");
+    localStorage.removeItem("cs_jwt");
+    localStorage.removeItem("cs_api_key");
+    localStorage.removeItem("cs_company");
     localStorage.removeItem("careersphere_user");
-    localStorage.removeItem("vish_seeker_token");
-    localStorage.removeItem("vish_seeker_data");
+    localStorage.removeItem("cs_seeker_token");
+    localStorage.removeItem("cs_seeker_data");
 
     const isSeeker = typeof window !== "undefined" && (window.location.pathname.startsWith('/jobs') || window.location.pathname.startsWith('/seeker'));
     const targetUrl = isSeeker 
@@ -175,15 +175,15 @@ export const authAPI = {
   login: async (email,password) => {
     const d = await req("POST","/auth/login",
                          {email,password})
-    localStorage.setItem("vish_jwt",d.jwt_token)
-    localStorage.setItem("vish_api_key",d.api_key||"")
-    localStorage.setItem("vish_company",JSON.stringify(d))
+    localStorage.setItem("cs_jwt",d.jwt_token)
+    localStorage.setItem("cs_api_key",d.api_key||"")
+    localStorage.setItem("cs_company",JSON.stringify(d))
     return d
   },
   logout: () => {
-    localStorage.removeItem("vish_jwt")
-    localStorage.removeItem("vish_api_key")
-    localStorage.removeItem("vish_company")
+    localStorage.removeItem("cs_jwt")
+    localStorage.removeItem("cs_api_key")
+    localStorage.removeItem("cs_company")
     window.location.href="/login"
   },
   generateKey: (b) => req("POST","/auth/api-keys/generate",b),
@@ -191,16 +191,16 @@ export const authAPI = {
   deleteKey: (id) => req("DELETE",`/auth/api-keys/${id}`),
   googleLogin: async (credential) => {
     const d = await req("POST", "/auth/login-google", { credential })
-    localStorage.setItem("vish_jwt", d.jwt_token)
-    localStorage.setItem("vish_api_key", d.api_key || "")
-    localStorage.setItem("vish_company", JSON.stringify(d))
+    localStorage.setItem("cs_jwt", d.jwt_token)
+    localStorage.setItem("cs_api_key", d.api_key || "")
+    localStorage.setItem("cs_company", JSON.stringify(d))
     return d
   },
   githubLogin: async (code) => {
     const d = await req("POST", "/auth/login-github", { code })
-    localStorage.setItem("vish_jwt", d.jwt_token)
-    localStorage.setItem("vish_api_key", d.api_key || "")
-    localStorage.setItem("vish_company", JSON.stringify(d))
+    localStorage.setItem("cs_jwt", d.jwt_token)
+    localStorage.setItem("cs_api_key", d.api_key || "")
+    localStorage.setItem("cs_company", JSON.stringify(d))
     return d
   },
   getMe: () => req("GET","/auth/me"),
@@ -311,12 +311,12 @@ export const exportAPI = {
   candidatesUrl: (sessionId,status="hired") =>
     `${BASE}/sessions/${sessionId}/export/candidates` +
     `?status=${status}&x_api_key=${
-      localStorage.getItem("vish_api_key")||""}&token=${
-      localStorage.getItem("vish_jwt")||""}`,
+      localStorage.getItem("cs_api_key")||""}&token=${
+      localStorage.getItem("cs_jwt")||""}`,
   reportUrl: (sessionId) =>
     `${BASE}/sessions/${sessionId}/export/report` +
-    `?x_api_key=${localStorage.getItem("vish_api_key")||""}&token=${
-      localStorage.getItem("vish_jwt")||""}`
+    `?x_api_key=${localStorage.getItem("cs_api_key")||""}&token=${
+      localStorage.getItem("cs_jwt")||""}`
 }
 
 // BILLING
@@ -361,7 +361,7 @@ export const publicJobsAPI = {
 
 function getSeekerHeaders(isFile = false) {
   const h = {};
-  const token = localStorage.getItem('vish_seeker_token');
+  const token = localStorage.getItem('cs_seeker_token');
   if (token) h['Authorization'] = `Bearer ${token}`;
   if (!isFile) h['Content-Type'] = 'application/json';
   return h;
@@ -376,8 +376,8 @@ async function seekerReq(method, path, body = null, isFile = false) {
   const res = await fetch(`${API_HOST}${path}`, opts);
   const data = await res.json();
   if (res.status === 401) {
-    localStorage.removeItem('vish_seeker_token');
-    localStorage.removeItem('vish_seeker_data');
+    localStorage.removeItem('cs_seeker_token');
+    localStorage.removeItem('cs_seeker_data');
     window.location.href = '/jobs/login';
     throw new Error('Session expired');
   }
@@ -393,11 +393,11 @@ async function seekerReq(method, path, body = null, isFile = false) {
   if (isAccountBanned) {
     let email = "";
     try {
-      const s = localStorage.getItem("vish_seeker_data");
+      const s = localStorage.getItem("cs_seeker_data");
       if (s) email = JSON.parse(s).email || "";
     } catch(e) {}
-    localStorage.removeItem('vish_seeker_token');
-    localStorage.removeItem('vish_seeker_data');
+    localStorage.removeItem('cs_seeker_token');
+    localStorage.removeItem('cs_seeker_data');
     window.location.href = `/jobs/login?banned=true&email=${encodeURIComponent(email)}`;
     throw new Error(data.error || "Account banned");
   }
@@ -438,16 +438,16 @@ export const seekerAPI = {
   googleLogin: async (credential) => {
     const d = await seekerReq('POST', '/api/v1/seeker/auth/login-google', { credential });
     if (typeof window !== "undefined") {
-      localStorage.setItem('vish_seeker_token', d.seeker_token);
-      localStorage.setItem('vish_seeker_data', JSON.stringify(d.seeker));
+      localStorage.setItem('cs_seeker_token', d.seeker_token);
+      localStorage.setItem('cs_seeker_data', JSON.stringify(d.seeker));
     }
     return d;
   },
   githubLogin: async (code) => {
     const d = await seekerReq('POST', '/api/v1/seeker/auth/login-github', { code });
     if (typeof window !== "undefined") {
-      localStorage.setItem('vish_seeker_token', d.seeker_token);
-      localStorage.setItem('vish_seeker_data', JSON.stringify(d.seeker));
+      localStorage.setItem('cs_seeker_token', d.seeker_token);
+      localStorage.setItem('cs_seeker_data', JSON.stringify(d.seeker));
     }
     return d;
   },
@@ -562,8 +562,8 @@ export const seekerAPI = {
 async function publicReq(method, path) {
   const headers = { 'Content-Type': 'application/json' };
   if (typeof window !== "undefined") {
-    const seekerToken = localStorage.getItem('vish_seeker_token');
-    const recruiterToken = localStorage.getItem('vish_jwt');
+    const seekerToken = localStorage.getItem('cs_seeker_token');
+    const recruiterToken = localStorage.getItem('cs_jwt');
     const developerToken = localStorage.getItem('portal_jwt');
 
     // Send primary token as Authorization
@@ -654,7 +654,7 @@ export const roundsAPI = {
 };
 
 const getTestHeaders = (isFile = false) => {
-  const token = localStorage.getItem("vish_test_token") || "";
+  const token = localStorage.getItem("cs_test_token") || "";
   const h = {};
   if (!isFile) h["Content-Type"] = "application/json";
   if (token) h["Authorization"] = `Bearer ${token}`;
@@ -675,7 +675,7 @@ async function testReq(method, path, body = null, isFile = false) {
 
 export const testAPI = {
   validateToken: (token) => {
-    localStorage.setItem("vish_test_token", token);
+    localStorage.setItem("cs_test_token", token);
     return testReq("POST", "/validate-token", { token });
   },
   getMcqQuestions: () => testReq("GET", "/mcq-questions"),

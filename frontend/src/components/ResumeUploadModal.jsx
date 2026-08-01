@@ -50,7 +50,7 @@ export default function ResumeUploadModal({ isOpen, onClose, preselectedFile }) 
       const profile = data.parsed_profile;
       
       // Store seeker profile in localStorage
-      localStorage.setItem('vish_seeker_profile', JSON.stringify(profile));
+      localStorage.setItem('cs_seeker_profile', JSON.stringify(profile));
       setParsedProfile(profile);
       setStep(2);
       

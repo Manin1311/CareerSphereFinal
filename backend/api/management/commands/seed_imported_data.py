@@ -23,32 +23,32 @@ SEED_DATA = [
             {
                 "id": "fe782370-9b53-4926-b977-94aeb89dcaca",
                 "key_name": "Default Key",
-                "secret_key": "vish_live_vk6apvmsGJ2u23yugoogPPlhBly1wjxO",
-                "public_key": "vish_pub_etQqq7Na8rFKUmp6nbF_6CxYekGegyMf",
+                "secret_key": "cs_live_vk6apvmsGJ2u23yugoogPPlhBly1wjxO",
+                "public_key": "cs_pub_etQqq7Na8rFKUmp6nbF_6CxYekGegyMf",
                 "environment": "production",
                 "is_active": False
             },
             {
                 "id": "d7ccd627-8411-4601-8115-cb9d9b4367cb",
                 "key_name": "new key ",
-                "secret_key": "vish_live_TkDiiEwPcyEAeMU_14LlBvR0uTnu85a-",
-                "public_key": "vish_pub_bVaEWkHmbQTUV62n8lV6wXBm8F3QQd7q",
+                "secret_key": "cs_live_TkDiiEwPcyEAeMU_14LlBvR0uTnu85a-",
+                "public_key": "cs_pub_bVaEWkHmbQTUV62n8lV6wXBm8F3QQd7q",
                 "environment": "production",
                 "is_active": False
             },
             {
                 "id": "3060edf0-6d86-493c-9dc6-54409e1d81ea",
                 "key_name": "new",
-                "secret_key": "vish_live_34Z8SlM8t_AeGxfyAq4m7WYZuyhl5EUW",
-                "public_key": "vish_pub_9xJjj8_XdMQXHeq7Q3Yw2zrogCkrX_Qa",
+                "secret_key": "cs_live_34Z8SlM8t_AeGxfyAq4m7WYZuyhl5EUW",
+                "public_key": "cs_pub_9xJjj8_XdMQXHeq7Q3Yw2zrogCkrX_Qa",
                 "environment": "production",
                 "is_active": False
             },
             {
                 "id": "10766ede-a07e-4574-9fba-913a8e33ef46",
                 "key_name": "new",
-                "secret_key": "vish_live_eKluSeJrtBsFQGY2A9wMmRWYWSfVou_6",
-                "public_key": "vish_pub_IyrIa80NddYt-BXZo7aQrENynJAXoNM4",
+                "secret_key": "cs_live_eKluSeJrtBsFQGY2A9wMmRWYWSfVou_6",
+                "public_key": "cs_pub_IyrIa80NddYt-BXZo7aQrENynJAXoNM4",
                 "environment": "production",
                 "is_active": False
             }
@@ -1903,8 +1903,8 @@ SEED_DATA = [
             {
                 "id": "b3737a5d-1b08-4ec6-b35d-c2e7d94bb680",
                 "key_name": "Default Key",
-                "secret_key": "vish_live_xh1q1UQoUsCTCcMNmgYgF6dV0wT6Y52C",
-                "public_key": "vish_pub_wdsL9MfrthPpBYenvaCHolqTJDWmOZqo",
+                "secret_key": "cs_live_xh1q1UQoUsCTCcMNmgYgF6dV0wT6Y52C",
+                "public_key": "cs_pub_wdsL9MfrthPpBYenvaCHolqTJDWmOZqo",
                 "environment": "production",
                 "is_active": True
             }
@@ -1930,8 +1930,8 @@ SEED_DATA = [
             {
                 "id": "b1e971c2-b21b-4cf8-a16c-7cf8265d1d48",
                 "key_name": "Default Key",
-                "secret_key": "vish_live_mzaZ49x6jnG4WNc93CRb_V6jLnAf1Ijv",
-                "public_key": "vish_pub_KXrMgNVBK2AcCX4-jX4r-Mm1ZT3EqbzS",
+                "secret_key": "cs_live_mzaZ49x6jnG4WNc93CRb_V6jLnAf1Ijv",
+                "public_key": "cs_pub_KXrMgNVBK2AcCX4-jX4r-Mm1ZT3EqbzS",
                 "environment": "production",
                 "is_active": True
             }
@@ -1957,8 +1957,8 @@ SEED_DATA = [
             {
                 "id": "eea77ad6-ab52-4ef8-bf12-f9c37334f328",
                 "key_name": "Default Key",
-                "secret_key": "vish_live_cmRGUpUewmh125NkIlmEjFtFUm_3me8z",
-                "public_key": "vish_pub_9P7zX8AGbZLCWPwRYHav6FvWTOlBkMfI",
+                "secret_key": "cs_live_cmRGUpUewmh125NkIlmEjFtFUm_3me8z",
+                "public_key": "cs_pub_9P7zX8AGbZLCWPwRYHav6FvWTOlBkMfI",
                 "environment": "production",
                 "is_active": True
             }
@@ -1984,8 +1984,8 @@ SEED_DATA = [
             {
                 "id": "921f57dd-6336-43ae-89ac-735ef50f277f",
                 "key_name": "Default Key",
-                "secret_key": "vish_live_e3F3kgFf5zJ--6Iiwltzh1lmJJmj4fBw",
-                "public_key": "vish_pub_ZKN9rVICRnYVNDwwFCt9Ex44fatVEhp7",
+                "secret_key": "cs_live_e3F3kgFf5zJ--6Iiwltzh1lmJJmj4fBw",
+                "public_key": "cs_pub_ZKN9rVICRnYVNDwwFCt9Ex44fatVEhp7",
                 "environment": "production",
                 "is_active": True
             }
@@ -2011,8 +2011,8 @@ SEED_DATA = [
             {
                 "id": "4d8b1d78-c12d-41d9-8756-95a8dd88f870",
                 "key_name": "Default Key",
-                "secret_key": "vish_live_wpupOwGTtCwym2X-h0iogoY0BrdG9MJs",
-                "public_key": "vish_pub_v_X-zFaG4ranOy-jKucXl4KUeTLGoaUY",
+                "secret_key": "cs_live_wpupOwGTtCwym2X-h0iogoY0BrdG9MJs",
+                "public_key": "cs_pub_v_X-zFaG4ranOy-jKucXl4KUeTLGoaUY",
                 "environment": "production",
                 "is_active": True
             }

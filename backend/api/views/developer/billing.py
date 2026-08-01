@@ -112,7 +112,7 @@ def subscribe(request):
                 order = client.order.create({
                     "amount": amount,
                     "currency": "INR",
-                    "receipt": f"vish_{str(dev.id)[:8]}"
+                    "receipt": f"cs_{str(dev.id)[:8]}"
                 })
             except Exception as e:
                 err_str = str(e).lower()

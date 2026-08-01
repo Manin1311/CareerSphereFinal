@@ -48,7 +48,7 @@ export default function SettingsPage() {
     authAPI.getProfile()
       .then((data) => {
         if (data) {
-          setAuth({ ...company, ...data, jwt_token: localStorage.getItem("vish_jwt") });
+          setAuth({ ...company, ...data, jwt_token: localStorage.getItem("cs_jwt") });
         }
       })
       .catch((err) => console.warn("Could not fetch fresh company profile:", err));
@@ -84,7 +84,7 @@ export default function SettingsPage() {
         setAuth({
           ...company,
           notification_settings: res.notification_settings,
-          jwt_token: localStorage.getItem("vish_jwt")
+          jwt_token: localStorage.getItem("cs_jwt")
         });
       }
       toast.success("Notification preference saved!");
@@ -99,7 +99,7 @@ export default function SettingsPage() {
     return `${API_HOST}${path}`;
   };
 
-  const [logo, setLogo] = useState(company?.logo_path ? getFullUrl(company.logo_path) : (localStorage.getItem('vish_company_logo') || ''));
+  const [logo, setLogo] = useState(company?.logo_path ? getFullUrl(company.logo_path) : (localStorage.getItem('cs_company_logo') || ''));
   const [logoFile, setLogoFile] = useState(null);
 
   const handleLogout = () => {
@@ -179,7 +179,7 @@ export default function SettingsPage() {
              });
              toast.success("Successfully upgraded plan (Mock Mode)!");
              
-             const updatedCompany = { ...company, tier: planId, jwt_token: localStorage.getItem("vish_jwt") };
+             const updatedCompany = { ...company, tier: planId, jwt_token: localStorage.getItem("cs_jwt") };
              setAuth(updatedCompany);
              refetchSub();
              window.location.reload();
@@ -207,7 +207,7 @@ export default function SettingsPage() {
             });
             toast.success("Successfully upgraded plan!");
             
-            const updatedCompany = { ...company, tier: planId, jwt_token: localStorage.getItem("vish_jwt") };
+            const updatedCompany = { ...company, tier: planId, jwt_token: localStorage.getItem("cs_jwt") };
             setAuth(updatedCompany);
             refetchSub();
             window.location.reload();
@@ -231,7 +231,7 @@ export default function SettingsPage() {
       toast.success("Subscription cancelled. Downgraded to Starter Plan.");
       setCancelModal(false);
       
-      const updatedCompany = { ...company, tier: "free", jwt_token: localStorage.getItem("vish_jwt") };
+      const updatedCompany = { ...company, tier: "free", jwt_token: localStorage.getItem("cs_jwt") };
       setAuth(updatedCompany);
       refetchSub();
       window.location.reload();
@@ -301,9 +301,9 @@ export default function SettingsPage() {
 
       // Sync local storage for sidebar backward compatibility
       if (logo) {
-        localStorage.setItem('vish_company_logo', logo);
+        localStorage.setItem('cs_company_logo', logo);
       } else {
-        localStorage.removeItem('vish_company_logo');
+        localStorage.removeItem('cs_company_logo');
       }
 
       window.dispatchEvent(new Event('company_logo_updated'));

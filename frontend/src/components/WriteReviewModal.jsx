@@ -24,8 +24,8 @@ export default function WriteReviewModal({
   const [loading, setLoading] = useState(false);
 
   // Identify logged in accounts
-  const isSeekerLoggedIn = typeof window !== 'undefined' && !!localStorage.getItem('vish_seeker_token');
-  const isRecruiterLoggedIn = typeof window !== 'undefined' && !!localStorage.getItem('vish_jwt');
+  const isSeekerLoggedIn = typeof window !== 'undefined' && !!localStorage.getItem('cs_seeker_token');
+  const isRecruiterLoggedIn = typeof window !== 'undefined' && !!localStorage.getItem('cs_jwt');
   const isDeveloperLoggedIn = typeof window !== 'undefined' && !!localStorage.getItem('portal_jwt');
 
   let seekerName = "";
@@ -33,7 +33,7 @@ export default function WriteReviewModal({
   let developerName = "";
 
   try {
-    const s = localStorage.getItem('vish_seeker_data');
+    const s = localStorage.getItem('cs_seeker_data');
     if (s) seekerName = JSON.parse(s)?.full_name || "Job Seeker";
     const r = localStorage.getItem('careersphere_user');
     if (r) recruiterName = JSON.parse(r)?.name || "Recruiter";

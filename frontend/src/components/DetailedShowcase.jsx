@@ -112,7 +112,7 @@ const DetailedShowcase = () => {
   const opacity2 = useTransform(scrollYProgress, [0.5, 0.6, 1], [0, 1, 1]);
 
   const handleTryDashboard = () => {
-    if (localStorage.getItem("vish_jwt")) {
+    if (localStorage.getItem("cs_jwt")) {
       navigate('/dashboard');
     } else {
       navigate('/login');

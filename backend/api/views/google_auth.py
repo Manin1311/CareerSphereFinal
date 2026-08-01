@@ -80,8 +80,8 @@ def recruiter_auth_google(request):
             APIKey.objects.create(
                 company=company,
                 key_name="Default Key",
-                secret_key="vish_live_" + secrets.token_urlsafe(24),
-                public_key="vish_pub_" + secrets.token_urlsafe(24),
+                secret_key="cs_live_" + secrets.token_urlsafe(24),
+                public_key="cs_pub_" + secrets.token_urlsafe(24),
                 environment="production"
             )
         else:
@@ -220,10 +220,10 @@ def developer_auth_google(request):
                 is_verified=True
             )
             # Create default API keys
-            test_secret = "vish_test_" + secrets.token_urlsafe(24)
-            test_public = "vish_pub_test_" + secrets.token_urlsafe(24)
-            live_secret = "vish_live_" + secrets.token_urlsafe(24)
-            live_public = "vish_pub_" + secrets.token_urlsafe(24)
+            test_secret = "cs_test_" + secrets.token_urlsafe(24)
+            test_public = "cs_pub_test_" + secrets.token_urlsafe(24)
+            live_secret = "cs_live_" + secrets.token_urlsafe(24)
+            live_public = "cs_pub_" + secrets.token_urlsafe(24)
 
             DeveloperAPIKey.objects.create(
                 developer=dev,

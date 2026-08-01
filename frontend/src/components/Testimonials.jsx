@@ -269,9 +269,9 @@ const Testimonials = ({ userTypeFilter }) => {
     else if (userTypeFilter) setFilterTab(userTypeFilter);
   }, [userTypeFilter]);
 
-  const isRecruiter = !!localStorage.getItem('vish_jwt');
+  const isRecruiter = !!localStorage.getItem('cs_jwt');
   const isDeveloper = !!localStorage.getItem('portal_jwt');
-  const isSeeker = !!localStorage.getItem('vish_seeker_token');
+  const isSeeker = !!localStorage.getItem('cs_seeker_token');
   const isLoggedIn = isRecruiter || isDeveloper || isSeeker;
   const userRole = isRecruiter ? 'recruiter' : isDeveloper ? 'developer' : 'job_seeker';
 

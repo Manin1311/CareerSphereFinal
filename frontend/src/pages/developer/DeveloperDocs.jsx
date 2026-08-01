@@ -292,11 +292,11 @@ export default function DeveloperDocs() {
               All API endpoints are authenticated using specific secret keys. Pass your key through the <code className="bg-gray-100 text-charcoal rounded px-1">X-API-Key</code> HTTP header.
             </p>
             <div className="p-4 bg-amber-50 rounded-xl border border-amber-200 mb-6 text-sm font-semibold text-amber-800">
-               Test keys have the prefix <code>vish_test_</code> and do not incur billing charges, but are tightly rate-limited. Production keys use <code>vish_live_</code>.
+               Test keys have the prefix <code>cs_test_</code> and do not incur billing charges, but are tightly rate-limited. Production keys use <code>cs_live_</code>.
             </div>
             <SyntaxHighlighter language="bash" style={vs2015} customStyle={{ borderRadius: "12px", padding: "16px", fontSize: "13px" }}>
 {`curl -X GET "https://api.careersphere.indevs.in/api/v1/sessions" \\
-  -H "X-API-Key: vish_live_xxxxxxxx"`}
+  -H "X-API-Key: cs_live_xxxxxxxx"`}
             </SyntaxHighlighter>
           </section>
 
@@ -740,7 +740,7 @@ export default function DeveloperDocs() {
             <SyntaxHighlighter language="python" style={vs2015} customStyle={{ borderRadius: "12px", padding: "16px", fontSize: "12px", marginBottom: "16px" }}>
 {`import between
 
-client = between.Client(api_key="vish_live_xxxxxxxx")
+client = between.Client(api_key="cs_live_xxxxxxxx")
 
 # Parse a resume
 result = client.parse(file=open("resume.pdf", "rb"))
@@ -755,7 +755,7 @@ for m in matches:
             <h4 className="font-bold text-charcoal text-sm uppercase mb-3 text-gray-400">JavaScript / Node.js Example</h4>
             <SyntaxHighlighter language="javascript" style={vs2015} customStyle={{ borderRadius: "12px", padding: "16px", fontSize: "12px" }}>
 {`import { CareerSphereClient } from 'careersphere-js';
-const client = new CareerSphereClient({ apiKey: 'vish_live_xxxxxxxx' });
+const client = new CareerSphereClient({ apiKey: 'cs_live_xxxxxxxx' });
 
 // Parse a resume
 const { data } = await client.parse({ file: fs.createReadStream('resume.pdf') });
@@ -792,7 +792,7 @@ console.log(matches.data.matches);`}
                     <div className="flex items-center gap-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl px-3 py-2 focus-within:border-accent transition-colors">
                       <input 
                         type="text" 
-                        placeholder="vish_test_..." 
+                        placeholder="cs_test_..." 
                         value={apiKey}
                         onChange={(e)=>setApiKey(e.target.value)}
                         className="flex-1 bg-transparent outline-none font-mono text-xs font-bold truncate dark:text-zinc-200" 

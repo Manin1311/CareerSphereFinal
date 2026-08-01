@@ -21,7 +21,7 @@ export default function ProtectedRoute({ children }) {
 
   useEffect(() => {
     const userRaw = localStorage.getItem("careersphere_user");
-    const jwt = localStorage.getItem("vish_jwt");
+    const jwt = localStorage.getItem("cs_jwt");
 
     if (userRaw && jwt) {
       try {
@@ -34,7 +34,7 @@ export default function ProtectedRoute({ children }) {
             navigate("/admin/dashboard", { replace: true });
           } else {
             localStorage.removeItem("careersphere_user");
-            localStorage.removeItem("vish_jwt");
+            localStorage.removeItem("cs_jwt");
             navigate("/login", { replace: true });
           }
           return;

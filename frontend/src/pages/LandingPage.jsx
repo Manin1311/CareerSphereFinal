@@ -23,7 +23,7 @@ export default function LandingPage() {
 
   const navigate = useNavigate();
   const location = useLocation();
-  const isLoggedIn = !!localStorage.getItem("vish_jwt");
+  const isLoggedIn = !!localStorage.getItem("cs_jwt");
 
   useEffect(() => {
     if (location.hash) {
@@ -39,7 +39,7 @@ export default function LandingPage() {
   }, [location]);
 
   const handleAuth = () => {
-    if (localStorage.getItem("vish_jwt")) {
+    if (localStorage.getItem("cs_jwt")) {
       navigate('/dashboard');
     } else {
       navigate('/login');

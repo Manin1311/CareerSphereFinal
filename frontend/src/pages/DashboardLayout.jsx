@@ -215,7 +215,7 @@ export default function DashboardLayout() {
 
   useEffect(() => {
     initFromStorage();
-    const jwt = localStorage.getItem("vish_jwt");
+    const jwt = localStorage.getItem("cs_jwt");
     if (!jwt) {
       navigate("/login");
     } else {

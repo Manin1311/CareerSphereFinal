@@ -35,9 +35,9 @@ export function useAuth() {
 
   const logout = () => {
     localStorage.removeItem("careersphere_user");
-    localStorage.removeItem("vish_jwt");
-    localStorage.removeItem("vish_company");
-    localStorage.removeItem("vish_api_key");
+    localStorage.removeItem("cs_jwt");
+    localStorage.removeItem("cs_company");
+    localStorage.removeItem("cs_api_key");
     navigate("/login");
   };
 

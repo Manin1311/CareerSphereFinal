@@ -93,7 +93,7 @@ const bentoCapabilities = [
           Integrate AI resume parsing, candidate scoring, and job posting widgets directly into your HR tech stack or custom career portal.
         </p>
         <div className="p-3 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-xs font-mono text-purple-700 dark:text-purple-300">
-          POST /api/v1/parse -H "X-API-Key: vish_pub_xxx"
+          POST /api/v1/parse -H "X-API-Key: cs_pub_xxx"
         </div>
       </div>
     )
@@ -215,9 +215,9 @@ function Home() {
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [editingReview, setEditingReview] = useState(null);
   const seekerData = useMemo(() => {
-    try { return JSON.parse(localStorage.getItem('vish_seeker_data') || 'null'); } catch { return null; }
+    try { return JSON.parse(localStorage.getItem('cs_seeker_data') || 'null'); } catch { return null; }
   }, []);
-  const hasSeekerToken = !!localStorage.getItem('vish_seeker_token');
+  const hasSeekerToken = !!localStorage.getItem('cs_seeker_token');
   const isVerified = !!(seekerData?.email_verified && seekerData?.phone_verified);
 
   useEffect(() => {
@@ -272,7 +272,7 @@ function Home() {
     try {
       const reviewId = typeof t === "object" ? t.id : t;
       const targetRole = typeof t === "object" ? (t.user_type || t.author?.user_type) : (
-        localStorage.getItem('vish_jwt') ? 'recruiter' :
+        localStorage.getItem('cs_jwt') ? 'recruiter' :
         localStorage.getItem('portal_jwt') ? 'developer' : 'job_seeker'
       );
       if (targetRole === 'recruiter') {
@@ -852,7 +852,7 @@ function Home() {
           onSubmit={handleReviewSubmitted}
           editingReview={editingReview}
           userRole={
-            localStorage.getItem('vish_jwt') ? 'recruiter' :
+            localStorage.getItem('cs_jwt') ? 'recruiter' :
             localStorage.getItem('portal_jwt') ? 'developer' : 'job_seeker'
           }
         />

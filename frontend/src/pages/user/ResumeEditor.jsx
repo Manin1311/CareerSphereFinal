@@ -938,8 +938,8 @@ export default function ResumeEditor() {
       const result = await seekerAPI.activateDraft(resumeId, pdfFile);
       
       // Save local storage profile to stay in sync
-      localStorage.setItem("vish_seeker_data", JSON.stringify({
-        ...JSON.parse(localStorage.getItem("vish_seeker_data") || "{}"),
+      localStorage.setItem("cs_seeker_data", JSON.stringify({
+        ...JSON.parse(localStorage.getItem("cs_seeker_data") || "{}"),
         has_resume: true,
         resume_data: result.resumeData
       }));

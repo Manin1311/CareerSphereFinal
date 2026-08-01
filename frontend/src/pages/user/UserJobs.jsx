@@ -260,7 +260,7 @@ export default function UserJobs() {
     if (location) params.location = location;
     
     // Try seeker API first (for match scores), fall back to public API
-    const token = localStorage.getItem('vish_seeker_token');
+    const token = localStorage.getItem('cs_seeker_token');
     const apiCall = token ? seekerAPI.listJobs(params) : publicAPI.listJobs(params);
     apiCall
       .then((data) => {

@@ -97,7 +97,7 @@ export default function JobsLandingPage() {
     fetchJobs();
 
     const checkProfile = () => {
-      const saved = localStorage.getItem('vish_seeker_profile');
+      const saved = localStorage.getItem('cs_seeker_profile');
       if (saved) {
         try {
           setProfile(JSON.parse(saved));

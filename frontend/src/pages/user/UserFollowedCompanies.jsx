@@ -33,7 +33,7 @@ export default function UserFollowedCompanies() {
   const fetchFollowed = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("vish_seeker_token");
+      const token = localStorage.getItem("cs_seeker_token");
       if (!token) {
         setCompanies([]);
         setLoading(false);
@@ -74,7 +74,7 @@ export default function UserFollowedCompanies() {
     }
   };
 
-  const isLoggedIn = !!localStorage.getItem("vish_seeker_token");
+  const isLoggedIn = !!localStorage.getItem("cs_seeker_token");
 
   return (
     <div className="min-h-screen bg-background">

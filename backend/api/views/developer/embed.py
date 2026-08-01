@@ -50,7 +50,7 @@ def tokens_root(request):
             domain = domain.replace("http://", "").replace("https://", "")
             domain = domain.rstrip("/")
 
-            token_value = "vish_embed_" + secrets.token_urlsafe(32)
+            token_value = "cs_embed_" + secrets.token_urlsafe(32)
 
             embed_token = EmbedToken.objects.create(
                 developer=dev,

@@ -61,8 +61,8 @@ export default function JobSeekerRegisterPage() {
               try {
                 const data = await seekerAPI.googleLogin(tokenResponse.access_token);
                 if (data.seeker?.requires_profile_completion) {
-                  localStorage.removeItem("vish_seeker_token");
-                  localStorage.removeItem("vish_seeker_data");
+                  localStorage.removeItem("cs_seeker_token");
+                  localStorage.removeItem("cs_seeker_data");
                   sessionStorage.setItem('temp_oauth_data', JSON.stringify({ role: 'seeker', data }));
                   navigate('/auth/complete-profile');
                   return;
@@ -91,8 +91,8 @@ export default function JobSeekerRegisterPage() {
     try {
       const data = await seekerAPI.register(form);
       setAuth(data);
-      localStorage.setItem('vish_seeker_token', data.seeker_token);
-      localStorage.setItem('vish_seeker_data', JSON.stringify(data.seeker));
+      localStorage.setItem('cs_seeker_token', data.seeker_token);
+      localStorage.setItem('cs_seeker_data', JSON.stringify(data.seeker));
       toast.success('Account created! Welcome to CareerSphere!');
       navigate('/jobs/dashboard');
     } catch (err) {

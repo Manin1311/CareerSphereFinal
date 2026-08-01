@@ -298,7 +298,7 @@ The frontend runs on port `5173` by default and serves all four portals (Recruit
 ### Resume Parsing
 ```bash
 curl -X POST "https://api.careersphere.ai/api/v1/parse" \
-  -H "X-API-Key: vish_live_xxxxxxxxxxx" \
+  -H "X-API-Key: cs_live_xxxxxxxxxxx" \
   -F "file=@resume.pdf"
 ```
 ```json
@@ -317,7 +317,7 @@ curl -X POST "https://api.careersphere.ai/api/v1/parse" \
 ### Fraud Detection Scan
 ```bash
 curl -X POST "https://api.careersphere.ai/api/v1/protection/scan" \
-  -H "X-API-Key: vish_live_xxxxxxxxxxx" \
+  -H "X-API-Key: cs_live_xxxxxxxxxxx" \
   -d '{
     "scan_type": "job",
     "job_title": "Senior Frontend Engineer",

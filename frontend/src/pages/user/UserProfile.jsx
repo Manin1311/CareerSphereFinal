@@ -355,7 +355,7 @@ export default function UserProfile() {
       const data = await seekerAPI.uploadAvatar(file);
       setSeeker(data);
       if (typeof window !== "undefined") {
-        localStorage.setItem('vish_seeker_data', JSON.stringify(data));
+        localStorage.setItem('cs_seeker_data', JSON.stringify(data));
       }
       window.dispatchEvent(new Event('seeker_profile_updated')); // update navbar
       toast.success("Profile photo updated successfully!", { id: toastId });

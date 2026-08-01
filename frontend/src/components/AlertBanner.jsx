@@ -17,7 +17,7 @@ export default function AlertBanner() {
 
   useEffect(() => {
     const localSeeker = (() => {
-      try { return JSON.parse(localStorage.getItem('vish_seeker_data') || 'null'); } catch { return null; }
+      try { return JSON.parse(localStorage.getItem('cs_seeker_data') || 'null'); } catch { return null; }
     })();
     const activeSeeker = seeker || localSeeker;
 

@@ -128,7 +128,7 @@ export default function CompleteProfilePage() {
         }
 
         // Temporarily write token so request headers catch it
-        localStorage.setItem('vish_seeker_token', data.seeker_token);
+        localStorage.setItem('cs_seeker_token', data.seeker_token);
         
         const updated = await seekerAPI.updateProfile({
           phone: phone.trim(),
@@ -180,7 +180,7 @@ export default function CompleteProfilePage() {
           return;
         }
 
-        localStorage.setItem('vish_jwt', data.jwt_token);
+        localStorage.setItem('cs_jwt', data.jwt_token);
 
         const updated = await authAPI.updateProfile({
           industry: industry.trim(),
@@ -203,9 +203,9 @@ export default function CompleteProfilePage() {
     } catch (err) {
       toast.error(err.message || 'Failed to complete profile registration');
       // Clean up temporary tokens on failure
-      if (role === 'seeker') localStorage.removeItem('vish_seeker_token');
+      if (role === 'seeker') localStorage.removeItem('cs_seeker_token');
       if (role === 'developer') localStorage.removeItem('portal_jwt');
-      if (role === 'recruiter') localStorage.removeItem('vish_jwt');
+      if (role === 'recruiter') localStorage.removeItem('cs_jwt');
     } finally {
       setLoading(false);
     }

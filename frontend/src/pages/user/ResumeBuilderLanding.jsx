@@ -45,7 +45,7 @@ export default function ResumeBuilderLanding() {
   );
 
   const navigate = useNavigate();
-  const token = localStorage.getItem("vish_seeker_token");
+  const token = localStorage.getItem("cs_seeker_token");
 
   // Redirect if not logged in
   if (!token) {

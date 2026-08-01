@@ -36,8 +36,8 @@ export default function GitHubCallbackPage() {
         if (state === 'seeker') {
           const data = await seekerAPI.githubLogin(code);
           if (data.seeker?.requires_profile_completion) {
-            localStorage.removeItem("vish_seeker_token");
-            localStorage.removeItem("vish_seeker_data");
+            localStorage.removeItem("cs_seeker_token");
+            localStorage.removeItem("cs_seeker_data");
             sessionStorage.setItem('temp_oauth_data', JSON.stringify({ role: 'seeker', data }));
             navigate('/auth/complete-profile');
             return;
@@ -66,9 +66,9 @@ export default function GitHubCallbackPage() {
           // Default to recruiter / company
           const data = await authAPI.githubLogin(code);
           if (data.requires_profile_completion) {
-            localStorage.removeItem("vish_jwt");
-            localStorage.removeItem("vish_api_key");
-            localStorage.removeItem("vish_company");
+            localStorage.removeItem("cs_jwt");
+            localStorage.removeItem("cs_api_key");
+            localStorage.removeItem("cs_company");
             localStorage.removeItem("careersphere_user");
             sessionStorage.setItem('temp_oauth_data', JSON.stringify({ role: 'recruiter', data }));
             navigate('/auth/complete-profile');

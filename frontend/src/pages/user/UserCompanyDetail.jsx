@@ -21,15 +21,15 @@ export default function UserCompanyDetail() {
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [editingReview, setEditingReview] = useState(null);
 
-  const hasSeekerToken = !!localStorage.getItem("vish_seeker_token");
+  const hasSeekerToken = !!localStorage.getItem("cs_seeker_token");
   const seekerData = (() => {
-    try { return JSON.parse(localStorage.getItem('vish_seeker_data') || 'null'); } catch { return null; }
+    try { return JSON.parse(localStorage.getItem('cs_seeker_data') || 'null'); } catch { return null; }
   })();
   const isVerified = !!(seekerData?.email_verified && seekerData?.phone_verified);
 
   // Check if current user is company owner (recruiter)
   const recruiterCompany = (() => {
-    try { return JSON.parse(localStorage.getItem('vish_company') || 'null'); } catch { return null; }
+    try { return JSON.parse(localStorage.getItem('cs_company') || 'null'); } catch { return null; }
   })();
   const isCompanyOwner = !!(recruiterCompany && String(recruiterCompany.id) === String(companyId));
 
@@ -45,7 +45,7 @@ export default function UserCompanyDetail() {
   useEffect(() => {
     if (!companyId) return;
     setLoading(true);
-    const hasSeekerToken = !!localStorage.getItem("vish_seeker_token");
+    const hasSeekerToken = !!localStorage.getItem("cs_seeker_token");
     const apiCall = hasSeekerToken 
       ? seekerAPI.getCompany(companyId) 
       : publicAPI.getCompany(companyId);

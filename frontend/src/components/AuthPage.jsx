@@ -297,8 +297,8 @@ const AuthPage = ({ isLogin: initialIsLogin = true }) => {
     };
 
     // Check recruiter session
-    const rToken = localStorage.getItem("vish_jwt");
-    const rData = localStorage.getItem("vish_company");
+    const rToken = localStorage.getItem("cs_jwt");
+    const rData = localStorage.getItem("cs_company");
     if (rToken && rData) {
       try {
         const parsed = JSON.parse(rData);
@@ -321,8 +321,8 @@ const AuthPage = ({ isLogin: initialIsLogin = true }) => {
     }
 
     // Check seeker session
-    const sToken = localStorage.getItem("vish_seeker_token");
-    const sData = localStorage.getItem("vish_seeker_data");
+    const sToken = localStorage.getItem("cs_seeker_token");
+    const sData = localStorage.getItem("cs_seeker_data");
     if (sToken && sData) {
       try {
         const parsed = JSON.parse(sData);
@@ -354,8 +354,8 @@ const AuthPage = ({ isLogin: initialIsLogin = true }) => {
         navigate("/developer/portal/dashboard");
       } else if (role === 'seeker') {
         seekerAuth.setAuth(data);
-        localStorage.setItem('vish_seeker_token', data.seeker_token);
-        localStorage.setItem('vish_seeker_data', JSON.stringify(data.seeker));
+        localStorage.setItem('cs_seeker_token', data.seeker_token);
+        localStorage.setItem('cs_seeker_data', JSON.stringify(data.seeker));
         toast.success(`Welcome back, ${data.seeker.full_name}!`);
         navigate('/jobs/dashboard');
       }
@@ -405,9 +405,9 @@ const AuthPage = ({ isLogin: initialIsLogin = true }) => {
                 if (currentRole === 'recruiter') {
                   const data = await authAPI.googleLogin(tokenResponse.access_token);
                   if (data.requires_profile_completion) {
-                    localStorage.removeItem("vish_jwt");
-                    localStorage.removeItem("vish_api_key");
-                    localStorage.removeItem("vish_company");
+                    localStorage.removeItem("cs_jwt");
+                    localStorage.removeItem("cs_api_key");
+                    localStorage.removeItem("cs_company");
                     localStorage.removeItem("careersphere_user");
                     sessionStorage.setItem('temp_oauth_data', JSON.stringify({ role: 'recruiter', data }));
                     navigate('/auth/complete-profile');
@@ -441,8 +441,8 @@ const AuthPage = ({ isLogin: initialIsLogin = true }) => {
                 } else if (currentRole === 'seeker') {
                   const data = await seekerAPI.googleLogin(tokenResponse.access_token);
                   if (data.seeker?.requires_profile_completion) {
-                    localStorage.removeItem("vish_seeker_token");
-                    localStorage.removeItem("vish_seeker_data");
+                    localStorage.removeItem("cs_seeker_token");
+                    localStorage.removeItem("cs_seeker_data");
                     sessionStorage.setItem('temp_oauth_data', JSON.stringify({ role: 'seeker', data }));
                     navigate('/auth/complete-profile');
                     return;
@@ -534,8 +534,8 @@ const AuthPage = ({ isLogin: initialIsLogin = true }) => {
         } else if (role === 'seeker') {
           const data = await seekerAPI.login({ email, password });
           seekerAuth.setAuth(data);
-          localStorage.setItem('vish_seeker_token', data.seeker_token);
-          localStorage.setItem('vish_seeker_data', JSON.stringify(data.seeker));
+          localStorage.setItem('cs_seeker_token', data.seeker_token);
+          localStorage.setItem('cs_seeker_data', JSON.stringify(data.seeker));
           toast.success(`Welcome back, ${data.seeker.full_name}!`);
           navigate('/jobs/dashboard');
         }
@@ -584,8 +584,8 @@ const AuthPage = ({ isLogin: initialIsLogin = true }) => {
             resume_data: resumeData,
           });
           seekerAuth.setAuth(data);
-          localStorage.setItem('vish_seeker_token', data.seeker_token);
-          localStorage.setItem('vish_seeker_data', JSON.stringify(data.seeker));
+          localStorage.setItem('cs_seeker_token', data.seeker_token);
+          localStorage.setItem('cs_seeker_data', JSON.stringify(data.seeker));
           toast.success('Account created! Welcome to CareerSphere!');
           navigate('/jobs/dashboard');
         }
@@ -662,9 +662,9 @@ const AuthPage = ({ isLogin: initialIsLogin = true }) => {
     if (!savedKeys) return toast.error("Confirm you have saved the API keys");
     if (apiKeys) {
       recruiterAuth.setAuth(apiKeys);
-      localStorage.setItem("vish_jwt", apiKeys.jwt_token);
-      localStorage.setItem("vish_api_key", apiKeys.api_key || "");
-      localStorage.setItem("vish_company", JSON.stringify(apiKeys));
+      localStorage.setItem("cs_jwt", apiKeys.jwt_token);
+      localStorage.setItem("cs_api_key", apiKeys.api_key || "");
+      localStorage.setItem("cs_company", JSON.stringify(apiKeys));
     }
     navigate("/dashboard");
   };
@@ -1205,7 +1205,7 @@ const AuthPage = ({ isLogin: initialIsLogin = true }) => {
                   <input
                     type={showLiveSecret ? "text" : "password"}
                     readOnly
-                    value={apiKeys.secret_key || "vish_sec_secretkey"}
+                    value={apiKeys.secret_key || "cs_sec_secretkey"}
                     className="flex-1 p-2 border border-gray-200 rounded-lg text-sm bg-gray-50 font-mono outline-none"
                   />
                   <button onClick={() => setShowLiveSecret(!showLiveSecret)} className="px-2 text-xs bg-gray-100 rounded-lg border border-gray-200 hover:bg-gray-200">
@@ -1223,7 +1223,7 @@ const AuthPage = ({ isLogin: initialIsLogin = true }) => {
                   <input
                     type="text"
                     readOnly
-                    value={apiKeys.api_key || apiKeys.public_key || "vish_pub_publickey"}
+                    value={apiKeys.api_key || apiKeys.public_key || "cs_pub_publickey"}
                     className="flex-1 p-2 border border-gray-200 rounded-lg text-sm bg-gray-50 font-mono outline-none"
                   />
                   <button onClick={() => handleCopyKey(apiKeys.api_key || apiKeys.public_key, 'public')} className="px-3 bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded-lg text-sm font-medium flex items-center gap-1 justify-center">
@@ -1319,7 +1319,7 @@ const AuthPage = ({ isLogin: initialIsLogin = true }) => {
                     <input
                       type={showLiveSecret ? "text" : "password"}
                       readOnly
-                      value={apiKeysData.secret_key || "vish_sec_livekey"}
+                      value={apiKeysData.secret_key || "cs_sec_livekey"}
                       className="flex-1 p-2 border border-gray-200 rounded-lg text-[13px] bg-gray-50 font-mono outline-none"
                     />
                     <button onClick={() => setShowLiveSecret(!showLiveSecret)} className="px-2 text-xs bg-gray-100 rounded-lg border border-gray-200 hover:bg-gray-200">
@@ -1337,7 +1337,7 @@ const AuthPage = ({ isLogin: initialIsLogin = true }) => {
                     <input
                       type="text"
                       readOnly
-                      value={apiKeysData.public_key || "vish_pub_livekey"}
+                      value={apiKeysData.public_key || "cs_pub_livekey"}
                       className="flex-1 p-2 border border-gray-200 rounded-lg text-[13px] bg-gray-50 font-mono outline-none"
                     />
                     <button onClick={() => handleCopyKey(apiKeysData.public_key, 'public')} className="px-2 bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded-lg text-xs font-medium">
@@ -1356,7 +1356,7 @@ const AuthPage = ({ isLogin: initialIsLogin = true }) => {
                     <input
                       type={showTestSecret ? "text" : "password"}
                       readOnly
-                      value={apiKeysData.test_secret_key || "vish_test_sec_key"}
+                      value={apiKeysData.test_secret_key || "cs_test_sec_key"}
                       className="flex-1 p-2 border border-gray-200 rounded-lg text-[13px] bg-gray-50 font-mono outline-none"
                     />
                     <button onClick={() => setShowTestSecret(!showTestSecret)} className="px-2 text-xs bg-gray-100 rounded-lg border border-gray-200 hover:bg-gray-200">
@@ -1374,7 +1374,7 @@ const AuthPage = ({ isLogin: initialIsLogin = true }) => {
                     <input
                       type="text"
                       readOnly
-                      value={apiKeysData.test_public_key || "vish_test_pub_key"}
+                      value={apiKeysData.test_public_key || "cs_test_pub_key"}
                       className="flex-1 p-2 border border-gray-200 rounded-lg text-[13px] bg-gray-50 font-mono outline-none"
                     />
                     <button onClick={() => handleCopyKey(apiKeysData.test_public_key, 'test_public')} className="px-2 bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded-lg text-xs font-medium">

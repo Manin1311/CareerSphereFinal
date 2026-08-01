@@ -113,7 +113,7 @@ export default function JobDetailsPage() {
   const [applyLoading, setApplyLoading] = useState(false);
 
   const syncProfile = () => {
-    const saved = localStorage.getItem('vish_seeker_profile');
+    const saved = localStorage.getItem('cs_seeker_profile');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -223,7 +223,7 @@ export default function JobDetailsPage() {
         phone: applyPhone
       });
 
-      const applied = JSON.parse(localStorage.getItem('vish_applied_jobs') || '[]');
+      const applied = JSON.parse(localStorage.getItem('cs_applied_jobs') || '[]');
       applied.push({
         jobId: job.id,
         jobTitle: job.job_title,
@@ -232,12 +232,12 @@ export default function JobDetailsPage() {
         matchScore: data.match_details?.match_score || 85,
         status: 'Submitted'
       });
-      localStorage.setItem('vish_applied_jobs', JSON.stringify(applied));
+      localStorage.setItem('cs_applied_jobs', JSON.stringify(applied));
 
       toast.success(`Application sent successfully!`);
       
       if (data.parsed_profile) {
-        localStorage.setItem('vish_seeker_profile', JSON.stringify(data.parsed_profile));
+        localStorage.setItem('cs_seeker_profile', JSON.stringify(data.parsed_profile));
         window.dispatchEvent(new Event('seeker_profile_updated'));
       }
 

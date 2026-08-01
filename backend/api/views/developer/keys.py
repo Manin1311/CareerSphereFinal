@@ -79,10 +79,10 @@ def keys_root(request):
                 return JsonResponse(error_response(f"Key limit reached for {dev.tier} plan"), status=400)
 
             if env == "test":
-                secret = "vish_test_" + secrets.token_urlsafe(24)
+                secret = "cs_test_" + secrets.token_urlsafe(24)
             else:
-                secret = "vish_live_" + secrets.token_urlsafe(24)
-            public = "vish_pub_" + secrets.token_urlsafe(24)
+                secret = "cs_live_" + secrets.token_urlsafe(24)
+            public = "cs_pub_" + secrets.token_urlsafe(24)
 
             new_key = DeveloperAPIKey.objects.create(
                 developer=dev,
@@ -147,9 +147,9 @@ def rotate_key(request, key_id):
             return JsonResponse(error_response("API Key not found"), status=404)
 
         if key.environment == "test":
-            new_secret = "vish_test_" + secrets.token_urlsafe(24)
+            new_secret = "cs_test_" + secrets.token_urlsafe(24)
         else:
-            new_secret = "vish_live_" + secrets.token_urlsafe(24)
+            new_secret = "cs_live_" + secrets.token_urlsafe(24)
 
         key.secret_key = new_secret
         key.save(update_fields=['secret_key'])
