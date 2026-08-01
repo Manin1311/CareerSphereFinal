@@ -118,7 +118,7 @@ export default function AdminLogin() {
               <Mail className="w-4 h-4 text-slate-400 dark:text-zinc-500 absolute left-4 top-3.5" />
               <input
                 type="email"
-                placeholder="admin@between.com"
+                placeholder="admin@careersphere.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full bg-slate-100 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 rounded-xl pl-11 pr-4 py-3 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-600 focus:outline-none focus:border-blue-600 dark:focus:border-blue-500 transition"

@@ -21,7 +21,7 @@ def log_admin_action(request, action: str, target_type: str = "", target_id: str
     try:
         ip = request.META.get('HTTP_X_FORWARDED_FOR', '').split(',')[0].strip() or request.META.get('REMOTE_ADDR', 'unknown')
         AdminAuditLog.objects.create(
-            admin_email=getattr(request, 'admin_email', 'admin@between.com'),
+            admin_email=getattr(request, 'admin_email', 'admin@careersphere.com'),
             admin_role=getattr(request, 'admin_role', 'super_admin'),
             action=action,
             target_type=target_type,
@@ -72,7 +72,7 @@ def admin_login(request):
         except Exception as rl_err:
             logger.warning("Redis rate limit error: %s", rl_err)
 
-        admin_email = os.getenv("ADMIN_EMAIL", "admin@between.com").strip().lower()
+        admin_email = os.getenv("ADMIN_EMAIL", "admin@careersphere.com").strip().lower()
         admin_password = os.getenv("ADMIN_PASSWORD", "Admin@007")
 
         if email == admin_email and password == admin_password:
@@ -200,7 +200,7 @@ def ban_unban_user(request):
         should_ban = (action == "ban")
 
         # Load admin email to prevent self-ban
-        admin_email = os.getenv("ADMIN_EMAIL", "admin@between.com").strip().lower()
+        admin_email = os.getenv("ADMIN_EMAIL", "admin@careersphere.com").strip().lower()
 
         from django.db import transaction
         with transaction.atomic():
@@ -256,7 +256,7 @@ def ban_unban_user(request):
 
         # Audit Log
         AdminBanLog.objects.create(
-            admin_email=getattr(request, 'admin_email', 'admin@between.com'),
+            admin_email=getattr(request, 'admin_email', 'admin@careersphere.com'),
             target_type=user_type,
             target_id=user_id,
             action=action
@@ -287,7 +287,7 @@ def resolve_support_ticket(request):
 
         ticket.status = "resolved"
         ticket.resolved_at = timezone.now()
-        ticket.resolved_by = getattr(request, 'admin_email', 'admin@between.com')
+        ticket.resolved_by = getattr(request, 'admin_email', 'admin@careersphere.com')
         ticket.save(update_fields=['status', 'resolved_at', 'resolved_by'])
 
         return JsonResponse(success_response({
@@ -580,7 +580,7 @@ def admin_unban_from_ticket(request):
         ticket.messages = current_msgs
         ticket.status = "resolved"
         ticket.resolved_at = timezone.now()
-        ticket.resolved_by = getattr(request, 'admin_email', 'admin@between.com')
+        ticket.resolved_by = getattr(request, 'admin_email', 'admin@careersphere.com')
         ticket.save()
 
         return JsonResponse(success_response({

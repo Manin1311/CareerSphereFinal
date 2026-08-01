@@ -433,7 +433,7 @@ export default function AdminDashboard() {
             </button>
             <div className="text-right">
               <p className="text-sm font-semibold text-slate-800 dark:text-zinc-200">Admin Account</p>
-              <p className="text-xs text-slate-500 dark:text-zinc-500">admin@between.com</p>
+              <p className="text-xs text-slate-500 dark:text-zinc-500">admin@careersphere.com</p>
             </div>
             <button 
               onClick={handleLogout} 
