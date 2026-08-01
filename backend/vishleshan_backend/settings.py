@@ -1,4 +1,9 @@
 import sys
+import bcrypt
+if not hasattr(bcrypt, '__about__'):
+    class About:
+        __version__ = getattr(bcrypt, '__version__', '4.0.0')
+    bcrypt.__about__ = About()
 from types import ModuleType
 
 # Polyfill/mock pkg_resources to prevent AttributeError in Python 3.12+ environments (e.g. for razorpay)
