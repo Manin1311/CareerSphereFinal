@@ -493,6 +493,11 @@ export default function UserApplications() {
                                       }`}>
                                         {round.name || `Round ${round.order}`}
                                       </h5>
+                                      {round.passing_score !== undefined && round.passing_score !== null && (
+                                        <span className="pill text-[10px] bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 font-bold px-2 py-0.5 border border-blue-200 dark:border-blue-800" title="Minimum score required to qualify">
+                                          Min. {round.passing_score}% required
+                                        </span>
+                                      )}
                                       {isActive && app.status !== "rejected" && app.status !== "hired" && (
                                         <span className="pill text-[10px] bg-primary/10 text-primary font-bold px-2 py-0.5">
                                           Active Round
@@ -503,11 +508,11 @@ export default function UserApplications() {
                                       <span>Status: <span className={statusColor}>{roundStatus}</span></span>
                                       {round.score !== undefined && round.score !== null && (
                                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                                          round.score >= 50
+                                          round.score >= (round.passing_score || 50)
                                             ? "bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
                                             : "bg-rose-100 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800"
                                         }`}>
-                                          {round.score >= 50 ? `Passed (${round.score}%)` : `Failed (${round.score}%)`}
+                                          {round.score >= (round.passing_score || 50) ? `Passed (${round.score}%)` : `Failed (${round.score}%)`}
                                         </span>
                                       )}
                                       {round.interviewer && round.interviewer.trim() !== "" && round.interviewer.trim().toLowerCase() !== "not assigned" && (

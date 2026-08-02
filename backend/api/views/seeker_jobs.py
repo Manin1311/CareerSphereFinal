@@ -769,6 +769,7 @@ def my_applications(request):
                     "result_announcement_date": r.get("result_announcement_date"),
                     "score": r_score,
                     "attempt_status": r_status,
+                    "passing_score": sr_obj.passing_score if sr_obj else r.get("passing_score", 50),
                 })
 
             # Compute offer letter URL relative path if present

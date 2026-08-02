@@ -733,6 +733,7 @@ def validate_test_token(request):
         "round_name": attempt.round.name if attempt.round else "Assessment Round",
         "round_number": attempt.round.round_number if attempt.round else 1,
         "time_limit_minutes": attempt.round.time_limit_minutes if attempt.round else 30,
+        "passing_score": attempt.round.passing_score if attempt.round else 50,
         "candidate_name": getattr(attempt.candidate, "name", "Candidate"),
         "job_title": getattr(session, "job_title", "Position") if session else "Position",
         "company_name": session.company.name if (session and getattr(session, "company", None)) else "CareerSphere",

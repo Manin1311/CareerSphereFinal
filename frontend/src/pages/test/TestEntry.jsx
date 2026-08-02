@@ -108,6 +108,7 @@ export default function TestEntry() {
         <div className="mt-6">
           <h3 className="font-semibold text-gray-900 text-sm">Important Instructions</h3>
           <ul className="mt-2.5 space-y-2 text-xs text-gray-600 list-disc pl-5">
+            <li className="font-semibold text-blue-700">Passing Benchmark: A minimum score of {data.passing_score || 50}% is required to qualify for the next round.</li>
             <li>This assessment is strictly proctored. Your webcam and microphone will remain active.</li>
             <li>Do not switch tabs, exit full screen, or open other applications. Doing so will trigger warnings.</li>
             <li>Make sure your face is fully visible in front of the camera at all times.</li>
