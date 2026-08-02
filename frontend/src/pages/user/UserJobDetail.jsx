@@ -5,7 +5,7 @@ import { CompanyLogo } from "../../components/user/company-logo";
 import { seekerAPI } from "../../lib/api";
 import LoadingSkeleton from "../../components/LoadingSkeleton";
 import VerifiedBadge from "../../components/VerifiedBadge";
-import { ArrowLeft, Bookmark, Share2, MapPin, Clock, Briefcase, DollarSign, CheckCircle2, Star, BookOpen, TrendingUp, Award } from "lucide-react";
+import { ArrowLeft, Bookmark, Share2, MapPin, Clock, Briefcase, DollarSign, CheckCircle2, XCircle, Check, Star, BookOpen, TrendingUp, Award } from "lucide-react";
 import toast from "react-hot-toast";
 import { BookmarkIconButton } from "../../components/ui/bookmark-icon-button";
 
@@ -63,6 +63,7 @@ export default function UserJobDetail() {
           requirements: reqs,
           tags: inferredTags,
           applied: data.applied || false,
+          applicationStatus: data.application_status,
           isSaved: data.is_saved || false,
           skillAlignment: data.skill_alignment,
         };
@@ -191,9 +192,17 @@ export default function UserJobDetail() {
             </div>
           </div>
           <div className="mt-6 flex flex-wrap items-center gap-2 sm:mt-8">
-            {job.applied ? (
+            {job.applicationStatus === "rejected" ? (
+              <span className="pill inline-flex items-center gap-2 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 px-6 py-3 text-sm font-semibold text-rose-700 dark:text-rose-300 shadow-sm">
+                <XCircle className="h-4 w-4 text-rose-600" /> Not Shortlisted
+              </span>
+            ) : job.applicationStatus === "hired" ? (
+              <span className="pill inline-flex items-center gap-2 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 px-6 py-3 text-sm font-semibold text-emerald-700 dark:text-emerald-300 shadow-sm">
+                <CheckCircle2 className="h-4 w-4 text-emerald-600" /> Hired for this Role
+              </span>
+            ) : job.applied ? (
               <span className="pill inline-flex items-center gap-2 bg-muted px-6 py-3 text-sm font-medium text-muted-foreground">
-                Applied
+                <Check className="h-4 w-4 text-emerald-600" /> Applied
               </span>
             ) : (
               <Link to={`/jobs/apply/${job.id}`} className="pill inline-flex items-center gap-2 bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:opacity-90">

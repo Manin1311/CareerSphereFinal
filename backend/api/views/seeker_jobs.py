@@ -108,7 +108,7 @@ def _get_salary_range(session) -> str:
     return meta.get("salary_range", "Competitive")
 
 
-def _session_to_job(session: Session, match_score=None, applied=False, is_saved=False) -> dict:
+def _session_to_job(session: Session, match_score=None, applied=False, is_saved=False, application_status=None) -> dict:
     """Serialize a Session as a public job listing."""
     meta = _parse_job_description_meta(session.job_description)
     criteria = session.criteria or {}
@@ -147,6 +147,7 @@ def _session_to_job(session: Session, match_score=None, applied=False, is_saved=
         "created_at": session.created_at.isoformat() if session.created_at else None,
         "match_score": match_score,
         "applied": applied,
+        "application_status": application_status,
         "is_saved": is_saved,
         "applicant_count": session.applicant_count if hasattr(session, "applicant_count") else session.seeker_applications.count(),
         "salary_range": _get_salary_range(session),
@@ -351,7 +352,9 @@ def job_detail(request, session_id):
             return JsonResponse(error_response("Job not found"), status=404)
 
         score = _compute_match_score(seeker.skills, session.inferred_skills, session_id=str(session.id), seeker=seeker, session=session)
-        applied = JobApplication.objects.filter(seeker=seeker, session=session).exists()
+        app = JobApplication.objects.filter(seeker=seeker, session=session).first()
+        applied = app is not None
+        application_status = app.status if app else None
         is_saved = SavedJob.objects.filter(seeker=seeker, session=session).exists()
 
         # Compute skill alignment
@@ -362,7 +365,7 @@ def job_detail(request, session_id):
         matched_skills = [s for s in job_skills if s.lower() in seeker_lower]
         missing_skills = [s for s in job_skills if s.lower() not in seeker_lower]
 
-        job = _session_to_job(session, match_score=score, applied=applied, is_saved=is_saved)
+        job = _session_to_job(session, match_score=score, applied=applied, is_saved=is_saved, application_status=application_status)
         job["skill_alignment"] = {
             "matched": matched_skills,
             "missing": missing_skills,
