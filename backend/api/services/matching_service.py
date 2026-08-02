@@ -41,10 +41,12 @@ def _get_flat_skills(skills_input):
 
 def calculate_unified_match_score(skills, total_exp_years, location, entity_id_str, session):
     """
-    Unified, deterministic, and realistic match score calculation (15–98%) shared by:
-    - Seeker Find Jobs (/jobs/search)
-    - Seeker Applications (/jobs/applications)
-    - Recruiter Dashboard & Candidate Profiles
+    Pure mathematical, dynamic match score calculation (0–100%) without artificial minimum clamping.
+    Formula:
+      - Skill Match (50% weight): Ratio of matched job skills to required skills.
+      - Experience Match (25% weight): Candidate experience vs required min experience.
+      - Location Match (15% weight): Match candidate location against preferred locations or remote.
+      - Title / Domain Match (10% weight): Relevance of job title keywords in candidate skills.
     """
     if not session:
         return 75, {"match_score": 75}
@@ -52,17 +54,16 @@ def calculate_unified_match_score(skills, total_exp_years, location, entity_id_s
     criteria = getattr(session, "criteria", {}) or {}
     if not isinstance(criteria, dict):
         criteria = {}
-        
+
     required_skills = criteria.get("required_skills", [])
     if not required_skills and getattr(session, "inferred_skills", None):
         required_skills = session.inferred_skills or []
 
     req_norm_list = [_normalize_skill(r) for r in required_skills if r]
-
     flat_skills = _get_flat_skills(skills)
     cand_norm_set = {_normalize_skill(s) for s in flat_skills if s}
 
-    # Match calculation using normalized skills
+    # 1. Skill Match Score (50% Weight)
     matched_list = []
     for r in required_skills:
         rn = _normalize_skill(r)
@@ -75,50 +76,58 @@ def calculate_unified_match_score(skills, total_exp_years, location, entity_id_s
     if req_norm_list:
         skill_score = round((matched_count / len(req_norm_list)) * 100)
     else:
-        skill_score = 60
+        skill_score = 50 if cand_norm_set else 0
 
-    # Job Title relevance boost if candidate skills align with title domain
-    title_lower = (session.job_title or "").lower()
-    title_boost = 0
-    tech_keywords = ['frontend', 'web', 'developer', 'software', 'python', 'javascript', 'ui', 'backend', 'full-stack', 'fullstack', 'coding', 'engineer']
-    if any(k in title_lower for k in tech_keywords):
-        if skill_score > 0 or any(c in title_lower for c in cand_norm_set if len(c) > 3):
-            title_boost = 25
-
-    # Experience score
+    # 2. Experience Match Score (25% Weight)
     min_exp = criteria.get("min_experience", 0)
     try:
         exp_val = total_exp_years if total_exp_years is not None else 0
         exp_years = float(exp_val)
     except (ValueError, TypeError):
         exp_years = 0.0
-    experience_score = min(100, round((exp_years / max(min_exp, 1)) * 100)) if min_exp > 0 else (80 if exp_years >= 2 else 60)
 
-    # Location score
+    if min_exp > 0:
+        experience_score = min(100, round((exp_years / min_exp) * 100))
+    else:
+        experience_score = 100 if exp_years >= 1 else 70
+
+    # 3. Location Match Score (15% Weight)
     preferred_locs = criteria.get("preferred_locations", [])
     cand_location = (location or "").lower().strip()
-    location_score = 100 if not preferred_locs else (100 if any(str(l).lower().strip() in cand_location for l in preferred_locs) else 50)
-
-    # Deterministic hash offset (0-6%) to differentiate identical scores
-    if entity_id_str:
-        md5_hex = hashlib.md5(str(entity_id_str).encode('utf-8')).hexdigest()
-        hash_offset = int(md5_hex[:4], 16) % 7
+    if not preferred_locs or "remote" in [str(l).lower().strip() for l in preferred_locs]:
+        location_score = 100
+    elif cand_location and any(str(l).lower().strip() in cand_location or cand_location in str(l).lower().strip() for l in preferred_locs):
+        location_score = 100
     else:
-        hash_offset = 3
+        location_score = 0
 
-    # Weighted score: skills (55%), title relevance (25%), experience (20%)
+    # 4. Title / Domain Keyword Match (10% Weight)
+    title_lower = (session.job_title or "").lower()
+    title_score = 0
+    if cand_norm_set:
+        matches_title = sum(1 for c in cand_norm_set if len(c) > 2 and c in title_lower)
+        if matches_title > 0:
+            title_score = min(100, matches_title * 40)
+        elif any(k in title_lower for k in ['developer', 'engineer', 'software', 'frontend', 'backend', 'web', 'python', 'javascript', 'ui']):
+            title_score = 50
+
+    # Pure Weighted Match Score calculation (0 to 100)
     raw_score = round(
-        skill_score * 0.55 + 
-        title_boost * 0.25 + 
-        experience_score * 0.20
+        skill_score * 0.50 +
+        experience_score * 0.25 +
+        location_score * 0.15 +
+        title_score * 0.10
     )
-    score = min(98, max(15, raw_score + hash_offset))
+
+    # Final score strictly bounded to 0..100 (no artificial minimum floor like 15 or 45!)
+    score = max(0, min(100, raw_score))
 
     details = {
         "match_score": score,
         "skill_score": skill_score,
         "experience_score": experience_score,
         "location_score": location_score,
+        "title_score": title_score,
         "matched_skills": matched_list,
         "missing_skills": missing_list,
         "matched_count": matched_count,

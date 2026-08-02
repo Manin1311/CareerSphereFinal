@@ -34,7 +34,7 @@ export default function UserCompanyDetail() {
   const isCompanyOwner = !!(recruiterCompany && String(recruiterCompany.id) === String(companyId));
 
   useEffect(() => {
-    if (!companyId) return;
+    if (!companyId || companyId === "undefined") return;
     publicAPI.getCompanyReviews(companyId)
       .then((data) => {
         setReviews(data.reviews || []);
@@ -43,11 +43,14 @@ export default function UserCompanyDetail() {
   }, [companyId]);
 
   useEffect(() => {
-    if (!companyId) return;
+    if (!companyId || companyId === "undefined") {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     const hasSeekerToken = !!localStorage.getItem("cs_seeker_token");
-    const apiCall = hasSeekerToken 
-      ? seekerAPI.getCompany(companyId) 
+    const apiCall = hasSeekerToken
+      ? seekerAPI.getCompany(companyId)
       : publicAPI.getCompany(companyId);
 
     apiCall
@@ -86,23 +89,23 @@ export default function UserCompanyDetail() {
     setFollowing(true);
     const isCurrentlyFollowing = company.isFollowing;
     // Optimistic update
-    setCompany(prev => ({ 
-      ...prev, 
+    setCompany(prev => ({
+      ...prev,
       isFollowing: !isCurrentlyFollowing,
       followersCount: isCurrentlyFollowing ? Math.max(0, (prev.followersCount || 0) - 1) : (prev.followersCount || 0) + 1
     }));
     try {
       await seekerAPI.followCompany(company.id, !isCurrentlyFollowing);
       toast.success(
-        isCurrentlyFollowing 
-          ? "Unfollowed company" 
+        isCurrentlyFollowing
+          ? "Unfollowed company"
           : "Following! You'll get notified of new job postings.",
         { duration: 3000 }
       );
     } catch (err) {
       // Revert on failure
-      setCompany(prev => ({ 
-        ...prev, 
+      setCompany(prev => ({
+        ...prev,
         isFollowing: isCurrentlyFollowing,
         followersCount: isCurrentlyFollowing ? (prev.followersCount || 0) + 1 : Math.max(0, (prev.followersCount || 0) - 1)
       }));
@@ -118,7 +121,7 @@ export default function UserCompanyDetail() {
         <Header />
         <div className="flex-1 mx-auto max-w-7xl w-full px-6 py-10 space-y-8">
           <LoadingSkeleton width="100px" height="20px" />
-          
+
           <div className="rounded-3xl border border-border bg-card p-6 md:p-8 space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex items-center gap-4">
@@ -130,7 +133,7 @@ export default function UserCompanyDetail() {
               </div>
               <LoadingSkeleton width="120px" height="36px" className="pill" />
             </div>
-            
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pt-6 border-t border-border">
               <div className="lg:col-span-2 space-y-4">
                 <LoadingSkeleton width="100px" height="20px" />
@@ -193,12 +196,12 @@ export default function UserCompanyDetail() {
             style={{ background: `radial-gradient(50% 70% at 20% 0%, color-mix(in oklab, ${company.logoColor} 25%, transparent), transparent)` }}
           />
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
-            <CompanyLogo 
-              name={company.name} 
-              logoPath={company.logoPath} 
-              color={company.logoColor || '#059669'} 
-              size={96} 
-              className="rounded-2xl border-2 border-border/80 shadow-md shrink-0" 
+            <CompanyLogo
+              name={company.name}
+              logoPath={company.logoPath}
+              color={company.logoColor || '#059669'}
+              size={96}
+              className="rounded-2xl border-2 border-border/80 shadow-md shrink-0"
             />
 
             <div className="min-w-0 flex-1">
@@ -228,14 +231,13 @@ export default function UserCompanyDetail() {
             <button
               onClick={handleFollow}
               disabled={following}
-              className={`pill px-5 py-2.5 text-sm font-medium transition-colors inline-flex items-center gap-2 ${
-                company.isFollowing 
-                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200' 
+              className={`pill px-5 py-2.5 text-sm font-medium transition-colors inline-flex items-center gap-2 ${company.isFollowing
+                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200'
                   : 'bg-primary text-primary-foreground hover:opacity-90'
-              }`}
+                }`}
             >
-              {company.isFollowing 
-                ? <><UserCheck className="h-4 w-4" /> Following</> 
+              {company.isFollowing
+                ? <><UserCheck className="h-4 w-4" /> Following</>
                 : <><Bell className="h-4 w-4" /> Follow & Get Notified</>}
             </button>
             {company.website && company.website !== "#" && (
@@ -306,11 +308,10 @@ export default function UserCompanyDetail() {
                       setEditingReview(null);
                       setShowReviewModal(true);
                     }}
-                    className={`pill inline-flex items-center gap-1.5 px-4 py-2 text-xs font-medium transition-colors ${
-                      isVerified
+                    className={`pill inline-flex items-center gap-1.5 px-4 py-2 text-xs font-medium transition-colors ${isVerified
                         ? 'bg-primary text-primary-foreground hover:opacity-90'
                         : 'bg-muted text-muted-foreground cursor-not-allowed'
-                    }`}
+                      }`}
                     title={!isVerified ? 'Verify your email and phone to write reviews' : 'Review this company'}
                   >
                     <MessageSquareQuote className="h-3.5 w-3.5" /> Rate & Review
@@ -319,10 +320,10 @@ export default function UserCompanyDetail() {
               </div>
 
               <div className="mt-6">
-                <UnifiedReviewsSection 
-                  reviews={reviews} 
-                  targetId={companyId} 
-                  ownerType="company" 
+                <UnifiedReviewsSection
+                  reviews={reviews}
+                  targetId={companyId}
+                  ownerType="company"
                   isCompanyOwner={isCompanyOwner}
                   onEditReview={(rev) => { setEditingReview(rev); setShowReviewModal(true); }}
                   onDeleteReview={async (rev) => {
@@ -338,7 +339,7 @@ export default function UserCompanyDetail() {
                     // Reload reviews after reply or company delete
                     publicAPI.getCompanyReviews(companyId)
                       .then((data) => setReviews(data.reviews || []))
-                      .catch(() => {});
+                      .catch(() => { });
                   }}
                 />
               </div>

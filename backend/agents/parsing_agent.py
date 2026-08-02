@@ -6,9 +6,9 @@ import re
 
 class ResumeParsingAgent:
     def __init__(self):
-        self.client = RotateLLMClient(agent_name="parsing_agent")
-        self.upload_dir = os.getenv("UPLOAD_DIR", "/tmp/careersphere/resumes")
-        self.photo_dir = os.getenv("PHOTO_DIR", "/tmp/careersphere/photos")
+        self.client = RotateLLMClient()
+        self.upload_dir = os.getenv("UPLOAD_DIR", "/tmp/vishleshan/resumes")
+        self.photo_dir = os.getenv("PHOTO_DIR", "/tmp/vishleshan/photos")
         os.makedirs(self.photo_dir, exist_ok=True)
 
     async def parse(self, file_path: str, file_type: str) -> dict:
@@ -68,7 +68,7 @@ class ResumeParsingAgent:
             }"""
 
             system = "Expert resume parser. Return ONLY valid JSON. No markdown. No explanation. Null for missing fields."
-            prompt = f"Parse resume. Return JSON matching schema:\n{SCHEMA}\n\nResume:\n{text[:8000]}"
+            prompt = f"Parse resume. Return JSON matching schema:\n{SCHEMA}\n\nResume:\n{text[:15000]}"
 
             response = self.client.chat.completions.create(
                 model="gpt-4o-mini",
@@ -89,6 +89,9 @@ class ResumeParsingAgent:
                 raw_content = raw_content[:-3]
                 
             parsed_dict = json.loads(raw_content.strip())
+
+            # Normalize field names so frontend can read them correctly
+            parsed_dict = self._normalize_parsed_data(parsed_dict)
 
             email_re = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
             phone_re = r'[\+\(]?[0-9][0-9\s\-\(\)]{8,15}[0-9]'
@@ -143,6 +146,60 @@ class ResumeParsingAgent:
                 "confidence": 0.4
             }
 
+    def _normalize_parsed_data(self, data: dict) -> dict:
+        """Normalize LLM-parsed field names to match what the frontend expects.
+        
+        The LLM schema uses start_date/end_date/responsibilities/year_end,
+        but the frontend reads duration/description/year/school.  This method
+        adds the frontend-expected fields while preserving the originals.
+        """
+        # ── professional_summary → summary alias ──────────────────────────
+        if data.get("professional_summary") and not data.get("summary"):
+            data["summary"] = data["professional_summary"]
+
+        # ── Experience normalization ──────────────────────────────────────
+        for exp in data.get("experience", []):
+            if not isinstance(exp, dict):
+                continue
+
+            # duration: build from start_date / end_date if missing
+            if not exp.get("duration") and not exp.get("dates"):
+                start = exp.get("start_date", "")
+                end = exp.get("end_date", "")
+                if start or end:
+                    exp["duration"] = f"{start} - {end}".strip(" -")
+
+            # description: join responsibilities list if no description
+            if not exp.get("description"):
+                resp = exp.get("responsibilities", [])
+                if isinstance(resp, list) and resp:
+                    exp["description"] = "\n".join(f"• {r}" for r in resp if r)
+
+            # Ensure role alias (some LLMs return 'title' instead)
+            if not exp.get("role") and exp.get("title"):
+                exp["role"] = exp["title"]
+
+        # ── Education normalization ───────────────────────────────────────
+        for edu in data.get("education", []):
+            if not isinstance(edu, dict):
+                continue
+
+            # year: copy from year_end if missing
+            if not edu.get("year") and edu.get("year_end"):
+                edu["year"] = edu["year_end"]
+
+            # school: copy from institution if missing
+            if not edu.get("school") and edu.get("institution"):
+                edu["school"] = edu["institution"]
+
+            # Merge field-of-study into degree for richer display
+            field = edu.get("field", "")
+            degree = edu.get("degree", "")
+            if field and degree and field.lower() not in degree.lower():
+                edu["degree"] = f"{degree} in {field}"
+
+        return data
+
     def _extract_pdf_text(self, path):
         with pdfplumber.open(path) as pdf:
             pages = [p.extract_text() or "" for p in pdf.pages]
@@ -151,15 +208,18 @@ class ResumeParsingAgent:
     def _extract_pdf_photo(self, path):
         try:
             doc = fitz.open(path)
-            for page in doc:
-                for img in page.get_images():
-                    xref = img[0]
-                    base = doc.extract_image(xref)
-                    img_bytes = base["image"]
-                    photo_path = f"{self.photo_dir}/{uuid.uuid4()}.jpg"
-                    with open(photo_path, "wb") as f: 
-                        f.write(img_bytes)
-                    return photo_path
+            try:
+                for page in doc:
+                    for img in page.get_images():
+                        xref = img[0]
+                        base = doc.extract_image(xref)
+                        img_bytes = base["image"]
+                        photo_path = f"{self.photo_dir}/{uuid.uuid4()}.jpg"
+                        with open(photo_path, "wb") as f: 
+                            f.write(img_bytes)
+                        return photo_path
+            finally:
+                doc.close()
         except: 
             return None
 

@@ -315,6 +315,12 @@ def public_company_reviews(request, company_id):
     if request.method != "GET":
         return JsonResponse(error_response("Method not allowed"), status=405)
 
+    import uuid
+    try:
+        uuid.UUID(str(company_id))
+    except ValueError:
+        return JsonResponse(error_response("Invalid company ID format"), status=400)
+
     try:
         company = Company.objects.filter(id=company_id).first()
         if not company:

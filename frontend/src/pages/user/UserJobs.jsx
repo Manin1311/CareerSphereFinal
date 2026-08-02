@@ -19,12 +19,15 @@ import toast from "react-hot-toast";
 import { BookmarkIconButton } from "../../components/ui/bookmark-icon-button";
 
 // Robust Salary Parsing & Conversion Helpers
+// Robust Salary Parsing & Conversion Helpers
 const parseSalary = (salaryStr) => {
   if (!salaryStr) return { min: null, max: null, currency: null, isFlexible: true };
   const lowerStr = salaryStr.toLowerCase().trim();
+
+  // Explicit unstated / negotiable salary text
   if (
-    lowerStr.includes("negotiable") || 
-    lowerStr.includes("competitive") || 
+    lowerStr.includes("negotiable") ||
+    lowerStr.includes("competitive") ||
     lowerStr.includes("disclosed") ||
     lowerStr.includes("best in industry")
   ) {
@@ -32,7 +35,7 @@ const parseSalary = (salaryStr) => {
   }
 
   let currency = "USD";
-  if (lowerStr.includes("₹") || lowerStr.includes("rs") || lowerStr.includes("lpa") || lowerStr.includes("inr") || lowerStr.includes("lakh")) {
+  if (lowerStr.includes("₹") || lowerStr.includes("rs") || lowerStr.includes("lpa") || lowerStr.includes("inr") || lowerStr.includes("lakh") || lowerStr.includes("pa")) {
     currency = "INR";
   } else if (lowerStr.includes("£") || lowerStr.includes("gbp")) {
     currency = "GBP";
@@ -40,10 +43,15 @@ const parseSalary = (salaryStr) => {
     currency = "EUR";
   }
 
-  const isMonthly = lowerStr.includes("/month") || lowerStr.includes("/mo") || lowerStr.includes("pm") || lowerStr.includes("p.m.");
-  const isHourly = lowerStr.includes("/hr") || lowerStr.includes("/hour");
+  const isMonthly = lowerStr.includes("/month") || lowerStr.includes("/mo") || lowerStr.includes("pm") || lowerStr.includes("p.m.") || lowerStr.includes("per month");
+  const isHourly = lowerStr.includes("/hr") || lowerStr.includes("/hour") || lowerStr.includes("per hour");
 
-  const nums = lowerStr.replace(/,/g, "").match(/\d+(?:\.\d+)?/g);
+  // Expand 'k' notation (e.g., 18k -> 18000) and 'lakh/lpa' notation (e.g., 4.5l -> 450000)
+  let cleanStr = lowerStr;
+  cleanStr = cleanStr.replace(/(\d+(?:\.\d+)?)\s*k\b/g, (_, p1) => String(parseFloat(p1) * 1000));
+  cleanStr = cleanStr.replace(/(\d+(?:\.\d+)?)\s*(?:lakh|lakhs|lpa|l)\b/g, (_, p1) => String(parseFloat(p1) * 100000));
+
+  const nums = cleanStr.replace(/,/g, "").match(/\d+(?:\.\d+)?/g);
   if (!nums || nums.length === 0) {
     return { min: null, max: null, currency, isFlexible: true };
   }
@@ -52,27 +60,28 @@ const parseSalary = (salaryStr) => {
   if (rawValues.length === 0) return { min: null, max: null, currency, isFlexible: true };
 
   const normalized = rawValues.map(num => {
-    let val = num;
-    if (isMonthly) {
-      val = num * 12;
+    let annualVal = num;
+
+    // In INR, values between 1,000 and 80,000 without annual suffix are monthly salaries (e.g. 18000 = 18k/mo -> 2.16 LPA)
+    if (isMonthly || (currency === "INR" && num >= 1000 && num <= 80000)) {
+      annualVal = num * 12;
     } else if (isHourly) {
-      val = num * 2000;
+      annualVal = num * 2000;
     }
 
     if (currency === "INR") {
-      if (lowerStr.includes("l") || lowerStr.includes("lakh") || lowerStr.includes("lpa")) {
-        val = num;
-      } else if (num >= 1000) {
-        val = num / 100000;
+      // Scale to LPA (Lakhs Per Annum)
+      if (annualVal >= 1000) {
+        return annualVal / 100000;
       }
+      return annualVal; // already in LPA format (e.g. 4.5)
     } else {
-      if (lowerStr.includes("k")) {
-        val = num;
-      } else if (num >= 1000) {
-        val = num / 1000;
+      // Scale to Thousands (k USD/GBP/EUR)
+      if (annualVal >= 1000) {
+        return annualVal / 1000;
       }
+      return annualVal;
     }
-    return val;
   });
 
   const min = normalized[0];
@@ -83,32 +92,36 @@ const parseSalary = (salaryStr) => {
 
 const convertSalaryToCurrency = (val, fromCurrency, toCurrency) => {
   if (!val || fromCurrency === toCurrency) return val;
-  
-  const toUSDThousands = {
-    USD: 1.0,
-    INR: 1.2,
-    GBP: 1.27,
-    EUR: 1.08,
+
+  const toUSDScale = {
+    USD: 1.0,   // 1k USD = 1.0
+    INR: 1.2,   // 1 LPA INR = $1.2k USD (~₹1,00,000)
+    GBP: 1.27,  // 1k GBP = $1.27k USD
+    EUR: 1.08,  // 1k EUR = $1.08k USD
   };
 
-  const valInUSDThousands = val * (toUSDThousands[fromCurrency] || 1.0);
-  return valInUSDThousands / (toUSDThousands[toCurrency] || 1.0);
+  const valInUSD = val * (toUSDScale[fromCurrency] || 1.0);
+  return valInUSD / (toUSDScale[toCurrency] || 1.0);
 };
 
 const salaryFilterFn = (salaryRange, minVal, filterCurrencyCode) => {
-  if (minVal === 0) return true;
+  if (minVal === 0) return true; // "Any salary" selected -> show all jobs
+
   const parsed = parseSalary(salaryRange);
-  if (parsed.isFlexible || parsed.max === null) return true;
-  
-  const jobCurrency = parsed.currency || "USD";
-  const convertedMax = convertSalaryToCurrency(parsed.max, jobCurrency, filterCurrencyCode);
-  
-  return convertedMax >= minVal;
+  // If user selected a specific minimum salary (e.g. ₹20 LPA+) and job salary is unstated / competitive, hide it!
+  if (parsed.isFlexible || parsed.min === null) return false;
+
+  const jobCurrency = parsed.currency || "INR";
+  // Check that the JOB'S STARTING (MINIMUM) SALARY meets or exceeds minVal!
+  const convertedMin = convertSalaryToCurrency(parsed.min, jobCurrency, filterCurrencyCode);
+
+  return convertedMin >= minVal;
 };
 
 // Currency configurations
 const CURRENCIES = [
-  { code: "INR", symbol: "₹", label: "INR (LPA)", min: 0, max: 100, step: 2, defaultVal: 0,
+  {
+    code: "INR", symbol: "₹", label: "INR (LPA)", min: 0, max: 100, step: 2, defaultVal: 0,
     options: [
       { value: 0, label: "Any salary" },
       { value: 3, label: "₹3 LPA+" },
@@ -125,7 +138,8 @@ const CURRENCIES = [
     formatCurrent: (v) => v === 0 ? "Any salary" : (v >= 100 ? `₹${v / 100} Cr+` : `₹${v} LPA+`),
     filterFn: (salary, minVal) => salaryFilterFn(salary, minVal, "INR")
   },
-  { code: "USD", symbol: "$", label: "USD ($)", min: 0, max: 200, step: 10, defaultVal: 0,
+  {
+    code: "USD", symbol: "$", label: "USD ($)", min: 0, max: 200, step: 10, defaultVal: 0,
     options: [
       { value: 0, label: "Any salary" },
       { value: 40, label: "$40k+" },
@@ -139,7 +153,8 @@ const CURRENCIES = [
     formatMin: (v) => `$0`, formatMax: (v) => `$200k+`, formatCurrent: (v) => v === 0 ? "Any salary" : `$${v}k+`,
     filterFn: (salary, minVal) => salaryFilterFn(salary, minVal, "USD")
   },
-  { code: "GBP", symbol: "£", label: "GBP (£)", min: 0, max: 150, step: 5, defaultVal: 0,
+  {
+    code: "GBP", symbol: "£", label: "GBP (£)", min: 0, max: 150, step: 5, defaultVal: 0,
     options: [
       { value: 0, label: "Any salary" },
       { value: 30, label: "£30k+" },
@@ -152,7 +167,8 @@ const CURRENCIES = [
     formatMin: (v) => `£0`, formatMax: (v) => `£150k+`, formatCurrent: (v) => v === 0 ? "Any salary" : `£${v}k+`,
     filterFn: (salary, minVal) => salaryFilterFn(salary, minVal, "GBP")
   },
-  { code: "EUR", symbol: "€", label: "EUR (€)", min: 0, max: 150, step: 5, defaultVal: 0,
+  {
+    code: "EUR", symbol: "€", label: "EUR (€)", min: 0, max: 150, step: 5, defaultVal: 0,
     options: [
       { value: 0, label: "Any salary" },
       { value: 30, label: "€30k+" },
@@ -167,7 +183,7 @@ const CURRENCIES = [
   },
 ];
 
-const jobTypes = ["Full-time", "Part-time", "Contract", "Internship"];
+const jobTypes = ["Full-time", "Part-time", "Contract"];
 const workplaces = ["Remote", "Hybrid", "On-site"];
 const experiences = ["Junior", "Mid-Level", "Senior", "Lead"];
 
@@ -175,38 +191,38 @@ function cleanDescriptionSnippet(text) {
   if (!text) return "";
   const lines = text.split("\n").map(l => l.trim());
   const cleanParts = [];
-  
+
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     if (!line) continue;
-    
+
     // Skip divider lines (=== or --- or similar)
     if (/^[=\-_*]{3,}$/.test(line)) {
       continue;
     }
-    
+
     // Skip key-value metadata lines (e.g. COMPANY: BuildFast)
     if (/^[A-Z0-9_\s]{2,25}:\s+(.*)/.test(line)) {
       continue;
     }
-    
+
     // Skip uppercase headers
     const isHeader = line.length < 50 && line === line.toUpperCase() && /[A-Z]/.test(line);
     if (isHeader) {
       continue;
     }
-    
+
     // Clean emojis from list items (✅, ✔️, ✔, ☑️, ☑, ⭐, 🌟, ✨, etc.)
     // and leading list markdown symbols like -, *, •, +
     const cleanLine = line
       .replace(/^(?:✅|✔️|✔|☑️|☑|⭐|🌟|✨|[-*•+])\s*/u, "")
       .trim();
-      
+
     if (cleanLine) {
       cleanParts.push(cleanLine);
     }
   }
-  
+
   const fullCleanText = cleanParts.join(" ");
   if (fullCleanText.length > 160) {
     return fullCleanText.substring(0, 157) + "...";
@@ -233,7 +249,7 @@ export default function UserJobs() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState(searchParams.get("q") || "");
   const [location, setLocation] = useState(searchParams.get("location") || "");
-  
+
   const [activeTypes, setActiveTypes] = useState([]);
   const [activeWorkplaces, setActiveWorkplaces] = useState([]);
   const [activeExp, setActiveExp] = useState("");
@@ -244,29 +260,22 @@ export default function UserJobs() {
   const [showLocSuggestions, setShowLocSuggestions] = useState(false);
 
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalJobs, setTotalJobs] = useState(0);
 
-  const fetchJobs = (resetPage = false) => {
+  const fetchJobs = () => {
     setLoading(true);
-    const targetPage = resetPage ? 1 : page;
-    if (resetPage) setPage(1);
 
     const params = {
-      page: targetPage,
-      per_page: 10
+      page: 1,
+      per_page: 200 // Fetch full candidate dataset to allow exact client-side filtering and gapless pagination
     };
     if (search) params.q = search;
     if (location) params.location = location;
-    
-    // Try seeker API first (for match scores), fall back to public API
+
     const token = localStorage.getItem('cs_seeker_token');
     const apiCall = token ? seekerAPI.listJobs(params) : publicAPI.listJobs(params);
     apiCall
       .then((data) => {
         setJobs(data.jobs || []);
-        setTotalPages(data.total_pages || 1);
-        setTotalJobs(data.total || 0);
       })
       .catch((err) => {
         console.error(err);
@@ -276,10 +285,6 @@ export default function UserJobs() {
         setLoading(false);
       });
   };
-
-  useEffect(() => {
-    fetchJobs();
-  }, [page]);
 
   useEffect(() => {
     const qParam = searchParams.get("q") || searchParams.get("category");
@@ -293,23 +298,38 @@ export default function UserJobs() {
     if (search) params.q = search;
     if (location) params.location = location;
     setSearchParams(params, { replace: true });
-    fetchJobs(true);
+    fetchJobs();
+    setPage(1);
   }, [search, location]);
+
+  // Reset page to 1 whenever filter parameters change
+  useEffect(() => {
+    setPage(1);
+  }, [activeTypes, activeWorkplaces, activeExp, salary, currency]);
 
   const toggle = (arr, set, v) =>
     set(arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
 
-  const filtered = jobs.filter((j) => {
+  // Filter entire dataset first
+  const filteredJobs = jobs.filter((j) => {
     if (activeTypes.length && !activeTypes.includes(j.employment_type)) return false;
     if (activeWorkplaces.length && !activeWorkplaces.includes(getWorkplaceType(j))) return false;
-    
+
     // Salary Filter
     if (currency && currency.filterFn) {
       if (!currency.filterFn(j.salary_range, salary[0])) return false;
     }
-    
+
     return true;
   });
+
+  // Calculate pagination dynamically based on filtered jobs count
+  const PER_PAGE = 10;
+  const totalFilteredJobs = filteredJobs.length;
+  const totalPages = Math.max(1, Math.ceil(totalFilteredJobs / PER_PAGE));
+  const activePage = Math.min(page, totalPages);
+  const startIndex = (activePage - 1) * PER_PAGE;
+  const paginatedJobs = filteredJobs.slice(startIndex, startIndex + PER_PAGE);
 
   const activeFilters = [
     ...activeTypes.map((t) => ({ k: "type", v: t })),
@@ -323,6 +343,7 @@ export default function UserJobs() {
     setActiveWorkplaces([]);
     setActiveExp("");
     setSalary([currency.defaultVal]);
+    setPage(1);
   };
 
   const handleSave = async (jobId, isSaved) => {
@@ -343,19 +364,19 @@ export default function UserJobs() {
           <div className="max-w-2xl">
             <div className="text-[11px] font-medium uppercase tracking-wider text-[var(--google-blue)]">Jobs</div>
             <h1 className="mt-1.5 font-display text-2xl font-semibold tracking-tight sm:text-3xl">Find your perfect role</h1>
-            <p className="mt-1 text-xs text-muted-foreground">Showing {filtered.length} of {totalJobs} roles</p>
+            <p className="mt-1 text-xs text-muted-foreground">Showing {paginatedJobs.length} of {totalFilteredJobs} matching roles</p>
           </div>
           <div className="flex gap-2 w-full sm:w-auto relative z-20">
             <div className="relative flex-1 sm:w-[240px]">
               <div className="google-shadow flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2 w-full">
                 <Search className="h-4 w-4 text-muted-foreground" />
-                <input 
-                  placeholder="Search job title..." 
+                <input
+                  placeholder="Search job title..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   onFocus={() => setShowSearchSuggestions(true)}
                   onBlur={() => setTimeout(() => setShowSearchSuggestions(false), 200)}
-                  className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground" 
+                  className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
                 />
               </div>
               {showSearchSuggestions && (
@@ -391,13 +412,13 @@ export default function UserJobs() {
             <div className="relative flex-1 sm:w-[240px]">
               <div className="google-shadow flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2 w-full">
                 <MapPin className="h-4 w-4 text-muted-foreground" />
-                <input 
-                  placeholder="Location..." 
+                <input
+                  placeholder="Location..."
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   onFocus={() => setShowLocSuggestions(true)}
                   onBlur={() => setTimeout(() => setShowLocSuggestions(false), 200)}
-                  className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground" 
+                  className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
                 />
               </div>
               {showLocSuggestions && (
@@ -451,11 +472,10 @@ export default function UserJobs() {
               <button
                 key={cat.label}
                 onClick={() => setSearch(cat.value)}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer border ${
-                  isActive
-                    ? "bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20"
-                    : "bg-background border-border text-muted-foreground hover:text-foreground hover:bg-muted"
-                }`}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer border ${isActive
+                  ? "bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20"
+                  : "bg-background border-border text-muted-foreground hover:text-foreground hover:bg-muted"
+                  }`}
               >
                 {cat.label}
               </button>
@@ -532,9 +552,8 @@ export default function UserJobs() {
                         <button
                           key={c.code}
                           onMouseDown={(e) => { e.preventDefault(); setCurrency(c); setSalary([c.defaultVal]); setShowCurrencyDropdown(false); }}
-                          className={`w-full text-left px-3 py-2 text-xs hover:bg-muted transition-colors ${
-                            c.code === currency.code ? 'font-bold text-primary bg-primary/5' : 'text-foreground'
-                          }`}
+                          className={`w-full text-left px-3 py-2 text-xs hover:bg-muted transition-colors ${c.code === currency.code ? 'font-bold text-primary bg-primary/5' : 'text-foreground'
+                            }`}
                         >
                           <span className="font-semibold mr-1.5">{c.symbol}</span> {c.label}
                         </button>
@@ -596,7 +615,7 @@ export default function UserJobs() {
           )}
 
           <div className="mb-4 flex items-center justify-between text-sm text-muted-foreground">
-            <span>{totalJobs} roles</span>
+            <span>{totalFilteredJobs} matching roles</span>
             <span>Sort: Best match</span>
           </div>
 
@@ -616,13 +635,13 @@ export default function UserJobs() {
                 </div>
               ))}
             </div>
-          ) : filtered.length === 0 ? (
+          ) : paginatedJobs.length === 0 ? (
             <div className="text-center p-12 border border-dashed border-border rounded-2xl bg-card text-muted-foreground">
               No jobs found matching your filters.
             </div>
           ) : (
             <div className="grid gap-2.5">
-              {filtered.map((j) => (
+              {paginatedJobs.map((j) => (
                 <div
                   key={j.id}
                   className="group grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3 rounded-2xl border border-border bg-card p-4 transition hover:google-shadow"
@@ -661,7 +680,7 @@ export default function UserJobs() {
                       to={`/jobs/${j.id}`}
                       className="pill inline-flex items-center gap-1 bg-primary px-4 py-1.5 text-[11px] font-medium text-primary-foreground hover:opacity-90"
                     >
-                      View <ArrowRight className="h-3 w-3" />
+                      View <ArrowRight className="h-3.5 w-3.5" />
                     </Link>
                   </div>
                 </div>
@@ -673,7 +692,7 @@ export default function UserJobs() {
             <div className="mt-8 flex justify-center">
               <Pagination>
                 <PaginationContent>
-                  {page > 1 && (
+                  {activePage > 1 && (
                     <PaginationItem>
                       <PaginationPrevious onClick={() => setPage(p => p - 1)} />
                     </PaginationItem>
@@ -681,7 +700,7 @@ export default function UserJobs() {
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
                     <PaginationItem key={p}>
                       <PaginationLink
-                        isActive={p === page}
+                        isActive={p === activePage}
                         onClick={() => setPage(p)}
                         className="cursor-pointer"
                       >
@@ -689,7 +708,7 @@ export default function UserJobs() {
                       </PaginationLink>
                     </PaginationItem>
                   ))}
-                  {page < totalPages && (
+                  {activePage < totalPages && (
                     <PaginationItem>
                       <PaginationNext onClick={() => setPage(p => p + 1)} />
                     </PaginationItem>

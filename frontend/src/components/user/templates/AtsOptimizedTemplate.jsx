@@ -77,13 +77,16 @@ export default function AtsOptimizedTemplate({ content }) {
     languages = [],
   } = content;
 
-  // Group skills if they come as flat array, otherwise use provided groups
-  const skillGroups = Array.isArray(skills)
-    ? [{ label: "Skills", items: skills }]
-    : Object.entries(skills).map(([label, items]) => ({
-        label: label.charAt(0).toUpperCase() + label.slice(1),
-        items,
-      }));
+  // Group skills: prefer skillCategories if present (categorized parsing result),
+  // else use flat skills array as a single group
+  const skillGroups = content.skillCategories?.length
+    ? content.skillCategories.map((c) => ({ label: c.category, items: c.skills }))
+    : Array.isArray(skills)
+      ? [{ label: "Skills", items: skills }]
+      : Object.entries(skills).map(([label, items]) => ({
+          label: label.charAt(0).toUpperCase() + label.slice(1),
+          items,
+        }));
 
   const columns = content.columns || 1;
 
@@ -246,7 +249,12 @@ export default function AtsOptimizedTemplate({ content }) {
                 <SectionHeading>Projects</SectionHeading>
                 {projects.map((proj, i) => (
                   <div key={i} style={{ marginBottom: "8px" }}>
-                    <strong style={{ fontSize: "12px", color: NAVY }}>{proj.name}</strong>
+                    <div style={{ display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: "4px" }}>
+                      <strong style={{ fontSize: "12px", color: NAVY }}>{proj.name}</strong>
+                      {proj.subtitle && (
+                        <em style={{ fontSize: "11px", color: GRAY }}> — {proj.subtitle}</em>
+                      )}
+                    </div>
                     {proj.bullets?.length > 0 ? (
                       <ul style={{ margin: "3px 0 0 16px", padding: 0 }}>
                         {proj.bullets.map((b, j) => (
@@ -397,7 +405,12 @@ export default function AtsOptimizedTemplate({ content }) {
           <SectionHeading>Projects</SectionHeading>
           {projects.map((proj, i) => (
             <div key={i} style={{ marginBottom: "8px" }}>
-              <strong style={{ fontSize: "12px", color: NAVY }}>{proj.name}</strong>
+              <div style={{ display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: "4px" }}>
+                <strong style={{ fontSize: "12px", color: NAVY }}>{proj.name}</strong>
+                {proj.subtitle && (
+                  <em style={{ fontSize: "11px", color: GRAY }}> — {proj.subtitle}</em>
+                )}
+              </div>
               {proj.bullets?.length > 0 ? (
                 <ul style={{ margin: "3px 0 0 16px", padding: 0 }}>
                   {proj.bullets.map((b, j) => (

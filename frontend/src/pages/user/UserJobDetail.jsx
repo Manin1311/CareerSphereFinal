@@ -170,10 +170,17 @@ export default function UserJobDetail() {
             <div className="flex items-start gap-5 sm:items-center">
               <CompanyLogo name={job.company} logoPath={job.logoPath} color={job.logoColor} size={72} />
               <div className="min-w-0">
-                <Link to={`/jobs/companies/${job.companyId}`} className="text-sm font-medium text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
-                  <span>{job.company}</span>
-                  <VerifiedBadge size={16} title="Verified Employer" />
-                </Link>
+                {job.companyId && job.companyId !== "undefined" ? (
+                  <Link to={`/jobs/companies/${job.companyId}`} className="text-sm font-medium text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
+                    <span>{job.company}</span>
+                    <VerifiedBadge size={16} title="Verified Employer" />
+                  </Link>
+                ) : (
+                  <span className="text-sm font-medium text-muted-foreground inline-flex items-center gap-1">
+                    <span>{job.company}</span>
+                    <VerifiedBadge size={16} title="Verified Employer" />
+                  </span>
+                )}
                 <h1 className="mt-1 font-display text-3xl font-semibold tracking-tight sm:text-4xl">{job.title}</h1>
                 <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
                   <span className="flex items-center gap-1.5"><MapPin className="h-4 w-4" />{job.location}</span>
@@ -386,18 +393,30 @@ export default function UserJobDetail() {
               </div>
             )}
 
-            <Link
-              to={`/jobs/companies/${job.companyId}`}
-              className="block rounded-3xl border border-border bg-card p-6 transition hover:google-shadow"
-            >
-              <div className="flex items-center gap-3">
-                <CompanyLogo name={job.company} logoPath={job.logoPath} color={job.logoColor} size={44} />
-                <div>
-                  <div className="font-display font-semibold">{job.company}</div>
-                  <div className="text-xs text-muted-foreground">View company profile</div>
+            {job.companyId && job.companyId !== "undefined" ? (
+              <Link
+                to={`/jobs/companies/${job.companyId}`}
+                className="block rounded-3xl border border-border bg-card p-6 transition hover:google-shadow"
+              >
+                <div className="flex items-center gap-3">
+                  <CompanyLogo name={job.company} logoPath={job.logoPath} color={job.logoColor} size={44} />
+                  <div>
+                    <div className="font-display font-semibold">{job.company}</div>
+                    <div className="text-xs text-muted-foreground">View company profile</div>
+                  </div>
+                </div>
+              </Link>
+            ) : (
+              <div className="block rounded-3xl border border-border bg-card p-6">
+                <div className="flex items-center gap-3">
+                  <CompanyLogo name={job.company} logoPath={job.logoPath} color={job.logoColor} size={44} />
+                  <div>
+                    <div className="font-display font-semibold">{job.company}</div>
+                    <div className="text-xs text-muted-foreground">CareerSphere Partner</div>
+                  </div>
                 </div>
               </div>
-            </Link>
+            )}
           </aside>
         </div>
       </section>

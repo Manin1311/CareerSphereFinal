@@ -136,6 +136,7 @@ def _session_to_job(session: Session, match_score=None, applied=False, is_saved=
 
     return {
         "id": str(session.id),
+        "company_id": str(session.company.id) if session.company else None,
         "job_title": session.job_title,
         "company_name": session.company.name if session.company else "CareerSphere Partner",
         "company_logo_path": session.company.logo_path if session.company else None,

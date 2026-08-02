@@ -7,27 +7,38 @@ socket.getaddrinfo = getaddrinfo_ipv4
 
 import os
 import sys
+from pathlib import Path
+from dotenv import load_dotenv
 
-# Ensure the backend directory is in the Python pathway
+# Ensure the backend directory is in the Python pathway and load environment variables early with override
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+load_dotenv(Path(__file__).resolve().parent.parent / ".env", override=True)
 
 import django
 # Initialize Django environment
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'careersphere_backend.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'vishleshan_backend.settings')
 django.setup()
 
 from celery import Celery
 import asyncio
 from pathlib import Path
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import concurrent.futures
 import fitz  # PyMuPDF
 from docx import Document
 import re
 import uuid
+import traceback
+import base64
+import io
+from PIL import Image
+import threading
+import logging
+import secrets
 
 from api.models import Candidate, Session as SessionModel, IngestJob, SkillTaxonomy
+FALLBACK_COMPANY_NAME = "CareerSphere Partner"
 
 redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
 if redis_url.startswith("rediss://") and "ssl_cert_reqs" not in redis_url:
@@ -37,7 +48,7 @@ if redis_url.startswith("rediss://") and "ssl_cert_reqs" not in redis_url:
         redis_url += "?ssl_cert_reqs=none"
 
 celery_app = Celery(
-    "careersphere",
+    "vishleshan",
     broker=redis_url,
     backend=redis_url
 )
@@ -49,6 +60,14 @@ celery_app.conf.update(
     task_track_started=True,
     broker_connection_retry_on_startup=True
 )
+
+def safe_dispatch_task(task_func, *args, **kwargs):
+    """Dispatches a Celery task via .delay(). If Redis/Celery is offline, executes task synchronously."""
+    try:
+        return task_func.delay(*args, **kwargs)
+    except Exception as e:
+        logging.warning(f"Celery/Redis broker offline ({e}). Executing task '{getattr(task_func, '__name__', str(task_func))}' synchronously...")
+        return task_func(*args, **kwargs)
 
 def _parse_resume_sync(file_path: str, skip_llm: bool = False) -> dict:
     """Synchronously extract text and parse a resume file using AI logic."""
@@ -71,8 +90,7 @@ def _parse_resume_sync(file_path: str, skip_llm: bool = False) -> dict:
                 
             # --- GEMINI OCR FALLBACK FOR IMAGE-BASED PDFS ---
             if len(text.strip()) < 50:
-                from agents.llm import get_available_gemini_key, record_gemini_usage
-                gemini_key, gemini_project = get_available_gemini_key()
+                gemini_key = os.getenv("GEMINI_API_KEY")
                 if gemini_key:
                     try:
                         import google.generativeai as genai
@@ -98,18 +116,29 @@ def _parse_resume_sync(file_path: str, skip_llm: bool = False) -> dict:
                         
                         if ocr_text:
                             text = "\n".join(ocr_text)
-                            record_gemini_usage(gemini_project)
                     except Exception as e:
                         print("Gemini OCR Failed:", str(e))
             try:
                 doc = fitz.open(file_path)
                 for page in doc:
-                    for img in page.get_images():
-                        xref = img[0]
+                    for img_info in page.get_images():
+                        xref = img_info[0]
                         base = doc.extract_image(xref)
-                        photo_path = f"{photo_dir}/{uuid.uuid4()}.jpg"
-                        with open(photo_path, "wb") as f:
-                            f.write(base["image"])
+                        img_bytes = base.get("image")
+                        if not img_bytes:
+                            continue
+                        try:
+                            im = Image.open(io.BytesIO(img_bytes))
+                            w, h = im.size
+                            # Profile photo must be at least 80x80 and roughly square/portrait
+                            if w >= 80 and h >= 80 and 0.4 <= (w / h) <= 2.2:
+                                photo_path = f"{photo_dir}/{uuid.uuid4()}.jpg"
+                                with open(photo_path, "wb") as f:
+                                    f.write(img_bytes)
+                                break
+                        except Exception:
+                            continue
+                    if photo_path:
                         break
             except Exception:
                 photo_path = None
@@ -199,7 +228,7 @@ def _parse_resume_sync(file_path: str, skip_llm: bool = False) -> dict:
             
             load_dotenv() # Load environment variables so keys exist
 
-            client = RotateLLMClient(agent_name="celery_interview")
+            client = RotateLLMClient()
             model_to_use = "gemini-1.5-flash"
             
             llm_result = [None]
@@ -266,7 +295,6 @@ def _parse_resume_sync(file_path: str, skip_llm: bool = False) -> dict:
         }
 
     except Exception as e:
-        import traceback
         traceback.print_exc()
         return {
             "parsed": {"name": Path(file_path).stem, "email": None, "phone": None, "location": "Unknown",
@@ -348,21 +376,41 @@ def process_resume_batch(self, job_id: str, file_paths: list, session_id: str, s
                 raw_skills = raw_data.get("skills", [])
                 normalized_skills = _normalize_skills_sync(raw_skills)
 
-                new_cand = Candidate(
-                    session=session_row,
-                    name=raw_data.get("name") or Path(path).stem,
-                    email=raw_data.get("email"),
-                    phone=raw_data.get("phone"),
-                    location=raw_data.get("location"),
-                    total_experience_years=float(raw_data.get("total_experience_years") or 0),
-                    normalized_skills=normalized_skills,
-                    raw_resume_data=parsed_res,
-                    resume_file_path=path,
-                    resume_photo_path=parsed_res.get("photo_path"),
-                    current_round_index=first_round_order,
-                    status="new",
-                    source=source
-                )
+                cand_email = raw_data.get("email")
+                cand_name = raw_data.get("name") or Path(path).stem
+
+                existing_cand = None
+                if cand_email:
+                    existing_cand = Candidate.objects.filter(session=session_row, email=cand_email).first()
+                if not existing_cand and cand_name:
+                    existing_cand = Candidate.objects.filter(session=session_row, name=cand_name).first()
+
+                if existing_cand:
+                    new_cand = existing_cand
+                    new_cand.name = cand_name
+                    if raw_data.get("phone"): new_cand.phone = raw_data.get("phone")
+                    if raw_data.get("location"): new_cand.location = raw_data.get("location")
+                    if raw_data.get("total_experience_years"): new_cand.total_experience_years = float(raw_data.get("total_experience_years"))
+                    new_cand.normalized_skills = normalized_skills or new_cand.normalized_skills
+                    new_cand.raw_resume_data = parsed_res
+                    new_cand.resume_file_path = path
+                    if parsed_res.get("photo_path"): new_cand.resume_photo_path = parsed_res.get("photo_path")
+                else:
+                    new_cand = Candidate(
+                        session=session_row,
+                        name=cand_name,
+                        email=cand_email,
+                        phone=raw_data.get("phone"),
+                        location=raw_data.get("location"),
+                        total_experience_years=float(raw_data.get("total_experience_years") or 0),
+                        normalized_skills=normalized_skills,
+                        raw_resume_data=parsed_res,
+                        resume_file_path=path,
+                        resume_photo_path=parsed_res.get("photo_path"),
+                        current_round_index=first_round_order,
+                        status="new",
+                        source=source
+                    )
 
                 # Simple rule-based match scoring if criteria exist
                 if required_skills:
@@ -410,8 +458,7 @@ def process_resume_batch(self, job_id: str, file_paths: list, session_id: str, s
                 if parsed_res.get("parsing_method") == "llm":
                     try:
                         from agents.llm import RotateLLMClient
-                        import json as py_json
-                        llm = RotateLLMClient(agent_name="celery_resume")
+                        llm = RotateLLMClient()
                         system_prompt = (
                             "You are an expert technical recruiter analyzing a candidate's fit for a job. "
                             "Respond in JSON format with exactly three fields: "
@@ -429,14 +476,14 @@ def process_resume_batch(self, job_id: str, file_paths: list, session_id: str, s
                             f"Job Description:\n{session_row.job_description[:1000]}\n\n"
                             f"Candidate Name: {new_cand.name}\n"
                             f"Candidate Skills: {', '.join(flat_skills)}\n"
-                            f"Candidate Experience:\n{py_json.dumps(raw_data.get('experience', [])[:3])}\n"
+                            f"Candidate Experience:\n{json.dumps(raw_data.get('experience', [])[:3])}\n"
                         )
                         response_text = llm.generate(prompt, system_prompt)
                         if "```json" in response_text:
                             response_text = response_text.split("```json")[1].split("```")[0]
                         elif "```" in response_text:
                             response_text = response_text.split("```")[1].split("```")[0]
-                        ai_insights = py_json.loads(response_text.strip())
+                        ai_insights = json.loads(response_text.strip())
                         new_cand.match_details["ai_insights"] = ai_insights
                     except Exception as inline_ex:
                         print(f"[Inline LLM] AI Insights pre-computation failed: {inline_ex}")
@@ -473,7 +520,6 @@ def process_resume_batch(self, job_id: str, file_paths: list, session_id: str, s
                 )
 
     except Exception as e:
-        import traceback
         try:
             active_job = IngestJob.objects.get(id=job_id)
             active_job.status = "failed"
@@ -536,8 +582,7 @@ def enrich_candidates_llm(candidate_ids: list):
                 # Pre-generate AI insights after LLM enrichment
                 try:
                     from agents.llm import RotateLLMClient
-                    import json as py_json
-                    llm = RotateLLMClient(agent_name="celery_resume")
+                    llm = RotateLLMClient()
                     system_prompt = (
                         "You are an expert technical recruiter analyzing a candidate's fit for a job. "
                         "Respond in JSON format with exactly three fields: "
@@ -555,14 +600,14 @@ def enrich_candidates_llm(candidate_ids: list):
                         f"Job Description:\n{cand.session.job_description[:1000]}\n\n"
                         f"Candidate Name: {cand.name}\n"
                         f"Candidate Skills: {', '.join(flat_skills)}\n"
-                        f"Candidate Experience:\n{py_json.dumps(parsed.get('experience', [])[:3])}\n"
+                        f"Candidate Experience:\n{json.dumps(parsed.get('experience', [])[:3])}\n"
                     )
                     response_text = llm.generate(prompt, system_prompt)
                     if "```json" in response_text:
                         response_text = response_text.split("```json")[1].split("```")[0]
                     elif "```" in response_text:
                         response_text = response_text.split("```")[1].split("```")[0]
-                    ai_insights = py_json.loads(response_text.strip())
+                    ai_insights = json.loads(response_text.strip())
                     
                     cand.refresh_from_db()
                     m_details = cand.match_details or {}
@@ -584,55 +629,194 @@ def sync_gmail_resumes(session_id: str, job_id: str):
         session_row = SessionModel.objects.get(id=session_id)
         job = IngestJob.objects.get(id=job_id)
     except (SessionModel.DoesNotExist, IngestJob.DoesNotExist):
+        logging.error(f"Gmail sync: session {session_id} or job {job_id} not found in DB.")
         return
 
     if not session_row.gmail_tokens:
         job.status = "failed"
-        job.error_log = ["Gmail not connected"]
+        job.error_log = ["Gmail not connected. Please connect a Gmail account first."]
+        job.completed_at = datetime.now(timezone.utc)
         job.save()
+        logging.error(f"Gmail sync failed: no gmail_tokens on session {session_id}")
         return
+
+    job.status = "processing"
+    job.save()
 
     try:
         import google.oauth2.credentials
+        import google.auth.transport.requests
         from googleapiclient.discovery import build
-        creds = google.oauth2.credentials.Credentials(**session_row.gmail_tokens)
+
+        # ── Build credentials with token refresh support ──
+        token_data = dict(session_row.gmail_tokens)  # copy so we don't mutate the JSONField
+        stored_scopes = token_data.get('scopes', None)
+        if stored_scopes and isinstance(stored_scopes, set):
+            stored_scopes = list(stored_scopes)
+
+        creds = google.oauth2.credentials.Credentials(
+            token=token_data.get('token'),
+            refresh_token=token_data.get('refresh_token'),
+            token_uri=token_data.get('token_uri', 'https://oauth2.googleapis.com/token'),
+            client_id=token_data.get('client_id'),
+            client_secret=token_data.get('client_secret'),
+            scopes=stored_scopes
+        )
+
+        # ── Auto-refresh expired token ──
+        if creds.expired and creds.refresh_token:
+            logging.info(f"Gmail sync: access token expired, refreshing...")
+            creds.refresh(google.auth.transport.requests.Request())
+            # Save refreshed token back to DB so future syncs don't re-refresh
+            session_row.gmail_tokens = {
+                'token': creds.token,
+                'refresh_token': creds.refresh_token,
+                'token_uri': creds.token_uri,
+                'client_id': creds.client_id,
+                'client_secret': creds.client_secret,
+                'scopes': list(creds.scopes) if creds.scopes else None,
+            }
+            session_row.save()
+            logging.info("Gmail sync: token refreshed and saved.")
+
         service = build('gmail', 'v1', credentials=creds)
 
-        query = "has:attachment filename:(pdf OR docx OR txt) subject:(resume OR CV OR application)"
-        results = service.users().messages().list(userId='me', q=query, maxResults=50).execute()
+        # ── Fetch messages with smart date filtering ──
+        # Construct query: filter emails with attachments received after session creation date
+        q_filter = 'has:attachment'
+        if getattr(session_row, 'created_at', None):
+            try:
+                after_date = session_row.created_at.strftime('%Y/%m/%d')
+                q_filter = f'has:attachment after:{after_date}'
+            except Exception as dt_err:
+                logging.warning(f"Gmail sync: Could not format session created_at date: {dt_err}")
+                q_filter = 'has:attachment newer_than:30d'
+
+        logging.info(f"Gmail sync using query filter: '{q_filter}'")
+
+        results = service.users().messages().list(
+            userId='me', maxResults=100, q=q_filter
+        ).execute()
         messages = results.get('messages', [])
+        logging.info(f"Gmail sync: found {len(messages)} messages with attachments matching filter.")
+
+        if not messages:
+            # Fallback 1: Try relative 30-day window
+            logging.info("Gmail sync fallback 1: trying 'has:attachment newer_than:30d'")
+            results = service.users().messages().list(
+                userId='me', maxResults=100, q='has:attachment newer_than:30d'
+            ).execute()
+            messages = results.get('messages', [])
+            logging.info(f"Gmail sync fallback 1: found {len(messages)} messages.")
+
+        if not messages:
+            # Fallback 2: General has:attachment filter
+            logging.info("Gmail sync fallback 2: trying general 'has:attachment'")
+            results = service.users().messages().list(
+                userId='me', maxResults=50, q='has:attachment'
+            ).execute()
+            messages = results.get('messages', [])
+            logging.info(f"Gmail sync fallback 2: found {len(messages)} messages.")
 
         save_dir = os.path.join(os.getenv("UPLOAD_DIR", "uploads"), session_id)
         os.makedirs(save_dir, exist_ok=True)
         downloaded = []
+        errors = []
+
+        def extract_part_filename(part):
+            fname = part.get('filename', '')
+            if fname:
+                return fname
+            headers = part.get('headers', [])
+            for h in headers:
+                name = h.get('name', '').lower()
+                val = h.get('value', '')
+                if name == 'content-disposition' and 'filename=' in val.lower():
+                    m = re.search(r'filename=["\']?([^"\';]+)["\']?', val, re.IGNORECASE)
+                    if m:
+                        return m.group(1).strip()
+                elif name == 'content-type' and 'name=' in val.lower():
+                    m = re.search(r'name=["\']?([^"\';]+)["\']?', val, re.IGNORECASE)
+                    if m:
+                        return m.group(1).strip()
+            return ''
+
+        RESUME_EXTENSIONS = {'.pdf', '.docx', '.doc', '.txt'}
+        RESUME_MIMETYPES = {
+            'application/pdf',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/msword',
+            'text/plain',
+        }
+
+        def get_attachments_recursive(part_list):
+            atts = []
+            for part in part_list:
+                fname = extract_part_filename(part)
+                att_id = part.get('body', {}).get('attachmentId')
+                mime_type = part.get('mimeType', '').lower()
+
+                is_target = False
+                if fname and any(fname.lower().endswith(ext) for ext in RESUME_EXTENSIONS):
+                    is_target = True
+                elif mime_type in RESUME_MIMETYPES:
+                    is_target = True
+
+                if is_target and att_id:
+                    final_name = fname or f"attachment_{att_id[:8]}.pdf"
+                    atts.append((final_name, att_id))
+
+                if part.get('parts'):
+                    atts.extend(get_attachments_recursive(part.get('parts')))
+            return atts
+
+        seen_filenames = set()  # deduplicate same attachment across messages
 
         for msg in messages:
             msg_id = msg['id']
-            message_data = service.users().messages().get(userId='me', id=msg_id).execute()
-            parts = message_data.get('payload', {}).get('parts', [])
-            for part in parts:
-                filename = part.get('filename', '')
-                if filename and (filename.lower().endswith('.pdf') or filename.lower().endswith('.docx') or filename.lower().endswith('.txt')):
-                    att_id = part['body'].get('attachmentId')
-                    if att_id:
-                        import base64
-                        att = service.users().messages().attachments().get(userId='me', messageId=msg_id, id=att_id).execute()
-                        file_data = base64.urlsafe_b64decode(att['data'].encode('UTF-8'))
-                        file_path = os.path.join(save_dir, f"{msg_id}_{filename}")
-                        with open(file_path, 'wb') as f:
-                            f.write(file_data)
-                        downloaded.append(file_path)
+            try:
+                message_data = service.users().messages().get(userId='me', id=msg_id).execute()
+                payload = message_data.get('payload', {})
+                parts = payload.get('parts', [])
+                if not parts:
+                    parts = [payload]
+
+                attachments = get_attachments_recursive(parts)
+                for filename, att_id in attachments:
+                    dedup_key = filename.lower()
+                    if dedup_key in seen_filenames:
+                        continue
+                    seen_filenames.add(dedup_key)
+
+                    att = service.users().messages().attachments().get(
+                        userId='me', messageId=msg_id, id=att_id
+                    ).execute()
+                    file_data = base64.urlsafe_b64decode(att['data'].encode('UTF-8'))
+                    file_path = os.path.join(save_dir, f"{msg_id}_{filename}")
+                    with open(file_path, 'wb') as f:
+                        f.write(file_data)
+                    downloaded.append(file_path)
+                    logging.info(f"Gmail sync: downloaded attachment '{filename}' from message {msg_id}")
+            except Exception as msg_err:
+                err_msg = f"Error reading message {msg_id}: {msg_err}"
+                logging.warning(err_msg)
+                errors.append(err_msg)
+
+        logging.info(f"Gmail sync: total downloaded = {len(downloaded)}, errors = {len(errors)}")
 
         if downloaded:
             job.total_files = len(downloaded)
             job.save()
-            process_resume_batch.delay(job_id, downloaded, session_id, "gmail")
+            safe_dispatch_task(process_resume_batch, job_id, downloaded, session_id, "gmail")
         else:
             job.status = "done"
+            job.processed_files = 0
+            job.error_log = errors or ["No resume attachments found in recent emails."]
             job.completed_at = datetime.now(timezone.utc)
             job.save()
 
     except Exception as e:
+        logging.error(f"Gmail sync failed: {e}", exc_info=True)
         job.status = "failed"
         job.error_log = [str(e)]
         job.completed_at = datetime.now(timezone.utc)
@@ -810,8 +994,7 @@ def sync_google_form_resumes(session_id: str, job_id: str):
             # Pre-generate AI insights for the synced candidate
             try:
                 from agents.llm import RotateLLMClient
-                import json as py_json
-                llm = RotateLLMClient(agent_name="celery_resume")
+                llm = RotateLLMClient()
                 system_prompt = (
                     "You are an expert technical recruiter analyzing a candidate's fit for a job. "
                     "Respond in JSON format with exactly three fields: "
@@ -835,7 +1018,7 @@ def sync_google_form_resumes(session_id: str, job_id: str):
                     response_text = response_text.split("```json")[1].split("```")[0]
                 elif "```" in response_text:
                     response_text = response_text.split("```")[1].split("```")[0]
-                ai_insights = py_json.loads(response_text.strip())
+                ai_insights = json.loads(response_text.strip())
                 cand.match_details["ai_insights"] = ai_insights
                 cand.save()
             except Exception as insights_ex:
@@ -857,16 +1040,16 @@ def sync_google_form_resumes(session_id: str, job_id: str):
 
 @celery_app.task(name="match_all_candidates")
 def match_all_candidates(session_id: str, job_id: str):
+    """Re-scores all candidates using the canonical _calculate_match_score.
+    Called when session criteria change (e.g. min_match_score threshold edited).
+    """
+    from api.views.jobs import _calculate_match_score
+
     try:
         session_row = SessionModel.objects.get(id=session_id)
         job = IngestJob.objects.get(id=job_id)
     except (SessionModel.DoesNotExist, IngestJob.DoesNotExist):
         return
-
-    criteria = session_row.criteria or {}
-    min_match_score = criteria.get("min_match_score", 0)
-    required_skills = criteria.get("required_skills", [])
-    req_lower = [r.lower() for r in required_skills]
 
     candidates = Candidate.objects.filter(session_id=session_id)
     total_count = candidates.count()
@@ -877,50 +1060,7 @@ def match_all_candidates(session_id: str, job_id: str):
 
     processed_count = 0
     for cand in candidates:
-        norm_skills = cand.normalized_skills or []
-        cand_skill_names = {
-            (s.get("canonical_skill") or s.get("skill") or s.get("raw_skill") or str(s)).lower()
-            if isinstance(s, dict) else str(s).lower()
-            for s in norm_skills if s
-        }
-        matched_list = [r for r in required_skills if any(r.lower() in s for s in cand_skill_names)]
-        missing_list = [r for r in required_skills if r.lower() not in [m.lower() for m in matched_list]]
-        matched = len(matched_list)
-        skill_score = round((matched / len(req_lower)) * 100) if req_lower else 0
-
-        # Experience score
-        min_exp = criteria.get("min_experience", 0)
-        exp_years = float(cand.total_experience_years or 0)
-        experience_score = min(100, round((exp_years / max(min_exp, 1)) * 100)) if min_exp > 0 else 50
-
-        # Location score
-        preferred_locs = criteria.get("preferred_locations", [])
-        cand_location = (cand.location or "").lower()
-        location_score = 100 if not preferred_locs else (100 if any(l.lower() in cand_location for l in preferred_locs) else 30)
-
-        # Weighted overall score
-        weights = criteria.get("weights", {"skills": 0.5, "experience": 0.3, "location": 0.2})
-        score = round(
-            skill_score * weights.get("skills", 0.5) + 
-            experience_score * weights.get("experience", 0.3) + 
-            location_score * weights.get("location", 0.2)
-        )
-        score = min(100, score)
-        cand.match_score = score
-        cand.recommendation = "Strong" if score >= 70 else ("Moderate" if score >= 40 else "Weak")
-        cand.match_details = {
-            "match_score": score,
-            "skill_score": skill_score,
-            "experience_score": experience_score,
-            "location_score": location_score,
-            "matched_skills": matched_list,
-            "missing_skills": missing_list,
-            "matched_count": matched
-        }
-        if min_match_score > 0 and score < min_match_score:
-            cand.status = "rejected"
-        
-        cand.save()
+        _calculate_match_score(cand, session_row)
         processed_count += 1
         job.processed_files = processed_count
         job.save()
@@ -933,86 +1073,40 @@ def match_all_candidates(session_id: str, job_id: str):
 def release_round_results(application_id: str, notify_status: str):
     from api.models import JobApplication, Notification
     from api.services.email_service import send_status_update_to_seeker
-    import logging
-    logger = logging.getLogger(__name__)
+    _logger = logging.getLogger(__name__)
 
     try:
-        app = JobApplication.objects.filter(id=application_id).select_related('seeker', 'session').first()
+        app = JobApplication.objects.filter(id=application_id).select_related('seeker', 'session', 'session__company').first()
         if not app:
-            logger.warning(f"release_round_results: Application {application_id} not found")
+            _logger.warning('release_round_results: Application %s not found', application_id)
             return
 
         # Update application status
         app.status = notify_status
         app.save(update_fields=['status'])
 
-        company_name = app.session.company.name if app.session and app.session.company else (app.session.name if app.session else "CareerSphere Partner")
-        
-        # Calculate unified match score & active round details
-        match_val = None
-        current_round_name = None
-        test_link = None
-        try:
-            from api.views.seeker_jobs import _compute_match_score
-            match_val = _compute_match_score(app.seeker.skills if (app.seeker and app.seeker.skills) else [], [], str(app.session.id) if app.session else "", app.seeker, app.session)
-        except Exception:
-            pass
+        company_name = app.session.company.name if app.session.company else FALLBACK_COMPANY_NAME
 
-        prior_round_name = None
-        try:
-            from api.models import SessionRound, ApplicantRoundAttempt
-            if app.candidate:
-                curr_idx = app.candidate.current_round_index
-                sr = SessionRound.objects.filter(session=app.session, round_number=curr_idx).first()
-                if sr:
-                    current_round_name = sr.name
-                
-                prior_sr = SessionRound.objects.filter(session=app.session, round_number=max(1, curr_idx - 1)).first()
-                if prior_sr:
-                    prior_round_name = prior_sr.name
-
-                attempt = ApplicantRoundAttempt.objects.filter(candidate=app.candidate, round__round_number=curr_idx).first()
-                if attempt and attempt.access_token:
-                    test_link = f"/test/entry?token={attempt.access_token}"
-        except Exception:
-            pass
-
-        match_score_str = f"{match_val}%" if match_val else "N/A"
-        notif_link = test_link if test_link else f"/jobs/applications?app_id={app.id}"
-
-        if notify_status == 'shortlisted':
-            notif_title = f"Shortlisted for {current_round_name or 'Next Round'} — {app.session.job_title}"
-            notif_msg = f"Congratulations! Your application for {app.session.job_title} at {company_name} [{match_score_str} Match] has been shortlisted on {prior_round_name or 'the previous round'}. You have advanced to the next round: {current_round_name or 'Next Round'}."
-        else:
-            notif_title = f"{notify_status.title()}: {app.session.job_title} at {company_name}"
-            round_note = f" ({current_round_name})" if current_round_name else ""
-            notif_msg = f"Your application for {app.session.job_title} at {company_name} [{match_score_str} Match] has been updated to {notify_status.title()}{round_note}. Click to view details."
-
-        # Create rich in-app notification
+        # Create in-app notification
         Notification.objects.create(
             seeker=app.seeker,
             type='status_updated',
-            title=notif_title,
-            message=notif_msg,
-            link=notif_link,
+            title=f'Application Update — {app.session.job_title}',
+            message=f'Your application at {company_name} has been updated to: {notify_status.title()}.',
+            link=f'/jobs/applications?app_id={app.id}',
         )
 
-        # Send rich email with full details
+        # Send email
         send_status_update_to_seeker(
             seeker_email=app.seeker.email,
             seeker_name=app.seeker.full_name,
             job_title=app.session.job_title,
             company_name=company_name,
             new_status=notify_status,
-            match_score=match_val,
-            current_round_name=current_round_name,
-            previous_round_name=prior_round_name if notify_status == 'shortlisted' else None,
-            location=(app.session.criteria.get("location") if (app.session and isinstance(app.session.criteria, dict) and app.session.criteria.get("location")) else None),
-            test_link=test_link,
         )
-        logger.info(f"release_round_results: Released status {notify_status} for app {application_id}")
+        _logger.info('release_round_results: Released status %s for app %s', notify_status, application_id)
     except Exception as e:
-        logger.error(f"release_round_results failed: {e}")
+        _logger.error('release_round_results failed: %s', e)
 
 # Celery app alias
 app = celery_app

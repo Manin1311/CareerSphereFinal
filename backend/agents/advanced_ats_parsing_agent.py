@@ -1,21 +1,10 @@
 import json
 import logging
-import os
 import re
 import uuid
-from agents.llm import RotateLLMClient, get_api_keys, get_active_gemini_keys, record_bad_key
-from openai import OpenAI
+from agents.llm import RotateLLMClient
 
 logger = logging.getLogger(__name__)
-
-# Section keywords used to evaluate text extraction quality
-_SECTION_KEYWORDS = [
-    "experience", "education", "skills", "projects", "summary",
-    "certifications", "languages", "achievements", "work history",
-    "professional summary", "objective", "technical skills",
-    "personal info", "contact", "profile",
-]
-
 
 class AdvancedAtsParsingAgent:
     """
@@ -24,93 +13,22 @@ class AdvancedAtsParsingAgent:
     Parses resume text directly into the schema expected by the React frontend editor,
     extracting summary, skills, experience, education, projects (with techStack),
     certifications, languages, and links.
-
-    Includes:
-    - Gemini Vision OCR fallback for scanned/image-based PDFs
-    - Improved column-aware text extraction without confusing LLM markers
-    - Gemini-first LLM call (no weak 8B model fallback)
     """
     def __init__(self):
-        self.client = RotateLLMClient(agent_name="resume_parser")
-
-    @staticmethod
-    def _count_section_keywords(text: str) -> int:
-        """Count how many resume section keywords appear in the text."""
-        text_lower = text.lower()
-        return sum(1 for kw in _SECTION_KEYWORDS if kw in text_lower)
-
-    @staticmethod
-    def _ocr_pdf_with_gemini(file_path: str, max_pages: int = 3) -> str:
-        """
-        OCR fallback for scanned/image-based PDFs using Gemini Vision.
-        Renders each page as a high-res PNG and sends to Gemini for text extraction.
-        Processes up to max_pages pages.
-        """
-        import fitz
-
-        gemini_keys = get_api_keys()
-        if not gemini_keys:
-            logger.warning("No Gemini API keys available for OCR fallback.")
-            return ""
-
-        try:
-            import google.generativeai as genai
-            from PIL import Image
-            import io
-        except ImportError:
-            logger.warning("google-generativeai or Pillow not installed; OCR fallback unavailable.")
-            return ""
-
-        doc = fitz.open(file_path)
-        num_pages = min(len(doc), max_pages)
-        ocr_pages = []
-
-        # Try each Gemini key until one works
-        for key in gemini_keys:
-            try:
-                genai.configure(api_key=key)
-                model = genai.GenerativeModel('gemini-2.5-flash')
-
-                for i in range(num_pages):
-                    page = doc[i]
-                    # Render at 2x resolution for better OCR accuracy
-                    pix = page.get_pixmap(matrix=fitz.Matrix(2, 2))
-                    img_data = pix.tobytes("png")
-                    img = Image.open(io.BytesIO(img_data))
-
-                    response = model.generate_content([
-                        "Extract ALL text from this resume image exactly as written. "
-                        "Preserve section headings, bullet points, dates, and formatting structure. "
-                        "Do not add markdown wrappers, code fences, or conversational text. "
-                        "Just return the plain text content.",
-                        img
-                    ])
-                    page_text = response.text.strip()
-                    if page_text:
-                        ocr_pages.append(page_text)
-
-                if ocr_pages:
-                    logger.info("Gemini Vision OCR extracted text from %d pages.", len(ocr_pages))
-                    return "\n\n".join(ocr_pages)
-
-            except Exception as e:
-                logger.warning("Gemini Vision OCR failed with key %s...: %s", key[:8], e)
-                continue
-
-        return ""
+        self.client = RotateLLMClient()
 
     @staticmethod
     def extract_text_column_aware(file_path: str) -> str:
         """
-        Smart PDF text extraction with column awareness and OCR fallback.
+        Column-aware PDF text extraction using PyMuPDF.
+        Splits pages into left and right columns if a vertical layout division is detected.
+        Conserves section integrity for two-column resumes.
+        Falls back to standard get_text() for non-PDF files.
 
-        Strategy:
-        1. Try standard get_text("text") — this preserves reading order for most PDFs.
-        2. Try block-based extraction with column detection for two-column layouts.
-        3. Compare both extractions and pick the one with more resume section keywords.
-        4. If both produce < 50 chars (scanned PDF), fall back to Gemini Vision OCR.
-
-        Falls back to standard extraction for non-PDF files.
+        Fallback chain (handles AI-polished/downloaded PDFs that may have no selectable text):
+          1. PyMuPDF blocks (column-aware, best quality)
+          2. PyMuPDF get_text("text") — simple full-page plain text
+          3. pdfplumber — handles complex font-embedded PDFs
         """
         import fitz
         from pathlib import Path
@@ -119,124 +37,126 @@ class AdvancedAtsParsingAgent:
         try:
             if ext == ".pdf":
                 doc = fitz.open(file_path)
+                try:
+                    pages_text = []
+                    for page in doc:
+                        blocks = page.get_text("blocks")
+                        # filter out empty blocks and non-text blocks
+                        blocks = [b for b in blocks if b[4].strip() and b[6] == 0]
 
-                # --- Method 1: Standard text extraction (reading order) ---
-                standard_pages = []
-                for page in doc:
-                    standard_pages.append(page.get_text("text") or "")
-                standard_text = "\n\n".join(standard_pages)
+                        page_width = page.rect.width
+                        page_height = page.rect.height
 
-                # --- Method 2: Block-based column-aware extraction ---
-                block_pages = []
-                for page in doc:
-                    blocks = page.get_text("blocks")
-                    # filter out empty blocks and non-text blocks
-                    blocks = [b for b in blocks if b[4].strip() and b[6] == 0]
+                        # ── LAYER 1: column-aware block extraction ──────────────────
+                        if blocks:
+                            # Search for best vertical split x between 25% and 75% width
+                            best_x = None
+                            min_crossings = float('inf')
 
-                    page_width = page.rect.width
-                    page_height = page.rect.height
+                            start_x = int(page_width * 0.25)
+                            end_x = int(page_width * 0.75)
 
-                    # Search for best vertical split x between 25% and 75% width
-                    best_x = None
-                    min_crossings = float('inf')
+                            for x in range(start_x, end_x, 5):
+                                crossings = 0
+                                for b in blocks:
+                                    x0, y0, x1, y1 = b[0], b[1], b[2], b[3]
+                                    if y0 >= 120 and y1 <= page_height - 80:
+                                        if x0 < x < x1:
+                                            crossings += 1
 
-                    start_x = int(page_width * 0.25)
-                    end_x = int(page_width * 0.75)
+                                if crossings < min_crossings:
+                                    min_crossings = crossings
+                                    best_x = x
 
-                    for x in range(start_x, end_x, 5):
-                        crossings = 0
-                        for b in blocks:
-                            x0, y0, x1, y1 = b[0], b[1], b[2], b[3]
-                            if y0 >= 120 and y1 <= page_height - 80:
-                                if x0 < x < x1:
-                                    crossings += 1
+                            is_two_column = False
+                            if len(blocks) > 4 and best_x is not None:
+                                left_count = 0
+                                right_count = 0
+                                spanning_count = 0
+                                for b in blocks:
+                                    x0, y0, x1, y1 = b[0], b[1], b[2], b[3]
+                                    if y0 >= 100 and y1 <= page_height - 60:
+                                        width = x1 - x0
+                                        if width > page_width * 0.70:
+                                            spanning_count += 1
+                                        elif x1 <= best_x + 15:
+                                            left_count += 1
+                                        elif x0 >= best_x - 15:
+                                            right_count += 1
+                                if left_count >= 2 and right_count >= 2 and spanning_count <= 2:
+                                    is_two_column = True
 
-                        if crossings < min_crossings:
-                            min_crossings = crossings
-                            best_x = x
+                            if is_two_column:
+                                header_blocks = []
+                                footer_blocks = []
+                                left_blocks = []
+                                right_blocks = []
 
-                    # Treat as two-column if min_crossings is low relative to blocks
-                    is_two_column = False
-                    if len(blocks) > 4:
-                        ratio = min_crossings / len(blocks)
-                        if min_crossings <= 2 or ratio < 0.15:
-                            is_two_column = True
+                                for b in blocks:
+                                    x0, y0, x1, y1 = b[0], b[1], b[2], b[3]
+                                    if y0 < 120:
+                                        header_blocks.append(b)
+                                    elif y1 > page_height - 80:
+                                        footer_blocks.append(b)
+                                    else:
+                                        center_x = (x0 + x1) / 2.0
+                                        if center_x < best_x:
+                                            left_blocks.append(b)
+                                        else:
+                                            right_blocks.append(b)
 
-                    if is_two_column:
-                        header_blocks = []
-                        footer_blocks = []
-                        left_blocks = []
-                        right_blocks = []
+                                header_blocks.sort(key=lambda x: (x[1], x[0]))
+                                left_blocks.sort(key=lambda x: (x[1], x[0]))
+                                right_blocks.sort(key=lambda x: (x[1], x[0]))
+                                footer_blocks.sort(key=lambda x: (x[1], x[0]))
 
-                        for b in blocks:
-                            x0, y0, x1, y1 = b[0], b[1], b[2], b[3]
-                            if y0 < 120:
-                                header_blocks.append(b)
-                            elif y1 > page_height - 80:
-                                footer_blocks.append(b)
+                                page_text = []
+                                for b in header_blocks:
+                                    page_text.append(b[4].strip())
+                                page_text.append("[LEFT COLUMN]")
+                                for b in left_blocks:
+                                    page_text.append(b[4].strip())
+                                page_text.append("[RIGHT COLUMN]")
+                                for b in right_blocks:
+                                    page_text.append(b[4].strip())
+                                for b in footer_blocks:
+                                    page_text.append(b[4].strip())
+                                pages_text.append("\n".join(page_text))
                             else:
-                                center_x = (x0 + x1) / 2.0
-                                if center_x < best_x:
-                                    left_blocks.append(b)
-                                else:
-                                    right_blocks.append(b)
+                                blocks.sort(key=lambda x: (x[1], x[0]))
+                                pages_text.append("\n".join(b[4].strip() for b in blocks))
 
-                        header_blocks.sort(key=lambda x: (x[1], x[0]))
-                        left_blocks.sort(key=lambda x: (x[1], x[0]))
-                        right_blocks.sort(key=lambda x: (x[1], x[0]))
-                        footer_blocks.sort(key=lambda x: (x[1], x[0]))
+                        else:
+                            # ── LAYER 2: fallback — plain get_text("text") ──────────
+                            # Handles PDFs where blocks are empty but text stream exists
+                            plain = page.get_text("text").strip()
+                            if plain:
+                                pages_text.append(plain)
+                            else:
+                                # ── LAYER 3: mark page as needing pdfplumber ─────────
+                                pages_text.append("")  # placeholder
 
-                        # Concatenate without confusing markers — just header, left, right, footer
-                        page_text = []
-                        for b in header_blocks:
-                            page_text.append(b[4].strip())
-                        for b in left_blocks:
-                            page_text.append(b[4].strip())
-                        for b in right_blocks:
-                            page_text.append(b[4].strip())
-                        for b in footer_blocks:
-                            page_text.append(b[4].strip())
+                    full_text = "\n\n".join(pages_text).strip()
 
-                        block_pages.append("\n".join(page_text))
-                    else:
-                        blocks.sort(key=lambda x: (x[1], x[0]))
-                        block_pages.append("\n".join(b[4].strip() for b in blocks))
+                    # ── LAYER 3: pdfplumber fallback if still mostly empty ──────────
+                    if len(full_text) < 200:
+                        try:
+                            import pdfplumber
+                            with pdfplumber.open(file_path) as pdf:
+                                plumber_pages = []
+                                for pg in pdf.pages:
+                                    t = pg.extract_text()
+                                    if t:
+                                        plumber_pages.append(t)
+                            plumber_text = "\n\n".join(plumber_pages).strip()
+                            if len(plumber_text) > len(full_text):
+                                full_text = plumber_text
+                        except Exception as plumber_err:
+                            logger.warning("pdfplumber fallback failed: %s", plumber_err)
 
-                block_text = "\n\n".join(block_pages)
-
-                # --- Pick the better extraction ---
-                standard_len = len(standard_text.strip())
-                block_len = len(block_text.strip())
-
-                # If both are too short, try OCR
-                if standard_len < 50 and block_len < 50:
-                    logger.info("Both text extractions too short (%d, %d chars); attempting Gemini Vision OCR.", standard_len, block_len)
-                    ocr_text = AdvancedAtsParsingAgent._ocr_pdf_with_gemini(file_path)
-                    if ocr_text and len(ocr_text.strip()) >= 50:
-                        return ocr_text
-                    return standard_text  # Return whatever we have
-
-                # Extract all embedded URI links (LinkedIn, GitHub, Portfolio, etc.)
-                embedded_links = []
-                for page in doc:
-                    for l in page.get_links():
-                        uri = l.get("uri")
-                        if uri and uri.strip() and uri.strip() not in embedded_links:
-                            embedded_links.append(uri.strip())
-
-                # Compare by section keyword density
-                standard_kw = AdvancedAtsParsingAgent._count_section_keywords(standard_text)
-                block_kw = AdvancedAtsParsingAgent._count_section_keywords(block_text)
-
-                # Prefer standard text if it has equal or more section keywords
-                # (standard preserves reading order better for exported/re-uploaded PDFs)
-                final_text = standard_text if standard_kw >= block_kw else block_text
-
-                if embedded_links:
-                    final_text += "\n\n[EMBEDDED HYPERLINKS IN PDF]\n" + "\n".join(embedded_links)
-
-                return final_text
-
+                    return full_text
+                finally:
+                    doc.close()
             elif ext in [".docx", ".doc"]:
                 from docx import Document
                 doc = Document(file_path)
@@ -248,18 +168,17 @@ class AdvancedAtsParsingAgent:
             logger.error("Column-aware extraction failed for %s: %s", file_path, e)
             return ""
 
+
     def preprocess_text(self, text: str) -> str:
         """
         Compress text to save input tokens:
         - Replaces 3+ consecutive newlines with exactly 2 newlines.
         - Trims whitespace from individual lines.
-        - Limits maximum text length to 16000 chars (~4K tokens for Gemini).
+        - Limits maximum text length.
         """
         if not text:
             return ""
-        # Split lines, strip, and join
         lines = [line.strip() for line in text.splitlines()]
-        # Filter out multiple consecutive empty lines
         cleaned_lines = []
         consecutive_empty = 0
         for line in lines:
@@ -270,9 +189,9 @@ class AdvancedAtsParsingAgent:
             else:
                 consecutive_empty = 0
                 cleaned_lines.append(line)
-
+        
         cleaned_text = "\n".join(cleaned_lines)
-        return cleaned_text[:16000]  # Increased from 12K to 16K for better extraction
+        return cleaned_text[:12000]
 
     def clean_url(self, url: str) -> str:
         """Helper to ensure URLs are formatted properly with a protocol."""
@@ -281,33 +200,12 @@ class AdvancedAtsParsingAgent:
         url = url.strip()
         if not url:
             return ""
-        # Strip stray trailing punctuation
         url = url.rstrip(".,;)")
         if not re.match(r"^https?://", url, re.IGNORECASE):
-            # If it's a known short-form handle like "yuvraj346" without a domain, skip it
             if "/" not in url and "." not in url:
                 return ""
             return "https://" + url
         return url
-
-    def _create_gemini_client(self):
-        """Create a direct Gemini OpenAI-compatible client, bypassing RotateLLMClient fallback chain."""
-        keys = get_api_keys()
-        if not keys:
-            return None, None
-
-        import time
-        for key in keys:
-            try:
-                client = OpenAI(
-                    api_key=key,
-                    base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
-                    max_retries=0
-                )
-                return client, key
-            except Exception:
-                continue
-        return None, None
 
     async def parse(self, text: str) -> dict:
         preprocessed = self.preprocess_text(text)
@@ -315,16 +213,33 @@ class AdvancedAtsParsingAgent:
             return self.get_empty_resume_dict()
 
         system_prompt = (
-            "You are an elite AI Resume Parsing Agent. The resume text may come from a two-column PDF layout "
-            "where text blocks are partially interleaved — contact info, skills, and projects may appear jumbled. "
-            "Reconstruct all sections correctly despite the scrambled order.\n\n"
-            "The resume may also be re-uploaded from our own platform. If the text appears scrambled due to PDF "
-            "rendering order, use semantic understanding to reconstruct sections correctly. Look for common section "
-            "headers (Personal Info, Summary, Experience, Education, Projects, Skills, Certifications, Languages) "
-            "and group content under the correct sections.\n\n"
-            "CRITICAL OPTIMIZATION: Rewrite and enhance the professional summary, experience bullets, and project "
-            "descriptions to make them highly professional and ATS-optimized (by using strong action verbs, including "
-            "key industry keywords matching their target/current roles, and formatting for readability).\n\n"
+            "You are an elite AI Resume Parsing Agent. Your task is to perform 100% COMPLETE, VERBATIM EXTRACTION "
+            "of ALL content from the candidate's resume. Do NOT omit, drop, combine, or compress any experience role, "
+            "company, job title, date range, or bullet point.\n\n"
+            "CRITICAL EXTRACTION MANDATES:\n"
+            "1. EXPERIENCE: Extract EVERY SINGLE work experience / job entry listed on the resume. If the resume has "
+            "2 or more jobs (e.g. 'Marketing Executive' and 'Operations Associate'), you MUST extract BOTH jobs as separate "
+            "entries in the 'experience' array. NEVER drop an entry.\n"
+            "2. SKILLS EXTRACTION: Look at how skills are presented on the resume:\n"
+            "   - If skills are listed as FLAT items (just a list of skill names with no category labels), output 'skills' as a flat array: [\"Python\", \"React\", ...]\n"
+            "   - If skills are grouped under CATEGORY HEADINGS like 'Languages: Python, Java', 'Frontend: React, CSS', 'Backend & Frameworks: Flask, Node.js', 'Databases: MySQL', 'Tools & Platforms: Git, Docker', \n"
+            "     then output 'skills' as an array of category objects: [{\"category\": \"Languages\", \"skills\": [\"Python\", \"Java\"]}, {\"category\": \"Frontend\", \"skills\": [\"React\", \"CSS\"]}]\n"
+            "   - PRESERVE THE EXACT CATEGORY NAMES as they appear in the resume. DO NOT merge or flatten categories.\n"
+            "   - Extract ALL skills within each category completely.\n"
+            "3. PROJECTS: Extract ALL projects. For each project:\n"
+            "   - 'name': the project title (e.g. 'SkillVerse')\n"
+            "   - 'subtitle': the descriptive tagline or type if present in italics or em-dash (e.g. 'Flask Freelance Marketplace', 'AI-Powered Study Platform'). Empty string if none.\n"
+            "   - 'bullets': array of individual bullet points describing the project. Each bullet must be a SEPARATE string in the array. Do NOT merge bullets into one paragraph.\n"
+            "   - 'techStack': array of technology names from the 'Stack:' line if present.\n"
+            "   - 'link': project URL if mentioned, else empty string.\n"
+            "4. CERTIFICATIONS: Extract ALL certifications. If a certification section exists with names like 'AWS Certified', "
+            "'Google Analytics Certified', extract each as a separate entry with name, issuer, and date. If a LinkedIn "
+            "certifications URL is present, create one entry named 'View all certifications' with the URL as the link field.\n"
+            "5. LANGUAGES: Extract ALL languages listed on the resume. Common patterns: 'Languages: English, Hindi, Gujarati' "
+            "or a dedicated Languages section. Extract each language with its proficiency level if mentioned (Native, Fluent, "
+            "Intermediate, Basic, Learning). If proficiency appears in parentheses like 'C++ (learning)', include it.\n"
+            "6. If ANY section (certifications, languages, projects, etc.) is NOT present on the resume, return an empty array [] "
+            "for that field. Do NOT hallucinate or invent entries that are not in the source text.\n\n"
             "Extract everything into this exact JSON schema:\n"
             "{\n"
             "  \"personalInfo\": {\n"
@@ -334,401 +249,342 @@ class AdvancedAtsParsingAgent:
             "    \"phone\": \"phone number\",\n"
             "    \"location\": \"city, state or country\",\n"
             "    \"website\": \"personal website URL or empty string\",\n"
-            "    \"linkedin\": \"full LinkedIn profile URL (e.g. https://linkedin.com/in/username)\",\n"
-            "    \"github\": \"full GitHub profile URL (e.g. https://github.com/username)\"\n"
+            "    \"linkedin\": \"full LinkedIn profile URL or empty string\",\n"
+            "    \"github\": \"full GitHub profile URL or empty string\"\n"
             "  },\n"
-            "  \"summary\": \"ATS-friendly professional summary or profile paragraph\",\n"
-            "  \"skills\": [\"Python\", \"React\", \"Docker\"],\n"
+            "  \"summary\": \"professional summary or profile paragraph\",\n"
+            "  \"skills\": [\"use flat array if uncategorized, OR array of {category, skills[]} objects if categorized\"],\n"
             "  \"experience\": [\n"
             "    {\n"
             "      \"company\": \"Company Name\",\n"
             "      \"title\": \"Job Title\",\n"
             "      \"location\": \"City, Country\",\n"
-            "      \"startDate\": \"Month Year\",\n"
-            "      \"endDate\": \"Month Year or Present\",\n"
-            "      \"bullets\": [\"ATS-friendly bullet: Achieved X by doing Y\", \"Led team of Z people\"]\n"
+            "      \"startDate\": \"Jan 2024\",\n"
+            "      \"endDate\": \"Present\",\n"
+            "      \"bullets\": [\"Achieved X by doing Y\", \"Led team of Z people\"]\n"
             "    }\n"
             "  ],\n"
             "  \"education\": [\n"
             "    {\n"
-            "      \"school\": \"University / College name\",\n"
-            "      \"degree\": \"B.E. Computer Engineering\",\n"
+            "      \"school\": \"University Name\",\n"
+            "      \"degree\": \"MBA Marketing\",\n"
             "      \"location\": \"City\",\n"
-            "      \"startDate\": \"Jul 2024\",\n"
-            "      \"endDate\": \"May 2028\"\n"
+            "      \"startDate\": \"2020\",\n"
+            "      \"endDate\": \"2022\"\n"
             "    }\n"
             "  ],\n"
             "  \"projects\": [\n"
             "    {\n"
-            "      \"name\": \"Project Name\",\n"
-            "      \"link\": \"https://github.com/user/repo or live URL or empty string\",\n"
-            "      \"bullets\": [\"Engineered X supporting Y users, achieving Z measurable outcome\", \"Built A using B, reducing C by D%\"],\n"
-            "      \"techStack\": [\"Python\", \"Flask\", \"MySQL\"]\n"
+            "      \"name\": \"SkillVerse\",\n"
+            "      \"subtitle\": \"Flask Freelance Marketplace\",\n"
+            "      \"link\": \"\",\n"
+            "      \"bullets\": [\"Fiverr-like marketplace with service listings\", \"Integrated Cloudinary for media storage\"],\n"
+            "      \"techStack\": [\"Python\", \"Flask\", \"React\"]\n"
             "    }\n"
             "  ],\n"
             "  \"certifications\": [\n"
             "    {\n"
-            "      \"name\": \"Certification Name\",\n"
-            "      \"issuer\": \"Issuing Organization\",\n"
-            "      \"date\": \"Month Year\"\n"
+            "      \"name\": \"Google Analytics Certified\",\n"
+            "      \"issuer\": \"Google\",\n"
+            "      \"date\": \"2023\",\n"
+            "      \"link\": \"https://credential-url-if-present-or-empty-string\"\n"
             "    }\n"
             "  ],\n"
             "  \"languages\": [\n"
             "    {\n"
             "      \"name\": \"English\",\n"
+            "      \"proficiency\": \"Fluent\"\n"
+            "    },\n"
+            "    {\n"
+            "      \"name\": \"Hindi\",\n"
             "      \"proficiency\": \"Native\"\n"
             "    }\n"
             "  ]\n"
             "}\n\n"
-            "CRITICAL RULES:\n"
-            "1. PROJECTS are MANDATORY — extract ALL projects listed. Look for project headings, project names "
-            "followed by tech stacks (lines starting with 'Stack:' or listing technologies). "
-            "ALWAYS split each project into 2-4 separate bullet points in the 'bullets' array — NEVER return a single "
-            "paragraph. If the source resume has one dense paragraph per project, intelligently split it into distinct "
-            "achievement-focused bullets (e.g. one bullet for the core feature built, one for a technical challenge solved, "
-            "one for the measurable outcome). Each bullet MUST start with a strong action verb (Engineered, Built, "
-            "Architected, Optimized, Designed, Automated, Reduced, Implemented — vary them, do not repeat the same verb "
-            "across bullets). Wherever the source text implies scale, performance, or impact (e.g. 'scalable', "
-            "'real-time', 'high-performance'), rewrite it with a concrete estimated metric if reasonably inferable from "
-            "context (e.g. 'supporting concurrent users', 'reducing latency to under Xms') — but NEVER fabricate a "
-            "specific number that isn't supported by the source text; instead use qualitative-but-specific phrasing if no "
-            "number is available. techStack should be a clean array of technology names parsed from lines like "
-            "'Stack: Python, Flask, MySQL'.\n"
-            "2. For GitHub URL: look for patterns like 'GitHub: username' or 'github.com/username' and construct "
-            "the full URL https://github.com/username.\n"
-            "3. For LinkedIn URL: look for patterns like 'LinkedIn: /in/slug' or 'linkedin.com/in/slug' and construct "
-            "the full URL https://linkedin.com/in/slug.\n"
-            "4. CERTIFICATIONS: extract all listed certifications. If a LinkedIn certifications URL is present, "
-            "create one entry named 'View all certifications' with the URL as the issuer field.\n"
-            "5. Skills should be a flat array of individual skill strings, not categories.\n"
-            "6. Clean up experience bullets — remove leading symbols (▸, •, -, *).\n"
-            "7. Return ONLY valid JSON. No markdown. No explanation."
+            "ADDITIONAL RULES:\n"
+            "1. For GitHub URL: look for 'github.com/username' and construct full URL.\n"
+            "2. For LinkedIn URL: look for 'linkedin.com/in/slug' and construct full URL.\n"
+            "3. CRITICAL: Each bullet point in bullets arrays must be a SEPARATE string. Never merge multiple bullets into one string.\n"
+            "4. Clean up bullets — remove leading symbols (▸, •, -, *, ●) from each bullet string.\n"
+            "5. Return ONLY valid JSON. No markdown. No explanation."
         )
 
-        # --- Gemini-First Parsing (skip weak 8B fallback models) ---
-        active_gemini_keys = get_active_gemini_keys()
-        all_gemini_keys = get_api_keys()
-
-        if active_gemini_keys:
-            for key in active_gemini_keys:
-                try:
-                    client = OpenAI(
-                        api_key=key,
-                        base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
-                        max_retries=0
-                    )
-                    gemini_model = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
-                    if "2.5" in gemini_model:
-                        gemini_model = "gemini-2.0-flash"
-                    masked_key = key[:8] + "..." + key[-4:] if len(key) > 12 else "..."
-                    print(f"[RESUME PARSER] Active Keys: {len(active_gemini_keys)}/{len(all_gemini_keys)}. Trying key {masked_key} with model {gemini_model}", flush=True)
-
-                    response = client.chat.completions.create(
-                        model=gemini_model,
-                        messages=[
-                            {"role": "system", "content": system_prompt},
-                            {"role": "user", "content": f"Resume Text:\n{preprocessed}"}
-                        ],
-                        temperature=0.0,
-                        response_format={"type": "json_object"},
-                        timeout=45.0
-                    )
-                    raw = response.choices[0].message.content.strip()
-                    print(f"[RESUME PARSER] Gemini key {masked_key} succeeded!", flush=True)
-
-                    # Clean markdown JSON wraps
-                    if raw.startswith("```json"):
-                        raw = raw[7:]
-                    if raw.startswith("```"):
-                        raw = raw[3:]
-                    if raw.endswith("```"):
-                        raw = raw[:-3]
-                    raw = raw.strip()
-
-                    parsed = json.loads(raw)
-                    normalized = self.normalize_parsed_content(parsed)
-                    if normalized.get("personalInfo", {}).get("fullName"):
-                        return normalized
-
-                except Exception as e:
-                    self._safe_record_bad_key(key, e)
-                    continue
-
-        # --- Groq Fallback ---
-        groq_key = os.getenv("GROQ_API_KEY")
-        if groq_key:
-            try:
-                client = OpenAI(
-                    api_key=groq_key,
-                    base_url="https://api.groq.com/openai/v1",
-                    max_retries=0
-                )
-                groq_model = os.getenv("GROQ_MODEL", "llama-3.3-70b-specdec")
-                print(f"[RESUME PARSER] Falling back to Groq model: {groq_model}", flush=True)
-
-                response = client.chat.completions.create(
-                    model=groq_model,
-                    messages=[
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": f"Resume Text:\n{preprocessed}"}
-                    ],
-                    temperature=0.0,
-                    timeout=30.0
-                )
-                raw = response.choices[0].message.content.strip()
-                print(f"[RESUME PARSER] Groq model {groq_model} succeeded!", flush=True)
-
-                if raw.startswith("```json"):
-                    raw = raw[7:]
-                if raw.startswith("```"):
-                    raw = raw[3:]
-                if raw.endswith("```"):
-                    raw = raw[:-3]
-                raw = raw.strip()
-
-                parsed = json.loads(raw)
-                normalized = self.normalize_parsed_content(parsed)
-                if normalized.get("personalInfo", {}).get("fullName"):
-                    return normalized
-
-            except Exception as e:
-                print(f"[RESUME PARSER] Groq fallback failed: {e}", flush=True)
-                logger.error("Groq 70B parsing fallback failed: %s", e)
-
-        # High-reliability Deterministic Heuristic Fallback
-        logger.warning("All LLM providers exhausted or returned empty results; executing deterministic heuristic fallback parser.")
-        return self._fallback_heuristic_parse(text)
-
-    def _safe_record_bad_key(self, key: str, exc: Exception):
-        """Safely call record_bad_key using thread pool to prevent Django ORM async thread errors."""
         try:
-            from agents.llm import _run_sync_in_thread, record_bad_key
-            _run_sync_in_thread(record_bad_key, key, exc)
-        except Exception as err:
-            logger.warning("Failed to safely record bad key: %s", err)
+            response = self.client.chat.completions.create(
+                model="gemini-1.5-flash",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": f"Resume Text:\n{preprocessed}"}
+                ],
+                temperature=0.0,
+                response_format={"type": "json_object"}
+            )
+            raw = response.choices[0].message.content.strip()
+            
+            if raw.startswith("```json"):
+                raw = raw[7:]
+            if raw.startswith("```"):
+                raw = raw[3:]
+            if raw.endswith("```"):
+                raw = raw[:-3]
+            raw = raw.strip()
 
-    def _fallback_heuristic_parse(self, raw_text: str) -> dict:
-        """
-        Deterministic, rule-based fallback parser using regex and section headers.
-        Guarantees that 100% of resume uploads extract valid Personal Info, Summary,
-        Education, Experience, Projects, Skills, and Certifications even if external
-        LLM APIs (Gemini/Groq) are rate-limited, quota-exhausted, or offline.
-        """
-        schema = self.get_empty_resume_dict()
-        if not raw_text or not raw_text.strip():
-            return schema
+            parsed = json.loads(raw)
+            normalized = self.normalize_parsed_content(parsed)
 
-        lines = [line.strip() for line in raw_text.splitlines() if line.strip()]
-        if not lines:
-            return schema
+            # Recovery: fill any missing sections from fallback parser
+            text_lower = preprocessed.lower()
+            fallback = None
+            
+            if not normalized.get("experience") and ("experience" in text_lower or "employment" in text_lower):
+                if not fallback:
+                    fallback = self._fallback_text_parse(text)
+                if fallback.get("experience"):
+                    normalized["experience"] = fallback["experience"]
 
-        section_keywords = [
-            'career objective', 'objective', 'professional summary', 'summary', 'profile',
-            'education', 'academic background',
-            'experience', 'work experience', 'work history', 'employment',
-            'projects', 'personal projects', 'key projects',
-            'technical skills', 'skills', 'technologies',
-            'certifications', 'certificates', 'courses', 'languages'
-        ]
+            if not normalized.get("skills") and "skills" in text_lower:
+                if not fallback:
+                    fallback = self._fallback_text_parse(text)
+                if fallback.get("skills"):
+                    normalized["skills"] = fallback["skills"]
 
-        # 1. Group into sections based on headers
-        sections = {}
-        current_sec = 'header'
-        sec_lines = []
+            if not normalized.get("certifications") and ("certif" in text_lower or "certificate" in text_lower):
+                if not fallback:
+                    fallback = self._fallback_text_parse(text)
+                if fallback.get("certifications"):
+                    normalized["certifications"] = fallback["certifications"]
 
-        for line in lines:
-            cleaned = line.lower().rstrip(':')
-            if cleaned in section_keywords:
-                if sec_lines:
-                    sections[current_sec] = sec_lines
-                current_sec = cleaned
-                sec_lines = []
-            else:
-                sec_lines.append(line)
-        if sec_lines:
-            sections[current_sec] = sec_lines
+            if not normalized.get("languages") and "language" in text_lower:
+                if not fallback:
+                    fallback = self._fallback_text_parse(text)
+                if fallback.get("languages"):
+                    normalized["languages"] = fallback["languages"]
 
-        header_lines = sections.get('header', [])
-        header_text = '\n'.join(header_lines)
-        full_raw = '\n'.join(lines)
+            if not normalized.get("education") and ("education" in text_lower or "academic" in text_lower):
+                if not fallback:
+                    fallback = self._fallback_text_parse(text)
+                if fallback.get("education"):
+                    normalized["education"] = fallback["education"]
 
-        # 2. Extract Personal Info
-        full_name = ''
-        for line in header_lines[:5]:
-            if not re.search(r'resume|curriculum|cv|email|phone|\+|@|github|linkedin|portfolio|http', line, re.I):
-                if len(line) < 40 and re.match(r'^[A-Za-z\s\.\-]+$', line):
-                    full_name = line.strip()
-                    break
-        if not full_name and lines:
-            first = lines[0]
-            if len(first) < 40 and not re.search(r'@|http|\+|\d{5}', first):
-                full_name = first.strip()
+            return normalized
 
-        email_m = re.search(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}', full_raw)
-        email = email_m.group(0) if email_m else ''
+        except Exception as e:
+            logger.error("AdvancedAtsParsingAgent parsing failed: %s — running fallback parser", e)
+            return self._fallback_text_parse(text)
 
-        phone_m = re.search(r'(\+?\d{1,3}[\s\-]?)?\(?\d{2,4}\)?[\s\-]?\d{3,5}[\s\-]?\d{3,5}', full_raw)
-        phone = phone_m.group(0) if phone_m else ''
+    def _fallback_text_parse(self, text: str) -> dict:
+        """Deterministic regex-based fallback parser when LLM response is incomplete or fails.
+        Extracts: contact info, experience, skills, education, certifications, languages, projects."""
+        res = self.get_empty_resume_dict()
+        if not text:
+            return res
 
-        loc_m = re.search(r'([A-Z][a-zA-Z\s]+,\s*[A-Z][a-zA-Z\s]+)', header_text)
-        location = loc_m.group(1).strip() if loc_m else ''
+        # Contact Info
+        email_re = re.search(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}', text)
+        if email_re:
+            res["personalInfo"]["email"] = email_re.group(0)
 
-        gh_m = re.search(r'(?:https?://)?(?:www\.)?github\.com/([a-zA-Z0-9_-]+)', full_raw, re.I)
-        github = f'https://github.com/{gh_m.group(1)}' if gh_m else ''
+        phone_re = re.search(r'[\+\(]?[0-9][0-9\s\-\(\)]{8,15}[0-9]', text)
+        if phone_re:
+            res["personalInfo"]["phone"] = phone_re.group(0).strip()
 
-        li_m = re.search(r'(?:https?://)?(?:www\.)?linkedin\.com/in/([a-zA-Z0-9_-]+)', full_raw, re.I)
-        linkedin = f'https://linkedin.com/in/{li_m.group(1)}' if li_m else ''
+        linkedin_re = re.search(r'(?:https?://)?(?:www\.)?linkedin\.com/in/[\w-]+', text, re.IGNORECASE)
+        if linkedin_re:
+            res["personalInfo"]["linkedin"] = self.clean_url(linkedin_re.group(0))
 
-        website = ''
-        web_m = re.search(r'https?://(?!github\.com|linkedin\.com)[^\s]+', full_raw)
-        if web_m:
-            website = web_m.group(0)
+        github_re = re.search(r'(?:https?://)?(?:www\.)?github\.com/[\w-]+', text, re.IGNORECASE)
+        if github_re:
+            res["personalInfo"]["github"] = self.clean_url(github_re.group(0))
 
-        title = ''
-        for h_line in header_lines[1:]:
-            if not re.search(r'@|\+|\d{5}|github|linkedin|portfolio', h_line, re.I):
-                if len(h_line) < 60:
-                    title = h_line.strip()
-                    break
+        lines = [l.strip() for l in text.splitlines() if l.strip()]
+        if lines:
+            res["personalInfo"]["fullName"] = lines[0]
 
-        schema["personalInfo"] = {
-            "fullName": full_name,
-            "title": title,
-            "email": email,
-            "phone": phone,
-            "location": location,
-            "website": self.clean_url(website),
-            "linkedin": self.clean_url(linkedin),
-            "github": self.clean_url(github)
+        # ---- Section-aware parser ----
+        # Identify section boundaries by detecting header-like lines
+        section_headers = {
+            "summary": ["summary", "profile", "objective", "about"],
+            "skills": ["skills", "technical skills", "core competencies", "expertise", "technologies"],
+            "experience": ["experience", "work experience", "work history", "employment", "professional experience", "internship"],
+            "education": ["education", "academic background", "academics", "qualification"],
+            "projects": ["projects", "personal projects", "academic projects"],
+            "certifications": ["certifications", "certificates", "certification", "professional certifications"],
+            "languages": ["languages", "language proficiency", "known languages"],
         }
 
-        # 3. Extract Summary
-        summary_lines = (
-            sections.get('career objective', []) or
-            sections.get('objective', []) or
-            sections.get('summary', []) or
-            sections.get('professional summary', []) or
-            sections.get('profile', [])
-        )
-        schema["summary"] = ' '.join(summary_lines).strip()
-
-        # 4. Extract Skills
-        skill_lines = (
-            sections.get('technical skills', []) or
-            sections.get('skills', []) or
-            sections.get('technologies', [])
-        )
-        skills = []
-        for sl in skill_lines:
-            clean_sl = re.sub(r'^(?:Languages|Frontend|Backend|Databases|Machine Learning|Tools|Frameworks|Libraries):\s*', '', sl, flags=re.I)
-            parts = [p.strip() for p in re.split(r'[,|•]', clean_sl) if p.strip()]
-            for p in parts:
-                if p and p not in skills and len(p) < 40:
-                    skills.append(p)
-        schema["skills"] = skills
-
-        # 5. Extract Education
-        edu_lines = sections.get('education', []) or sections.get('academic background', [])
-        if edu_lines:
-            school = edu_lines[0] if len(edu_lines) > 0 else ''
-            deg_line = edu_lines[1] if len(edu_lines) > 1 else ''
-            dates_m = re.search(r'(\d{4})\s*[\u2013\u2014\-–]\s*(\d{4}|Present)', deg_line)
-            start_date = dates_m.group(1) if dates_m else ''
-            end_date = dates_m.group(2) if dates_m else ''
-            degree_clean = re.sub(r'\d{4}\s*[\u2013\u2014\-–]\s*(\d{4}|Present)', '', deg_line).strip()
-            schema["education"].append({
-                "id": str(uuid.uuid4()),
-                "school": school,
-                "degree": degree_clean or deg_line,
-                "location": location,
-                "startDate": start_date,
-                "endDate": end_date
-            })
-
-        # 6. Extract Experience
-        exp_lines = (
-            sections.get('experience', []) or
-            sections.get('work experience', []) or
-            sections.get('work history', []) or
-            sections.get('employment', [])
-        )
-        if exp_lines:
-            first_line = exp_lines[0]
-            dates_m = re.search(r'([A-Za-z]+\s+\d{4})\s*[\u2013\u2014\-–]\s*([A-Za-z]+\s+\d{4}|Present)', first_line, re.I)
-            s_date = dates_m.group(1) if dates_m else ''
-            e_date = dates_m.group(2) if dates_m else ''
-            title_comp = re.sub(r'([A-Za-z]+\s+\d{4})\s*[\u2013\u2014\-–]\s*([A-Za-z]+\s+\d{4}|Present)', '', first_line, flags=re.I).strip()
-            bullets = [l.lstrip('•-* ').strip() for l in exp_lines[1:] if l.strip()]
-            schema["experience"].append({
-                "id": str(uuid.uuid4()),
-                "company": title_comp or "Experience",
-                "title": title_comp or "Role",
-                "location": "",
-                "startDate": s_date,
-                "endDate": e_date,
-                "bullets": bullets
-            })
-
-        # 7. Extract Projects
-        proj_lines = (
-            sections.get('projects', []) or
-            sections.get('personal projects', []) or
-            sections.get('key projects', [])
-        )
-        action_verb_re = r'^(?:Architected|Built|Implemented|Developed|Engineered|Created|Designed|Achieved|Led|Managed)\b'
-        curr_proj = None
-        for p_line in proj_lines:
-            stripped_p = p_line.strip()
-            if not stripped_p:
+        # Build ordered section map: [(section_name, start_line_index), ...]
+        section_map = []
+        for i, line in enumerate(lines):
+            clean_line = line.strip().strip(":-•▸*●◦").strip().lower()
+            if len(clean_line.split()) > 4:
                 continue
+            for sec_name, keywords in section_headers.items():
+                if any(clean_line == kw or re.fullmatch(rf'{re.escape(kw)}s?', clean_line) for kw in keywords):
+                    section_map.append((sec_name, i))
+                    break
 
-            is_action_verb = bool(re.match(action_verb_re, stripped_p, re.I))
-            is_bullet_symbol = stripped_p.startswith(('•', '-', '*'))
-            is_new_proj_header = not is_action_verb and not is_bullet_symbol and bool(re.search(r'[\u2013\u2014\-–]', stripped_p))
+        def _get_section_lines(sec_name):
+            """Get all lines belonging to a section."""
+            sec_lines = []
+            for idx, (name, start) in enumerate(section_map):
+                if name == sec_name:
+                    end = section_map[idx + 1][1] if idx + 1 < len(section_map) else len(lines)
+                    sec_lines.extend(lines[start + 1:end])
+            return sec_lines
 
-            if is_new_proj_header:
-                if curr_proj:
-                    schema["projects"].append(curr_proj)
-                curr_proj = {
+        # --- Experience ---
+        date_pattern = re.compile(
+            r'((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+\d{4}|\d{4})'
+            r'\s*[–\-\u2013—to]+\s*'
+            r'((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+\d{4}|\d{4}|Present|Current)',
+            re.IGNORECASE
+        )
+        exp_lines = _get_section_lines("experience")
+        exp_entries = []
+        current_exp = None
+        for line in exp_lines:
+            m = date_pattern.search(line)
+            if m:
+                if current_exp:
+                    exp_entries.append(current_exp)
+                role_part = date_pattern.sub('', line).strip().strip('|—–- ').strip()
+                current_exp = {
                     "id": str(uuid.uuid4()),
-                    "name": stripped_p,
+                    "company": role_part,
+                    "title": role_part,
+                    "location": "",
+                    "startDate": m.group(1),
+                    "endDate": m.group(2),
+                    "bullets": []
+                }
+            elif current_exp and line.startswith(("•", "-", "▸", "*", "●")):
+                current_exp["bullets"].append(line.lstrip("•-▸*● ").strip())
+            elif current_exp and not line.startswith(("•", "-", "▸", "*")) and len(line.split()) > 3:
+                current_exp["bullets"].append(line)
+        if current_exp:
+            exp_entries.append(current_exp)
+        res["experience"] = exp_entries
+
+        # --- Skills ---
+        skills_set = set()
+        skill_lines = _get_section_lines("skills")
+        for line in skill_lines:
+            cleaned = re.sub(
+                r'^(Marketing|Analytics|Tools|Soft Skills|Technical Skills|Skills|Programming|'
+                r'Frameworks|Databases|Cloud|DevOps|Design|Other|Core):\s*',
+                '', line, flags=re.IGNORECASE
+            )
+            for item in re.split(r'[,|•·;]', cleaned):
+                item_clean = item.strip().strip('"\'')
+                if item_clean and 2 <= len(item_clean) < 50:
+                    skills_set.add(item_clean)
+        res["skills"] = sorted(list(skills_set))
+
+        # --- Education ---
+        edu_lines = _get_section_lines("education")
+        edu_entries = []
+        current_edu = None
+        for line in edu_lines:
+            m = date_pattern.search(line)
+            if m or re.search(r'(university|institute|college|school|b\.|m\.|mba|bca|btech|mtech|b\.com|b\.sc)', line, re.IGNORECASE):
+                if current_edu:
+                    edu_entries.append(current_edu)
+                degree_part = date_pattern.sub('', line).strip().strip('|—–- ').strip()
+                current_edu = {
+                    "id": str(uuid.uuid4()),
+                    "school": degree_part,
+                    "degree": degree_part,
+                    "location": "",
+                    "startDate": m.group(1) if m else "",
+                    "endDate": m.group(2) if m else ""
+                }
+        if current_edu:
+            edu_entries.append(current_edu)
+        res["education"] = edu_entries
+
+        # --- Certifications ---
+        cert_lines = _get_section_lines("certifications")
+        cert_entries = []
+        for line in cert_lines:
+            if line and len(line) > 3:
+                cert_entries.append({
+                    "id": str(uuid.uuid4()),
+                    "name": line.strip().strip("•-▸*● "),
+                    "issuer": "",
+                    "date": ""
+                })
+        res["certifications"] = cert_entries
+
+        # --- Languages ---
+        lang_lines = _get_section_lines("languages")
+        lang_entries = []
+        known_languages = [
+            "english", "hindi", "gujarati", "marathi", "tamil", "telugu", "kannada", "bengali",
+            "punjabi", "urdu", "french", "german", "spanish", "chinese", "japanese", "korean",
+            "arabic", "portuguese", "russian", "italian", "dutch", "swedish", "malay", "thai"
+        ]
+        for line in lang_lines:
+            for item in re.split(r'[,|•·;]', line):
+                item_clean = item.strip()
+                if not item_clean:
+                    continue
+                # Check for proficiency in parentheses or after dash
+                prof_match = re.match(r'^(.+?)\s*[\(\-–:]+\s*(.+?)\s*\)?$', item_clean)
+                if prof_match:
+                    lang_entries.append({
+                        "id": str(uuid.uuid4()),
+                        "name": prof_match.group(1).strip(),
+                        "proficiency": prof_match.group(2).strip()
+                    })
+                elif item_clean.lower() in known_languages or len(item_clean.split()) <= 2:
+                    lang_entries.append({
+                        "id": str(uuid.uuid4()),
+                        "name": item_clean,
+                        "proficiency": ""
+                    })
+
+        # If no dedicated section found, search for inline "Languages: English, Hindi" pattern
+        if not lang_entries:
+            lang_inline = re.search(r'languages?\s*[:\-]\s*(.+)', text, re.IGNORECASE)
+            if lang_inline:
+                for item in re.split(r'[,|•·;]', lang_inline.group(1)):
+                    item_clean = item.strip()
+                    if item_clean and len(item_clean) < 30:
+                        lang_entries.append({
+                            "id": str(uuid.uuid4()),
+                            "name": item_clean,
+                            "proficiency": ""
+                        })
+        res["languages"] = lang_entries
+
+        # --- Projects ---
+        proj_lines = _get_section_lines("projects")
+        proj_entries = []
+        current_proj = None
+        for line in proj_lines:
+            if line and not line.startswith(("•", "-", "▸", "*", "●")) and len(line.split()) <= 8:
+                if current_proj:
+                    proj_entries.append(current_proj)
+                current_proj = {
+                    "id": str(uuid.uuid4()),
+                    "name": line.strip(),
                     "link": "",
                     "bullets": [],
                     "description": "",
                     "techStack": []
                 }
-            elif curr_proj:
-                if not is_action_verb and not is_bullet_symbol and (',' in stripped_p or 'React' in stripped_p or 'Node' in stripped_p) and not curr_proj['techStack'] and not curr_proj['bullets']:
-                    curr_proj['techStack'] = [t.strip() for t in stripped_p.split(',') if t.strip()]
+            elif current_proj:
+                stripped = line.lstrip("•-▸*● ").strip()
+                tech_match = re.match(r'^(?:stack|tech|technologies|built with)\s*:\s*(.+)', stripped, re.IGNORECASE)
+                if tech_match:
+                    current_proj["techStack"] = [t.strip() for t in tech_match.group(1).split(",") if t.strip()]
                 else:
-                    clean_b = stripped_p.lstrip('•-* ').strip()
-                    if clean_b:
-                        curr_proj['bullets'].append(clean_b)
+                    current_proj["bullets"].append(stripped)
+        if current_proj:
+            proj_entries.append(current_proj)
+        res["projects"] = proj_entries
 
-        if curr_proj:
-            schema["projects"].append(curr_proj)
-
-        # 8. Extract Certifications
-        cert_lines = (
-            sections.get('certifications', []) or
-            sections.get('certificates', []) or
-            sections.get('courses', [])
-        )
-        for c_line in cert_lines:
-            c_clean = c_line.lstrip('•-* ').strip()
-            if c_clean:
-                parts = c_clean.split('–') if '–' in c_clean else c_clean.split('-')
-                issuer = parts[0].strip() if len(parts) > 1 else ''
-                name = parts[1].strip() if len(parts) > 1 else c_clean
-                schema["certifications"].append({
-                    "id": str(uuid.uuid4()),
-                    "name": name,
-                    "issuer": issuer,
-                    "date": ""
-                })
-
-        schema["languages"] = [{"id": str(uuid.uuid4()), "name": "English", "proficiency": "Native"}]
-        return schema
+        return res
 
     def get_empty_resume_dict(self) -> dict:
         return {
@@ -753,7 +609,7 @@ class AdvancedAtsParsingAgent:
 
     def normalize_parsed_content(self, parsed: dict) -> dict:
         schema = self.get_empty_resume_dict()
-
+        
         # Merge personal info
         p_info = parsed.get("personalInfo") or {}
         if isinstance(p_info, dict):
@@ -766,10 +622,7 @@ class AdvancedAtsParsingAgent:
 
         schema["summary"] = str(parsed.get("summary") or "").strip()
 
-        # Skills
-        raw_skills = parsed.get("skills") or []
-        if isinstance(raw_skills, list):
-            schema["skills"] = [str(s).strip() for s in raw_skills if s]
+        # Skills — handled below after Projects section (supports both flat and categorized)
 
         # Experience
         raw_exp = parsed.get("experience") or []
@@ -804,6 +657,32 @@ class AdvancedAtsParsingAgent:
                     "startDate": str(item.get("startDate") or "").strip(),
                     "endDate": str(item.get("endDate") or "").strip()
                 })
+
+        # Skills — handle both flat ["Python", ...] and categorized [{category, skills[]}] formats
+        raw_skills = parsed.get("skills") or []
+        if isinstance(raw_skills, list) and raw_skills:
+            # Detect if it's categorized (list of dicts with 'category' key)
+            if isinstance(raw_skills[0], dict) and "category" in raw_skills[0]:
+                # Categorized format — store as flat array but preserve categories using prefix trick
+                # OR store the categories array directly if frontend supports it
+                skill_categories = []
+                flat_skills = []
+                for cat_obj in raw_skills:
+                    if not isinstance(cat_obj, dict):
+                        continue
+                    cat_name = str(cat_obj.get("category") or "").strip()
+                    cat_skills = cat_obj.get("skills") or []
+                    if isinstance(cat_skills, list):
+                        extracted = [str(s).strip() for s in cat_skills if s]
+                        if cat_name:
+                            skill_categories.append({"category": cat_name, "skills": extracted})
+                        flat_skills.extend(extracted)
+                # Store both — categories for display, flat for ATS matching
+                schema["skillCategories"] = skill_categories
+                schema["skills"] = flat_skills
+            else:
+                # Flat format
+                schema["skills"] = [str(s).strip() for s in raw_skills if s]
 
         # Projects
         raw_proj = parsed.get("projects") or []
@@ -841,9 +720,10 @@ class AdvancedAtsParsingAgent:
                 schema["projects"].append({
                     "id": str(uuid.uuid4()),
                     "name": str(item.get("name") or "").strip(),
+                    "subtitle": str(item.get("subtitle") or "").strip(),
                     "link": self.clean_url(link),
                     "bullets": bullets_list,
-                    "description": str(item.get("description") or "").strip() or "\n".join(f"• {b}" for b in bullets_list),  # kept for backward-compat, UI should prefer `bullets`
+                    "description": str(item.get("description") or "").strip() or "\n".join(f"• {b}" for b in bullets_list),  # kept for backward-compat
                     "techStack": tech_list
                 })
 
@@ -857,7 +737,8 @@ class AdvancedAtsParsingAgent:
                     "id": str(uuid.uuid4()),
                     "name": str(item.get("name") or "").strip(),
                     "issuer": str(item.get("issuer") or "").strip(),
-                    "date": str(item.get("date") or "").strip()
+                    "date": str(item.get("date") or "").strip(),
+                    "link": self.clean_url(str(item.get("link") or ""))
                 })
 
         # Languages

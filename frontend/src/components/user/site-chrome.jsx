@@ -76,7 +76,7 @@ export function Header() {
     const parts = name.trim().split(" ").filter(Boolean);
     const dakshPart = parts.find(p => p.toUpperCase() === "DAKSH");
     if (dakshPart) return "D";
-    
+
     if (parts.length > 0) {
       const firstUpper = parts[0].toUpperCase();
       const lastNames = ["BHAVSAR", "PATEL", "SHAH", "MEHTA", "JOSHI", "TRIVEDI"];
@@ -93,7 +93,7 @@ export function Header() {
     const token = localStorage.getItem('cs_seeker_token');
     const data = localStorage.getItem('cs_seeker_data');
     if (token && data) {
-      try { return JSON.parse(data); } catch {}
+      try { return JSON.parse(data); } catch { }
     }
     return null;
   });
@@ -103,7 +103,7 @@ export function Header() {
     const handleProfileUpdate = () => {
       const data = localStorage.getItem('cs_seeker_data');
       if (data) {
-        try { setSeekerData(JSON.parse(data)); } catch {}
+        try { setSeekerData(JSON.parse(data)); } catch { }
       } else {
         setSeekerData(null);
       }
@@ -176,252 +176,245 @@ export function Header() {
 
   return (
     <div className="sticky top-0 z-40 w-full transition-all duration-300 p-0 pointer-events-none">
-      <header className={`mx-auto transition-all duration-300 pointer-events-auto backdrop-blur-xl ${
-        isScrolled
+      <header className={`mx-auto transition-all duration-300 pointer-events-auto backdrop-blur-xl ${isScrolled
           ? "max-w-7xl mt-3 rounded-full border border-border bg-background/80 shadow-lg"
           : "w-full border-b border-border/60 bg-background/80"
-      }`}>
-      <div className={`mx-auto flex max-w-7xl items-center gap-4 py-3 transition-all duration-300 ${
-        isScrolled ? "px-8" : "px-4 sm:px-6"
-      }`}>
-        <Link to="/jobs" className="flex items-center gap-2 pr-1 sm:pr-3 shrink-0 no-underline text-inherit">
-          <img src="/logo.png" alt="CareerSphere" className="w-8 h-8 object-contain shrink-0 rounded-lg" />
-          <span className="font-display text-[22px] text-foreground tracking-tight font-semibold">
-            CareerSphere
-          </span>
-        </Link>
+        }`}>
+        <div className={`mx-auto flex max-w-7xl items-center gap-4 py-3 transition-all duration-300 ${isScrolled ? "px-8" : "px-4 sm:px-6"
+          }`}>
+          <Link to="/jobs" className="flex items-center gap-2 pr-1 sm:pr-3 shrink-0 no-underline text-inherit">
+            <img src="/logo.png" alt="CareerSphere" className="w-8 h-8 object-contain shrink-0 rounded-lg" />
+            <span className="font-display text-[22px] text-foreground tracking-tight font-semibold">
+              CareerSphere
+            </span>
+          </Link>
 
-        <nav className="ml-4 hidden flex-1 items-center gap-1.5 md:flex">
-          {filteredPrimary.map((l) => {
+          <nav className="ml-4 hidden flex-1 items-center gap-1.5 md:flex">
+            {filteredPrimary.map((l) => {
+              const active = pathname === l.to;
+              const tourId = `seeker-nav-${l.label.toLowerCase().replace(/\s+/g, '-')}`;
+              return (
+                <Link
+                  key={l.to}
+                  to={l.to}
+                  data-tour={tourId}
+                  className={`pill px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition ${active
+                      ? "bg-muted text-foreground font-medium shadow-sm"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    }`}
+                >
+                  {l.label}
+                </Link>
+              );
+            })}
+
+            {/* Tools Dropdown */}
+            {filteredTools.length > 0 && (
+              <div className="relative" ref={toolsDropdownRef}>
+                <button
+                  onClick={() => setToolsOpen(!toolsOpen)}
+                  data-tour="seeker-nav-career-tools"
+                  className={`pill px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition flex items-center gap-1 ${filteredTools.some(l => pathname === l.to)
+                      ? "bg-muted text-foreground font-semibold"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    }`}
+                >
+                  <span>Career Tools</span>
+                  <ChevronDown size={14} className={`transition-transform duration-200 ${toolsOpen ? "rotate-180" : ""}`} />
+                </button>
+
+                {toolsOpen && (
+                  <div className="absolute left-0 mt-2 w-52 rounded-xl p-1.5 z-20 flex flex-col gap-0.5 skeuo-dropdown-panel">
+                    {filteredTools.map((l) => {
+                      const Icon = l.icon;
+                      const active = pathname === l.to;
+                      const tourId = `seeker-nav-${l.label.toLowerCase().replace(/\s+/g, '-')}`;
+                      return (
+                        <Link
+                          key={l.to}
+                          to={l.to}
+                          data-tour={tourId}
+                          onClick={() => setToolsOpen(false)}
+                          className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm skeuo-dropdown-item ${active
+                              ? "bg-[#faf9f6] dark:bg-[#212126] text-foreground font-semibold"
+                              : "text-muted-foreground"
+                            }`}
+                        >
+                          <Icon size={14} className="text-muted-foreground shrink-0 transition-colors" />
+                          <span className="transition-colors">{l.label}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Premium plans featured pill */}
+            {isLoggedIn && (
+              <Link
+                to="/jobs/billing"
+                data-tour="seeker-nav-premium-plans"
+                className={`pill px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition flex items-center gap-1.5 ${pathname === "/jobs/billing"
+                    ? "bg-amber-500/10 text-amber-500 font-semibold border border-amber-500/20"
+                    : "text-amber-500 hover:bg-amber-500/5"
+                  }`}
+              >
+                <Sparkles size={14} />
+                <span>Premium Plans</span>
+              </Link>
+            )}
+          </nav>
+
+          <div className="ml-auto flex items-center gap-2">
+            <ThemeToggle />
+
+            {/* 9-Box App Switcher Dropdown */}
+            <div className="relative" ref={appsDropdownRef}>
+              <button
+                onClick={() => setAppsOpen(!appsOpen)}
+                aria-label="CareerSphere Applications"
+                className="pill p-2 text-muted-foreground hover:bg-muted hover:text-foreground flex items-center justify-center transition shrink-0 rounded-full"
+                title="CareerSphere Applications"
+              >
+                <Grid3x3 className="h-4 w-4" />
+              </button>
+
+              {appsOpen && (
+                <div className="absolute right-0 mt-2 w-52 rounded-xl p-1.5 z-50 flex flex-col gap-0.5 shadow-2xl border border-border bg-popover text-popover-foreground">
+                  <Link
+                    to="/jobs"
+                    onClick={() => setAppsOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm skeuo-dropdown-item font-semibold text-foreground hover:bg-muted/80 transition"
+                  >
+                    <Home size={14} className="text-blue-500 shrink-0" />
+                    <span>CareerSphere Jobs</span>
+                  </Link>
+                  <a
+                    href="/dashboard"
+                    onClick={() => setAppsOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm skeuo-dropdown-item text-muted-foreground hover:bg-muted/80 hover:text-foreground transition"
+                  >
+                    <LayoutDashboard size={14} className="text-muted-foreground shrink-0" />
+                    <span>CareerSphere Recruiter</span>
+                  </a>
+                  <a
+                    href="/developer"
+                    onClick={() => setAppsOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm skeuo-dropdown-item text-muted-foreground hover:bg-muted/80 hover:text-foreground transition"
+                  >
+                    <Bot size={14} className="text-muted-foreground shrink-0" />
+                    <span>CareerSphere Developer</span>
+                  </a>
+                  <Link
+                    to="/support"
+                    onClick={() => setAppsOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm skeuo-dropdown-item text-muted-foreground hover:bg-muted/80 hover:text-foreground transition border-t border-border/50 mt-1 pt-2"
+                  >
+                    <HelpCircle size={14} className="text-muted-foreground shrink-0" />
+                    <span>Support & Appeals</span>
+                  </Link>
+                </div>
+              )}
+            </div>
+            {isLoggedIn && (
+              <button
+                data-tour="seeker-help-btn"
+                aria-label="Help & Tour"
+                onClick={startTour}
+                className="pill p-2 text-muted-foreground hover:bg-muted hover:text-foreground flex items-center justify-center transition shrink-0"
+                title="Help & Tour"
+              >
+                <HelpCircle className="h-4 w-4" />
+              </button>
+            )}
+            {isLoggedIn ? (
+              <>
+                <Link
+                  to="/jobs/dashboard"
+                  data-tour="seeker-nav-dashboard"
+                  className="pill hidden border border-border bg-background px-4 py-2 text-sm font-medium hover:bg-muted sm:inline-flex"
+                >
+                  Dashboard
+                </Link>
+                <div className="flex items-center gap-2">
+                  <NotificationBell />
+                  <Link
+                    to="/jobs/profile"
+                    className="flex items-center justify-center h-10 w-10 rounded-full bg-accent/10 text-accent hover:bg-accent/20 transition shrink-0"
+                    aria-label="Profile"
+                  >
+                    {rawAvatar && !imgError ? (
+                      <img
+                        src={rawAvatar.startsWith('http') || rawAvatar.startsWith('data:') ? rawAvatar : `${API_HOST}${rawAvatar}`}
+                        alt={seekerData?.full_name || 'Profile'}
+                        onError={() => setImgError(true)}
+                        className="h-8 w-8 rounded-full object-cover border border-accent/20 bg-muted"
+                      />
+                    ) : (
+                      <div className="grid h-8 w-8 place-items-center rounded-full bg-accent text-xs font-bold text-white uppercase">
+                        {getSeekerInitial(seekerData?.full_name)}
+                      </div>
+                    )}
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="pill p-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                    title="Logout"
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/jobs/login"
+                  className="pill hidden border border-border bg-background px-4 py-2 text-sm font-medium hover:bg-muted sm:inline-flex"
+                >
+                  Sign in
+                </Link>
+                <Link
+                  to="/jobs/register"
+                  className="pill bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+                >
+                  Get started
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
+
+        <nav className="flex gap-1 overflow-x-auto hide-scrollbar border-t border-border/60 px-3 py-2 md:hidden">
+          {filteredLinks.map((l) => {
             const active = pathname === l.to;
+            const Icon = l.icon;
             const tourId = `seeker-nav-${l.label.toLowerCase().replace(/\s+/g, '-')}`;
             return (
               <Link
                 key={l.to}
                 to={l.to}
                 data-tour={tourId}
-                className={`pill px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition ${
-                  active
+                className={`pill flex shrink-0 items-center gap-1.5 px-3 py-1.5 text-xs font-medium ${active
                     ? "bg-muted text-foreground font-medium shadow-sm"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                }`}
+                  }`}
               >
+                <Icon className="h-3.5 w-3.5" />
                 {l.label}
               </Link>
             );
           })}
-
-          {/* Tools Dropdown */}
-          {filteredTools.length > 0 && (
-            <div className="relative" ref={toolsDropdownRef}>
-              <button
-                onClick={() => setToolsOpen(!toolsOpen)}
-                data-tour="seeker-nav-career-tools"
-                className={`pill px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition flex items-center gap-1 ${
-                  filteredTools.some(l => pathname === l.to)
-                    ? "bg-muted text-foreground font-semibold"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                }`}
-              >
-                <span>Career Tools</span>
-                <ChevronDown size={14} className={`transition-transform duration-200 ${toolsOpen ? "rotate-180" : ""}`} />
-              </button>
-
-              {toolsOpen && (
-                <div className="absolute left-0 mt-2 w-52 rounded-xl p-1.5 z-20 flex flex-col gap-0.5 skeuo-dropdown-panel">
-                  {filteredTools.map((l) => {
-                    const Icon = l.icon;
-                    const active = pathname === l.to;
-                    const tourId = `seeker-nav-${l.label.toLowerCase().replace(/\s+/g, '-')}`;
-                    return (
-                      <Link
-                        key={l.to}
-                        to={l.to}
-                        data-tour={tourId}
-                        onClick={() => setToolsOpen(false)}
-                        className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm skeuo-dropdown-item ${
-                          active
-                            ? "bg-[#faf9f6] dark:bg-[#212126] text-foreground font-semibold"
-                            : "text-muted-foreground"
-                        }`}
-                      >
-                        <Icon size={14} className="text-muted-foreground shrink-0 transition-colors" />
-                        <span className="transition-colors">{l.label}</span>
-                      </Link>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Premium plans featured pill */}
-          {isLoggedIn && (
-            <Link
-              to="/jobs/billing"
-              data-tour="seeker-nav-premium-plans"
-              className={`pill px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition flex items-center gap-1.5 ${
-                pathname === "/jobs/billing"
-                  ? "bg-amber-500/10 text-amber-500 font-semibold border border-amber-500/20"
-                  : "text-amber-500 hover:bg-amber-500/5"
-              }`}
-            >
-              <Sparkles size={14} />
-              <span>Premium Plans</span>
-            </Link>
-          )}
         </nav>
 
-        <div className="ml-auto flex items-center gap-2">
-          <ThemeToggle />
-
-          {/* 9-Box App Switcher Dropdown */}
-          <div className="relative" ref={appsDropdownRef}>
-            <button
-              onClick={() => setAppsOpen(!appsOpen)}
-              aria-label="CareerSphere Applications"
-              className="pill p-2 text-muted-foreground hover:bg-muted hover:text-foreground flex items-center justify-center transition shrink-0 rounded-full"
-              title="CareerSphere Applications"
-            >
-              <Grid3x3 className="h-4 w-4" />
-            </button>
-
-            {appsOpen && (
-              <div className="absolute right-0 mt-2 w-52 rounded-xl p-1.5 z-50 flex flex-col gap-0.5 shadow-2xl border border-border bg-popover text-popover-foreground">
-                <Link
-                  to="/jobs"
-                  onClick={() => setAppsOpen(false)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm skeuo-dropdown-item font-semibold text-foreground hover:bg-muted/80 transition"
-                >
-                  <Home size={14} className="text-blue-500 shrink-0" />
-                  <span>CareerSphere Jobs</span>
-                </Link>
-                <a
-                  href="/dashboard"
-                  onClick={() => setAppsOpen(false)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm skeuo-dropdown-item text-muted-foreground hover:bg-muted/80 hover:text-foreground transition"
-                >
-                  <LayoutDashboard size={14} className="text-muted-foreground shrink-0" />
-                  <span>CareerSphere Recruiter</span>
-                </a>
-                <a
-                  href="/developer"
-                  onClick={() => setAppsOpen(false)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm skeuo-dropdown-item text-muted-foreground hover:bg-muted/80 hover:text-foreground transition"
-                >
-                  <Bot size={14} className="text-muted-foreground shrink-0" />
-                  <span>CareerSphere Developer</span>
-                </a>
-                <Link
-                  to="/support"
-                  onClick={() => setAppsOpen(false)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm skeuo-dropdown-item text-muted-foreground hover:bg-muted/80 hover:text-foreground transition border-t border-border/50 mt-1 pt-2"
-                >
-                  <HelpCircle size={14} className="text-muted-foreground shrink-0" />
-                  <span>Support & Appeals</span>
-                </Link>
-              </div>
-            )}
-          </div>
-          {isLoggedIn && (
-            <button
-              data-tour="seeker-help-btn"
-              aria-label="Help & Tour"
-              onClick={startTour}
-              className="pill p-2 text-muted-foreground hover:bg-muted hover:text-foreground flex items-center justify-center transition shrink-0"
-              title="Help & Tour"
-            >
-              <HelpCircle className="h-4 w-4" />
-            </button>
-          )}
-          {isLoggedIn ? (
-            <>
-              <Link
-                to="/jobs/dashboard"
-                data-tour="seeker-nav-dashboard"
-                className="pill hidden border border-border bg-background px-4 py-2 text-sm font-medium hover:bg-muted sm:inline-flex"
-              >
-                Dashboard
-              </Link>
-              <div className="flex items-center gap-2">
-                <NotificationBell />
-                <Link
-                  to="/jobs/profile"
-                  className="flex items-center justify-center h-10 w-10 rounded-full bg-accent/10 text-accent hover:bg-accent/20 transition shrink-0"
-                  aria-label="Profile"
-                >
-                  {rawAvatar && !imgError ? (
-                    <img
-                      src={rawAvatar.startsWith('http') || rawAvatar.startsWith('data:') ? rawAvatar : `${API_HOST}${rawAvatar}`}
-                      alt={seekerData?.full_name || 'Profile'}
-                      onError={() => setImgError(true)}
-                      className="h-8 w-8 rounded-full object-cover border border-accent/20 bg-muted"
-                    />
-                  ) : (
-                    <div className="grid h-8 w-8 place-items-center rounded-full bg-accent text-xs font-bold text-white uppercase">
-                      {getSeekerInitial(seekerData?.full_name)}
-                    </div>
-                  )}
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  className="pill p-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                  title="Logout"
-                >
-                  <LogOut className="h-4 w-4" />
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              <Link
-                to="/jobs/login"
-                className="pill hidden border border-border bg-background px-4 py-2 text-sm font-medium hover:bg-muted sm:inline-flex"
-              >
-                Sign in
-              </Link>
-              <Link
-                to="/jobs/register"
-                className="pill bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
-              >
-                Get started
-              </Link>
-            </>
-          )}
-        </div>
-      </div>
-
-      <nav className="flex gap-1 overflow-x-auto hide-scrollbar border-t border-border/60 px-3 py-2 md:hidden">
-        {filteredLinks.map((l) => {
-          const active = pathname === l.to;
-          const Icon = l.icon;
-          const tourId = `seeker-nav-${l.label.toLowerCase().replace(/\s+/g, '-')}`;
-          return (
-            <Link
-              key={l.to}
-              to={l.to}
-              data-tour={tourId}
-              className={`pill flex shrink-0 items-center gap-1.5 px-3 py-1.5 text-xs font-medium ${
-                active 
-                  ? "bg-muted text-foreground font-medium shadow-sm" 
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
-              }`}
-            >
-              <Icon className="h-3.5 w-3.5" />
-              {l.label}
-            </Link>
-          );
-        })}
-      </nav>
-
-      {isLoggedIn && (
-        <OnboardingTour
-          tourKey="seeker_portal"
-          steps={SEEKER_TOUR_STEPS}
-          isOpen={tourOpen}
-          onClose={closeTour}
-        />
-      )}
+        {isLoggedIn && (
+          <OnboardingTour
+            tourKey="seeker_portal"
+            steps={SEEKER_TOUR_STEPS}
+            isOpen={tourOpen}
+            onClose={closeTour}
+          />
+        )}
       </header>
     </div>
   );
@@ -469,8 +462,8 @@ export function Footer() {
   ];
 
   const footerSections = [
-    { 
-      t: "Job Seekers", 
+    {
+      t: "Job Seekers",
       items: [
         { label: "Find Jobs", to: "/jobs/search" },
         { label: "Explore Companies", to: "/jobs/companies" },
@@ -478,29 +471,28 @@ export function Footer() {
         { label: "Market Trends", to: "/jobs/trends" },
         { label: "AI Mock Interview", to: "/jobs/mock-interview" },
         { label: "Premium Plans", to: "/jobs/billing" }
-      ] 
+      ]
     },
-    { 
-      t: "Developers & API", 
+    {
+      t: "Developers & API",
       items: [
         { label: "Developer Portal", to: "/developer" },
         { label: "API Documentation", to: "/developer/portal/docs" },
         { label: "API Keys", to: "/developer/portal/keys" },
-        { label: "Webhooks", to: "/developer/portal/webhooks" },
         { label: "Usage & Billing", to: "/developer/portal/usage" }
-      ] 
+      ]
     },
-    { 
-      t: "Portals & Login", 
+    {
+      t: "Portals & Login",
       items: [
         { label: "Job Seeker Portal", to: "/jobs" },
         { label: "Recruiter Workspace", to: "/login" },
         { label: "Developer Portal", to: "/developer" },
         { label: "Admin Login", to: "/admin/login" }
-      ] 
+      ]
     },
-    { 
-      t: "Company & Legal", 
+    {
+      t: "Company & Legal",
       items: [
         { label: "About Us", to: "/about" },
         { label: "Contact Support", to: "/contact" },
@@ -508,7 +500,7 @@ export function Footer() {
         { label: "Terms of Service", to: "/terms" },
         { label: "Privacy Policy", to: "/privacy" },
         { label: "Refund Policy", to: "/refund-policy" }
-      ] 
+      ]
     },
   ];
 
@@ -517,22 +509,21 @@ export function Footer() {
       <div className="mx-auto flex flex-col lg:flex-row justify-between items-start max-w-7xl w-full px-6 py-12 gap-10 relative z-10">
         {/* Brand Section */}
         <div className="max-w-xs w-full space-y-4">
-          <Link 
-            to="/jobs" 
+          <Link
+            to="/jobs"
             className="flex items-center gap-2.5 w-max group"
             onMouseEnter={() => setLogoHovered(true)}
             onMouseLeave={() => setLogoHovered(false)}
           >
-            <img 
-              src="/logo.png" 
-              alt="CareerSphere" 
-              className={`w-9 h-9 object-contain shrink-0 rounded-lg transition-all duration-300 ${logoHovered ? 'scale-105 shadow-md ring-2 ring-blue-500/20' : ''}`} 
+            <img
+              src="/logo.png"
+              alt="CareerSphere"
+              className={`w-9 h-9 object-contain shrink-0 rounded-lg transition-all duration-300 ${logoHovered ? 'scale-105 shadow-md ring-2 ring-blue-500/20' : ''}`}
             />
-            <span className={`font-display text-2xl font-bold tracking-tight transition-all duration-300 ${
-              logoHovered 
-                ? "text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-blue-600" 
+            <span className={`font-display text-2xl font-bold tracking-tight transition-all duration-300 ${logoHovered
+                ? "text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-blue-600"
                 : "text-foreground"
-            }`}>
+              }`}>
               CareerSphere
             </span>
           </Link>

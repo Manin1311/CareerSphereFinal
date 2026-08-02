@@ -174,4 +174,40 @@ body {
   box-shadow: 0 10px 30px rgba(255, 255, 255, 0.22) !important;
 }
 
+/* ── Resume Paper Container (Always crisp white paper with dark text in both dark/light modes) ── */
+.resume-page,
+.dark .resume-page {
+  background-color: #ffffff !important;
+  color: #111827 !important;
+}
+
+.resume-page h1,
+.dark .resume-page h1,
+.resume-page h2,
+.dark .resume-page h2,
+.resume-page h3,
+.dark .resume-page h3,
+.resume-page h4,
+.dark .resume-page h4,
+.resume-page strong,
+.dark .resume-page strong {
+  color: #111827 !important;
+}
+
+.resume-page p,
+.dark .resume-page p,
+.resume-page span,
+.dark .resume-page span,
+.resume-page li,
+.dark .resume-page li,
+.resume-page div,
+.dark .resume-page div {
+  color: #374151 !important;
+}
+
+.resume-page a,
+.dark .resume-page a {
+  color: #2563eb !important;
+}
+
 
