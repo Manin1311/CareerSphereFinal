@@ -16,7 +16,7 @@ load_dotenv(Path(__file__).resolve().parent.parent / ".env", override=True)
 
 import django
 # Initialize Django environment
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'vishleshan_backend.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'careersphere_backend.settings')
 django.setup()
 
 from celery import Celery

@@ -102,7 +102,7 @@ SEED_DATA = [
                 },
                 "location": "Remote",
                 "employment_type": "Full-time",
-                "salary_range": "Competitive",
+                "salary_range": "₹4–8 LPA",
                 "experience_level": "Mid-Level"
             },
             {
@@ -149,7 +149,7 @@ SEED_DATA = [
                 "inferred_skills": [],
                 "location": "Remote",
                 "employment_type": "Full-time",
-                "salary_range": "Competitive",
+                "salary_range": "₹3–6 LPA",
                 "experience_level": "Mid-Level"
             },
             {
@@ -246,7 +246,7 @@ SEED_DATA = [
                 },
                 "location": "Remote",
                 "employment_type": "Full-time",
-                "salary_range": "Competitive",
+                "salary_range": "₹18–32 LPA",
                 "experience_level": "Mid-Level"
             },
             {
@@ -536,12 +536,12 @@ SEED_DATA = [
                         "Implement CI/CD pipelines"
                     ],
                     "industry": "Technology",
-                    "salary_range": "Competitive",
-                    "employment_type": "Full-time"
+                    "salary_range": "₹18,000 – ₹20,000/month",
+                    "employment_type": "Part-time"
                 },
-                "location": "Remote",
-                "employment_type": "Full-time",
-                "salary_range": "Competitive",
+                "location": "Ahmedabad",
+                "employment_type": "Part-time",
+                "salary_range": "₹18,000 – ₹20,000/month",
                 "experience_level": "Mid Level"
             }
         ]
@@ -589,7 +589,7 @@ SEED_DATA = [
                 "inferred_skills": [],
                 "location": "Remote",
                 "employment_type": "Full-time",
-                "salary_range": "Competitive",
+                "salary_range": "₹8–15 LPA",
                 "experience_level": "Mid-Level"
             }
         ]

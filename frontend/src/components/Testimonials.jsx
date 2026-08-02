@@ -55,7 +55,7 @@ const TestimonialCard = ({ t, index, timeAgo, onEdit, onDelete }) => {
         src={avatarSrc} 
         alt={t.author} 
         onError={() => setImgError(true)}
-        className="w-9 h-9 rounded-full object-cover border border-blue-500/20" 
+        className="w-8 h-8 rounded-full object-cover border border-blue-500/20" 
       />
     ) : (
       <div className="author-avatar font-bold text-xs">
@@ -119,16 +119,16 @@ const TestimonialCard = ({ t, index, timeAgo, onEdit, onDelete }) => {
 
         {/* Official Response */}
         {t.officialReply && (
-          <div className="mt-2 mb-1 p-2.5 rounded-xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 text-[11px]">
+          <div className="mt-2 mb-3 p-2.5 rounded-xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 text-[11px]">
             <div className="font-bold text-sky-700 dark:text-sky-300 inline-flex items-center gap-1 mb-1">
               <ShieldCheck size={12} /> Official Response
             </div>
-            <p className="text-gray-600 dark:text-gray-300">{t.officialReply}</p>
+            <p className="text-gray-600 dark:text-gray-300 line-clamp-2">{t.officialReply}</p>
           </div>
         )}
         
-        <div className="testimonial-author flex items-center justify-between w-full">
-          <div className="flex items-center gap-3 flex-1 min-w-0">
+        <div className="testimonial-author flex items-center justify-between w-full min-w-0">
+          <div className="flex items-center gap-3 flex-1 min-w-0 overflow-hidden">
             {t.authorId ? (
               <Link 
                 to={
@@ -138,10 +138,10 @@ const TestimonialCard = ({ t, index, timeAgo, onEdit, onDelete }) => {
                     ? `/developer/profile/${t.authorId}`
                     : `/jobs/profile/${t.authorId}`
                 } 
-                className="flex items-center gap-3 group hover:opacity-85 transition-opacity no-underline text-inherit min-w-0"
+                className="flex items-center gap-3 group hover:opacity-85 transition-opacity no-underline text-inherit min-w-0 overflow-hidden"
               >
                 <AvatarEl />
-                <div className="author-info min-w-0">
+                <div className="author-info min-w-0 flex-1 overflow-hidden">
                   <div className="flex items-center gap-1.5 min-w-0 max-w-full">
                     <span className="font-bold text-sm text-gray-900 dark:text-white truncate max-w-[140px] inline-block">
                       {t.author}
@@ -149,9 +149,9 @@ const TestimonialCard = ({ t, index, timeAgo, onEdit, onDelete }) => {
                     {t.isVerified && <VerifiedBadge size={14} className="shrink-0" />}
                     {t.isOwn && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-sky-100 dark:bg-sky-900/60 text-sky-700 dark:text-sky-200 border border-sky-300 dark:border-sky-700 shrink-0">You</span>}
                   </div>
-                  <p className="text-xs font-medium text-gray-600 dark:text-gray-300 truncate">{t.role}</p>
+                  <p className="text-xs font-medium text-gray-600 dark:text-gray-300 truncate max-w-full block">{t.role}</p>
                   {t.roleBadge && (
-                    <span className="text-[9px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700 mt-1 inline-flex items-center">
+                    <span className="text-[9px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700 mt-1 inline-flex items-center shrink-0">
                       {getRoleIcon(t.user_type)}
                       {t.roleBadge}
                     </span>
@@ -159,9 +159,9 @@ const TestimonialCard = ({ t, index, timeAgo, onEdit, onDelete }) => {
                 </div>
               </Link>
             ) : (
-              <div className="flex items-center gap-3 min-w-0">
+              <div className="flex items-center gap-3 min-w-0 overflow-hidden">
                 <AvatarEl />
-                <div className="author-info min-w-0">
+                <div className="author-info min-w-0 flex-1 overflow-hidden">
                   <div className="flex items-center gap-1.5 min-w-0 max-w-full">
                     <span className="font-bold text-sm text-gray-900 dark:text-white truncate max-w-[140px] inline-block">
                       {t.author}
@@ -169,9 +169,9 @@ const TestimonialCard = ({ t, index, timeAgo, onEdit, onDelete }) => {
                     {t.isVerified && <VerifiedBadge size={14} className="shrink-0" />}
                     {t.isOwn && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-sky-100 dark:bg-sky-900/60 text-sky-700 dark:text-sky-200 border border-sky-300 dark:border-sky-700 shrink-0">You</span>}
                   </div>
-                  <p className="text-xs font-medium text-gray-600 dark:text-gray-300 truncate">{t.role}</p>
+                  <p className="text-xs font-medium text-gray-600 dark:text-gray-300 truncate max-w-full block">{t.role}</p>
                   {t.roleBadge && (
-                    <span className="text-[9px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700 mt-1 inline-flex items-center">
+                    <span className="text-[9px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700 mt-1 inline-flex items-center shrink-0">
                       {getRoleIcon(t.user_type)}
                       {t.roleBadge}
                     </span>

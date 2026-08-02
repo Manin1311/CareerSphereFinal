@@ -16,12 +16,15 @@ def _serialize_company(company, is_following=False, active_sessions=None, follow
         criteria = s.criteria or {}
         preferred_locations = criteria.get("preferred_locations", [])
         loc = preferred_locations[0] if preferred_locations else "Remote"
+        sal = criteria.get("salary_range") or "Not Disclosed"
+        if sal == "Competitive":
+            sal = "Not Disclosed"
         open_jobs.append({
             "id": str(s.id),
             "job_title": s.job_title,
             "location": loc,
             "employment_type": "Full-time",
-            "salary_range": "Competitive"
+            "salary_range": sal
         })
         
     cid_str = str(company.id)

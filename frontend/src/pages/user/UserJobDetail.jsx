@@ -49,7 +49,7 @@ export default function UserJobDetail() {
           location: data.location || "Remote",
           type: data.employment_type || "Full-time",
           posted: data.created_at ? new Date(data.created_at).toLocaleDateString() : "Just now",
-          salary: data.salary_range || "Competitive",
+          salary: (data.salary_range && data.salary_range !== "Competitive") ? data.salary_range : "Not Disclosed",
           description: data.full_description || data.job_description,
           logoColor: "#4F46E5",
           logoPath: data.company_logo_path,

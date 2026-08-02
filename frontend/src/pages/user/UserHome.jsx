@@ -235,7 +235,7 @@ function Home() {
           location: j.location || "Remote",
           posted: j.created_at ? new Date(j.created_at).toLocaleDateString(undefined, {month: 'short', day: 'numeric'}) : "Recently",
           description: j.job_description ? (j.job_description.substring(0, 100) + "...") : "",
-          salary: j.salary_range || "Competitive",
+          salary: (j.salary_range && j.salary_range !== "Competitive") ? j.salary_range : "Not Disclosed",
           remote: j.location || "Remote",
           type: j.employment_type || "Full-time"
         }));

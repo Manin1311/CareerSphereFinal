@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 def _parse_job_description_meta(description: str) -> dict:
     """Parses salary, location, and employment type from job description text."""
     meta = {
-        "salary_range": "Competitive",
+        "salary_range": "Not Disclosed",
         "location": "Remote",
         "employment_type": "Full-time"
     }
@@ -62,7 +62,7 @@ def _parse_job_description_meta(description: str) -> dict:
         val = parts[1].strip()
         if not val:
             continue
-        if meta["salary_range"] == "Competitive" and key in ["salary", "remuneration", "pay", "package", "compensation"]:
+        if meta["salary_range"] in ["Not Disclosed", "Competitive"] and key in ["salary", "remuneration", "pay", "package", "compensation"]:
             meta["salary_range"] = val
         elif meta["location"] == "Remote" and key in ["location", "job location", "city", "place", "workplace", "based in"]:
             meta["location"] = val
@@ -75,11 +75,11 @@ def _parse_job_description_meta(description: str) -> dict:
 def _get_salary_range(session) -> str:
     # 1. First check if salary is explicitly defined in JD description text
     meta = _parse_job_description_meta(session.job_description)
-    if meta.get("salary_range") and meta["salary_range"] != "Competitive":
+    if meta.get("salary_range") and meta["salary_range"] not in ["Not Disclosed", "Competitive"]:
         return meta["salary_range"]
 
     criteria = session.criteria or {}
-    if isinstance(criteria, dict) and criteria.get("salary_range"):
+    if isinstance(criteria, dict) and criteria.get("salary_range") and criteria.get("salary_range") != "Competitive":
         return criteria["salary_range"]
 
     salary_min = criteria.get("salary_min")
@@ -105,7 +105,7 @@ def _get_salary_range(session) -> str:
         except (ValueError, TypeError):
             pass
 
-    return meta.get("salary_range", "Competitive")
+    return meta.get("salary_range", "Not Disclosed")
 
 
 def _session_to_job(session: Session, match_score=None, applied=False, is_saved=False, application_status=None) -> dict:

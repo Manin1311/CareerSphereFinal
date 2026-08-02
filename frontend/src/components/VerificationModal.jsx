@@ -52,7 +52,7 @@ export default function VerificationModal({ isOpen, onClose, type, value, role, 
     try {
       let endpoint = '';
       let payload = { role };
-      
+
       if (type === 'email') {
         endpoint = `${API_BASE_URL}/api/v1/auth/verification/send-email-otp`;
         payload.email = value;
@@ -86,7 +86,7 @@ export default function VerificationModal({ isOpen, onClose, type, value, role, 
       setError(`Please enter a valid ${minLength === 6 ? '6-digit' : '4 or 6-digit'} verification code.`);
       return;
     }
-    
+
     setIsLoading(true);
     setError('');
     setSuccess('');
@@ -125,9 +125,9 @@ export default function VerificationModal({ isOpen, onClose, type, value, role, 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn">
       <div className="relative w-full max-w-md rounded-2xl border border-gray-200/80 dark:border-zinc-800/80 bg-white/95 dark:bg-zinc-950/95 p-6 shadow-2xl backdrop-blur-md">
-        
+
         {/* Close Button */}
-        <button 
+        <button
           onClick={onClose}
           className="absolute right-4 top-4 text-gray-400 hover:text-charcoal dark:hover:text-white transition-colors"
         >
@@ -213,8 +213,8 @@ export default function VerificationModal({ isOpen, onClose, type, value, role, 
                       disabled={isSending || isLoading}
                       className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors focus:outline-none bg-blue-50/50 dark:bg-blue-950/20 px-3 py-1.5 rounded-lg border border-blue-100/30 dark:border-blue-900/30"
                     >
-                      <MessageSquare className="w-3.5 h-3.5" />
-                      Resend SMS
+                      {/* <MessageSquare className="w-3.5 h-3.5" /> */}
+
                     </button>
                     <button
                       type="button"

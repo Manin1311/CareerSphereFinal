@@ -220,12 +220,9 @@ export default function ResumeBuilderLanding() {
       
       <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
         {/* Hero Section */}
-        <section className="mb-12 text-center md:text-left md:flex md:items-center md:justify-between gap-8 border-b border-border/60 pb-8">
+        <section className="mb-12 text-center md:text-left border-b border-border/60 pb-8">
           <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-4 py-1.5 text-xs font-medium text-muted-foreground shadow-elevation-1 mb-4">
-              <Sparkles className="h-3.5 w-3.5 text-primary" />
-              Powered by ATS Compatibility Agent
-            </div>
+
             <h1 className="font-display text-4xl font-semibold tracking-tight sm:text-5xl">
               Create a resume that <span className="google-gradient-text">beats the bots</span>.
             </h1>
@@ -261,102 +258,6 @@ export default function ResumeBuilderLanding() {
                 />
               </label>
             </div>
-          </div>
-
-          {/* Quick Scanner card */}
-          <div className="mt-8 md:mt-0 w-full max-w-md bg-card rounded-3xl border border-border p-6 shadow-elevation-1">
-            <h3 className="text-lg font-medium flex items-center gap-2 mb-2">
-              <TrendingUp className="h-5 w-5 text-[var(--google-blue)]" />
-              Improve My Current Resume
-            </h3>
-            <p className="text-xs text-muted-foreground mb-4">
-              Run the ATS Agent on your currently uploaded profile resume to calculate your score and get top recommendations.
-            </p>
-
-            {atsLoading && (
-              <div className="py-6 flex flex-col items-center justify-center gap-2">
-                <Loader2 className="h-8 w-8 text-primary animate-spin" />
-                <span className="text-xs text-muted-foreground">ATS Compatibility Agent is analyzing...</span>
-              </div>
-            )}
-
-            {!atsLoading && !atsReport && !atsError && (
-              <button
-                onClick={handleScanCurrentResume}
-                className="w-full pill bg-blue-600 dark:bg-blue-600 text-white py-2.5 text-xs font-bold hover:bg-blue-700 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm"
-              >
-                <Sparkles size={14} /> Scan current profile resume
-              </button>
-            )}
-
-            {atsError && (
-              <div className="p-3 bg-destructive/10 border border-destructive/20 text-destructive rounded-2xl text-xs flex items-start gap-2 mb-4">
-                <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-                <div>
-                  <div className="font-semibold">Scan Failed</div>
-                  <div>{atsError}</div>
-                  <button onClick={handleScanCurrentResume} className="mt-2 text-primary hover:underline font-semibold block">
-                    Retry Check
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {atsReport && (
-              <div>
-                <div className="flex items-center gap-4 bg-muted/40 p-4 rounded-2xl border border-border/60 mb-4">
-                  <div className="relative w-16 h-16 flex items-center justify-center">
-                    <svg className="absolute w-full h-full transform -rotate-90">
-                      <circle
-                        cx="32"
-                        cy="32"
-                        r="27"
-                        stroke="rgba(37, 99, 235, 0.1)"
-                        strokeWidth="4"
-                        fill="transparent"
-                      />
-                      <circle
-                        cx="32"
-                        cy="32"
-                        r="27"
-                        stroke="rgb(37, 99, 235)"
-                        strokeWidth="4"
-                        fill="transparent"
-                        strokeDasharray="169.6"
-                        strokeDashoffset={169.6 - (169.6 * (atsReport.overallScore || 0)) / 100}
-                        className="transition-all duration-500 ease-out"
-                      />
-                    </svg>
-                    <span className="text-xl font-bold text-primary relative z-10">{atsReport.overallScore}%</span>
-                  </div>
-                  <div>
-                    <div className="text-sm font-semibold">ATS Compatibility Score</div>
-                    <div className="text-xs text-muted-foreground mt-0.5">
-                      {atsReport.overallScore >= 80 ? "Excellent compatibility profile!" : "Needs formatting & content improvements."}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-2 mb-4">
-                  <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Top Improvements Needed:</div>
-                  <ul className="space-y-1.5 text-xs text-foreground">
-                    {atsReport.topSuggestions?.slice(0, 3).map((s, idx) => (
-                      <li key={idx} className="flex gap-2 items-start">
-                        <span className="text-primary font-bold">•</span>
-                        <span>{s}</span>
-                      </li>
-                    )) || <li>No major suggestions found. Looking good!</li>}
-                  </ul>
-                </div>
-
-                <button
-                  onClick={handleImportResume}
-                  className="w-full text-center text-xs font-semibold text-primary hover:underline flex items-center justify-center gap-1"
-                >
-                  Import profile data to edit and fix details <ArrowRight className="h-3 w-3" />
-                </button>
-              </div>
-            )}
           </div>
         </section>
 
