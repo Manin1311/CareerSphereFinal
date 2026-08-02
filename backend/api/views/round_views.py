@@ -1241,13 +1241,14 @@ def finalize_interview(request):
     attempt.overall_score = summary.get("overall_score", 0)
     attempt.save()
 
-    # Recruiter review decision required: skip auto progression for interview attempts.
     cand = attempt.candidate
     rec = summary.get("recommendation", "").lower()
     score = summary.get("overall_score", 0)
     if score == 0 and ("proceed" in rec or "hire" in rec):
         score = 70.0
-    # auto_progress_candidate is skipped here to let recruiter decide manually
+
+    # Auto progress / reject candidate based on score vs round passing threshold
+    auto_progress_candidate(cand, attempt.round.session, score, attempt)
 
     # R1: Notify recruiter that candidate submitted the interview round
     try:
