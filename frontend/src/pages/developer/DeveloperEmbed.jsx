@@ -244,11 +244,11 @@ import { CareerSpherePanel } from '@between/vue';
               <button onClick={() => setIsCodeModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white z-10"><X size={20}/></button>
               
               <div className="flex bg-[#2D2D2D] border-b border-gray-700 px-4 pt-4">
-                 {Object.keys(activeSnippets).map(tab => (
-                    <button key={tab} onClick={() => setActiveTab(tab)} className={`px-6 py-3 text-sm font-semibold transition-colors ${activeTab === tab ? 'text-white border-b-2 border-white bg-[#1E1E1E]' : 'text-gray-400 hover:text-white'}`}>
-                      {tab}
-                    </button>
-                 ))}
+                  {Object.keys(activeSnippets).map(tab => (
+                     <button key={tab} onClick={() => setActiveTab(tab)} className={`px-6 py-3 text-sm transition-all duration-200 ${activeTab === tab ? 'text-white font-bold border-b-2 border-accent bg-[#1E1E1E]' : 'text-zinc-400 dark:text-zinc-400 hover:text-zinc-100 dark:hover:text-zinc-100 font-medium'}`}>
+                       {tab}
+                     </button>
+                  ))}
               </div>
               <div className="p-6 relative">
                  <button onClick={() => {navigator.clipboard.writeText(activeSnippets[activeTab]); toast.success("Code copied!")}} className="absolute top-6 right-6 px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white text-xs font-bold rounded shadow transition-colors font-sans">Copy Code</button>

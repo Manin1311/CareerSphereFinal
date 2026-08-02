@@ -39,9 +39,4 @@ export const DEVELOPER_PLANS = [
   }
 ];
 
-/** Billing page may show extra features per plan */
-export const DEVELOPER_PLANS_BILLING = DEVELOPER_PLANS.map(p => {
-  if (p.id === "starter") return { ...p, features: [...p.features, "Webhooks"] };
-  if (p.id === "business") return { ...p, features: [...p.features, "Embed UI Component"] };
-  return p;
-});
+export const DEVELOPER_PLANS_BILLING = DEVELOPER_PLANS;

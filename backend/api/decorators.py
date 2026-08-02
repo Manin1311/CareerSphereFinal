@@ -39,100 +39,106 @@ def verify_api_key_helper(request):
     Stashes the validated company on request.company.
     Stashes the resolved api_key object on request.company._api_key_obj for rate limits.
     """
-    # 1. API Key from header or query param
-    x_api_key = request.headers.get("X-API-Key", "")
-    if not x_api_key:
-        x_api_key = request.GET.get("x_api_key", "")
-    if x_api_key:
-        # Check standard recruiter keys
-        api_key_obj = APIKey.objects.filter(secret_key=x_api_key, is_active=True).first()
-        if not api_key_obj:
-            api_key_obj = APIKey.objects.filter(public_key=x_api_key, is_active=True).first()
-        if api_key_obj:
-            company = Company.objects.filter(id=api_key_obj.company_id, is_active=True).first()
-            if company:
-                api_key_obj.last_used_at = timezone.now()
-                api_key_obj.save(update_fields=['last_used_at'])
-                company._api_key_obj = api_key_obj
+    try:
+        # 1. API Key from header or query param
+        x_api_key = (
+            request.headers.get("X-API-Key") or
+            request.headers.get("x-api-key") or
+            request.META.get("HTTP_X_API_KEY") or
+            request.GET.get("x_api_key") or
+            request.GET.get("api_key") or
+            request.GET.get("key", "")
+        )
+        if x_api_key:
+            x_api_key = str(x_api_key).strip()
+
+            # Check developer keys first (supports both public_key and secret_key)
+            dev_key_obj = DeveloperAPIKey.objects.filter(secret_key=x_api_key).first()
+            if not dev_key_obj:
+                dev_key_obj = DeveloperAPIKey.objects.filter(public_key=x_api_key).first()
+
+            if dev_key_obj:
+                dev_acc = dev_key_obj.developer
+                company = Company.objects.filter(email=dev_acc.email).first()
+                if not company:
+                    company = Company.objects.create(
+                        name=dev_acc.company_name or dev_acc.full_name or "Developer Workspace",
+                        email=dev_acc.email,
+                        password_hash=dev_acc.password_hash or "pbkdf2_sha256$devkeypass",
+                        tier=dev_acc.tier or "free",
+                        is_active=True
+                    )
+                else:
+                    if company.tier != dev_acc.tier:
+                        company.tier = dev_acc.tier
+                        company.save(update_fields=['tier'])
+
+                dev_key_obj.last_used_at = timezone.now()
+                dev_key_obj.save(update_fields=['last_used_at'])
+                company._api_key_obj = dev_key_obj
                 request.company = company
                 return True
 
-        # Check developer keys
-        dev_key_obj = DeveloperAPIKey.objects.filter(secret_key=x_api_key, is_active=True).first()
-        if not dev_key_obj:
-            dev_key_obj = DeveloperAPIKey.objects.filter(public_key=x_api_key, is_active=True).first()
-        if dev_key_obj:
-            dev_acc = dev_key_obj.developer
-            company, created = Company.objects.get_or_create(
-                email=dev_acc.email,
-                defaults={
-                    "name": dev_acc.company_name,
-                    "password_hash": dev_acc.password_hash,
-                    "tier": dev_acc.tier,
-                    "is_active": True
-                }
-            )
-            if not created and company.tier != dev_acc.tier:
-                company.tier = dev_acc.tier
-                company.save(update_fields=['tier'])
-            dev_key_obj.last_used_at = timezone.now()
-            dev_key_obj.save(update_fields=['last_used_at'])
-            company._api_key_obj = dev_key_obj
-            request.company = company
-            return True
-
-    # 2. JWT Bearer token
-    token = ""
-    auth_header = request.headers.get("Authorization", "")
-    if auth_header and auth_header.startswith("Bearer "):
-        token = auth_header.split(" ", 1)[1]
-    else:
-        token = request.GET.get("token", "")
-        if not token:
-            token = request.GET.get("jwt", "")
-            
-    if token and token != "undefined" and token != "null":
-        try:
-            if redis_client.exists(f"blacklist:{token}"):
-                return False
-        except Exception:
-            pass
-        try:
-            payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
-            company_id = payload.get("company_id")
-            if company_id:
-                company = Company.objects.filter(id=company_id, is_active=True).first()
+            # Check standard recruiter keys
+            api_key_obj = APIKey.objects.filter(secret_key=x_api_key).first()
+            if not api_key_obj:
+                api_key_obj = APIKey.objects.filter(public_key=x_api_key).first()
+            if api_key_obj:
+                company = Company.objects.filter(id=api_key_obj.company_id, is_active=True).first()
                 if company:
-                    # Try to find default api key for rate-limit tracking
-                    api_key_obj = APIKey.objects.filter(company_id=company.id, is_active=True).first()
+                    api_key_obj.last_used_at = timezone.now()
+                    api_key_obj.save(update_fields=['last_used_at'])
                     company._api_key_obj = api_key_obj
                     request.company = company
                     return True
 
-            developer_id = payload.get("developer_id")
-            if developer_id:
-                dev_acc = DeveloperAccount.objects.filter(id=developer_id).first()
-                if dev_acc:
-                    company, created = Company.objects.get_or_create(
-                        email=dev_acc.email,
-                        defaults={
-                            "name": dev_acc.company_name,
-                            "password_hash": dev_acc.password_hash,
-                            "tier": dev_acc.tier,
-                            "is_active": True
-                        }
-                    )
-                    if not created and company.tier != dev_acc.tier:
-                        company.tier = dev_acc.tier
-                        company.save(update_fields=['tier'])
-                    
-                    # Try to find an active developer key for rate-limit tracking
-                    dev_key_obj = DeveloperAPIKey.objects.filter(developer_id=dev_acc.id, is_active=True).first()
-                    company._api_key_obj = dev_key_obj
-                    request.company = company
-                    return True
-        except JWTError:
-            pass
+        # 2. JWT Bearer token
+        token = ""
+        auth_header = request.headers.get("Authorization", "")
+        if auth_header and auth_header.startswith("Bearer "):
+            token = auth_header.split(" ", 1)[1]
+        else:
+            token = request.GET.get("token") or request.GET.get("jwt", "")
+                
+        if token and token != "undefined" and token != "null":
+            try:
+                if redis_client.exists(f"blacklist:{token}"):
+                    return False
+            except Exception:
+                pass
+            try:
+                payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+                company_id = payload.get("company_id")
+                if company_id:
+                    company = Company.objects.filter(id=company_id, is_active=True).first()
+                    if company:
+                        api_key_obj = APIKey.objects.filter(company_id=company.id, is_active=True).first()
+                        company._api_key_obj = api_key_obj
+                        request.company = company
+                        return True
+
+                developer_id = payload.get("developer_id")
+                if developer_id:
+                    dev_acc = DeveloperAccount.objects.filter(id=developer_id).first()
+                    if dev_acc:
+                        company = Company.objects.filter(email=dev_acc.email).first()
+                        if not company:
+                            company = Company.objects.create(
+                                name=dev_acc.company_name or dev_acc.full_name or "Developer Workspace",
+                                email=dev_acc.email,
+                                password_hash=dev_acc.password_hash or "pbkdf2_sha256$devkeypass",
+                                tier=dev_acc.tier or "free",
+                                is_active=True
+                            )
+                        dev_key_obj = DeveloperAPIKey.objects.filter(developer_id=dev_acc.id, is_active=True).first()
+                        company._api_key_obj = dev_key_obj
+                        request.company = company
+                        return True
+            except JWTError:
+                pass
+
+    except Exception as e:
+        logger.error("Error in verify_api_key_helper: %s", e, exc_info=True)
 
     return False
 

@@ -218,6 +218,7 @@ const DEFAULT_TESTIMONIALS = [
     initials: "A",
     rating: 5,
     user_type: "recruiter",
+    createdAt: new Date(Date.now() - 1000 * 60 * 25).toISOString(), // 25m ago
     color: "#3b82f6",
     size: "medium"
   },
@@ -231,6 +232,7 @@ const DEFAULT_TESTIMONIALS = [
     initials: "R",
     rating: 5,
     user_type: "job_seeker",
+    createdAt: new Date(Date.now() - 1000 * 60 * 180).toISOString(), // 3h ago
     color: "#10b981",
     size: "large"
   },
@@ -244,6 +246,7 @@ const DEFAULT_TESTIMONIALS = [
     initials: "D",
     rating: 5,
     user_type: "developer",
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), // 2d ago
     color: "#8b5cf6",
     size: "medium"
   }
@@ -299,7 +302,7 @@ const Testimonials = ({ userTypeFilter }) => {
             rating: r.rating || 5,
             review_type: r.review_type,
             user_type: r.user_type,
-            createdAt: r.created_at,
+            createdAt: r.updated_at || r.created_at,
             isOwn: r.is_own,
             officialReply: r.official_reply || null,
             rawReview: r,

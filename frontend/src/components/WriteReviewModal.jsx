@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Star, MessageSquareQuote, Loader2, CheckCircle2, Building2, User, Code2, ShieldCheck } from 'lucide-react';
 import { seekerAPI, recruiterAPI, publicAPI } from '../lib/api';
 import { portalReviews } from '../lib/portalApi';
@@ -125,9 +126,9 @@ export default function WriteReviewModal({
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-lg bg-white dark:bg-[#141417] text-charcoal dark:text-gray-100 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-800 p-6 md:p-8 overflow-hidden">
+  return createPortal(
+    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="relative w-full max-w-lg bg-white dark:bg-[#141417] text-charcoal dark:text-gray-100 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-800 p-6 md:p-8 overflow-hidden max-h-[90vh] overflow-y-auto">
         {/* Top Header */}
         <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 pb-4 mb-6">
           <div className="flex items-center gap-2.5">
@@ -322,6 +323,7 @@ export default function WriteReviewModal({
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

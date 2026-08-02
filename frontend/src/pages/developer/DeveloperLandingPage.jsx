@@ -34,7 +34,15 @@ export default function DeveloperLandingPage() {
   const [mobileMenu, setMobileMenu] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [activeTab, setActiveTab] = useState("Python");
-  
+  const [copiedCode, setCopiedCode] = useState(false);
+
+  const handleCopyCode = () => {
+    navigator.clipboard.writeText(tabs[activeTab]);
+    setCopiedCode(true);
+    toast.success("Code copied to clipboard!");
+    setTimeout(() => setCopiedCode(false), 2000);
+  };
+
   const [platformStats, setPlatformStats] = useState({
     resumes_per_min: "500+",
     latency: "<10ms",
@@ -50,9 +58,9 @@ export default function DeveloperLandingPage() {
           setPlatformStats(data.data);
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
-  
+
   const [appsOpen, setAppsOpen] = useState(false);
   const appsDropdownRef = React.useRef(null);
 
@@ -77,7 +85,7 @@ export default function DeveloperLandingPage() {
     if (token && token !== "undefined") {
       setIsDevLoggedIn(true);
       initFromStorage();
-      
+
       // Fetch latest profile from backend to ensure tier is up-to-date
       portalAuth.getMe()
         .then((meData) => {
@@ -141,28 +149,62 @@ const { data } = await response.json();
 // }`;
 
   const tabs = {
-    Python: `import requests
-response = requests.post(
-    "https://api.careersphere.indevs.in/api/v1/ingest/upload",
-    headers={"X-API-Key": "between_live_your_key"},
-r = requests.post(
-    "https://api.careersphere.indevs.in/api/v1/parse",
-    headers={"X-API-Key": "cs_live_your_key"},
-  )
-  print(r.json())
+    Python: `import os
+import json
+import requests
 
-// Node.js (Axios)
-const res = await axios.post(
-  'https://api.careersphere.indevs.in/api/v1/parse',
-  formData,
-  { headers: { 'X-API-Key': 'cs_live_your_key' } }
-);
+def parse_resume(file_path, api_key):
+    url = "http://localhost:8000/api/v1/parse"
+    headers = {"X-API-Key": api_key}
 
-// cURL
-curl -X POST "https://api.careersphere.indevs.in/api/v1/parse" \
-  -H "X-API-Key: cs_live_your_key" \\
-  -F "session_id=your_session_id" \
-  -F "files=@resume.pdf"`
+    if not os.path.exists(file_path):
+        print(f"Error: File '{file_path}' not found.")
+        return
+
+    with open(file_path, "rb") as f:
+        files = {"file": f}
+        response = requests.post(url, headers=headers, files=files)
+
+    result = response.json()
+    # Pretty print indented JSON
+    print(json.dumps(result, indent=2))
+
+# Replace with your actual key and file path
+parse_resume("./resume.pdf", "YOUR_API_KEY")`,
+
+    "Node.js": `const fs = require('fs');
+const axios = require('axios');
+const FormData = require('form-data');
+
+async function parseResume(filePath, apiKey) {
+  try {
+    const formData = new FormData();
+    formData.append('file', fs.createReadStream(filePath));
+
+    const response = await axios.post(
+      'http://localhost:8000/api/v1/parse',
+      formData,
+      {
+        headers: {
+          ...formData.getHeaders(),
+          'X-API-Key': apiKey
+        }
+      }
+    );
+
+    // Pretty print indented JSON
+    console.log(JSON.stringify(response.data, null, 2));
+  } catch (error) {
+    console.error('Request Error:', error.response?.data || error.message);
+  }
+}
+
+parseResume('./resume.pdf', 'YOUR_API_KEY');`,
+
+    cURL: `# Pretty Print JSON Output in Terminal via python -m json.tool
+curl -s -X POST "http://localhost:8000/api/v1/parse" \\
+  -H "X-API-Key: YOUR_API_KEY" \\
+  -F "file=@resume.pdf" | python -m json.tool`
   };
 
   return (
@@ -253,18 +295,18 @@ curl -X POST "https://api.careersphere.indevs.in/api/v1/parse" \
       {/* MOBILE MENU */}
       {mobileMenu && (
         <div className="fixed inset-0 top-[60px] bg-white dark:bg-zinc-950 z-40 p-6 flex flex-col gap-6 md:hidden">
-            <Link to="/" className="text-lg font-semibold text-gray-700 dark:text-zinc-300" onClick={() => setMobileMenu(false)}>Home</Link>
-            <a href="#features" className="text-lg font-semibold text-gray-700 dark:text-zinc-300" onClick={() => setMobileMenu(false)}>Features</a>
-            <a href="#pricing" className="text-lg font-semibold text-gray-700 dark:text-zinc-300" onClick={() => setMobileMenu(false)}>Pricing</a>
-            <a href="#docs" className="text-lg font-semibold text-gray-700 dark:text-zinc-300" onClick={() => setMobileMenu(false)}>Docs</a>
-            <div className="border-t border-gray-100 dark:border-zinc-800/80 pt-6 flex flex-col gap-4">
-               {isDevLoggedIn ? (
-                  <Link to="/developer/portal" className="w-full text-center px-5 py-3 rounded-lg text-accent border border-accent font-semibold hover:bg-gray-100 dark:hover:bg-zinc-900" onClick={() => setMobileMenu(false)}>Dashboard</Link>
-               ) : (
-                  <Link to="/developer/login" className="w-full text-center px-5 py-3 rounded-lg text-accent border border-accent font-semibold hover:bg-gray-100 dark:hover:bg-zinc-900" onClick={() => setMobileMenu(false)}>Sign In</Link>
-               )}
-               <Link to="/developer/register" className="w-full text-center px-5 py-3 rounded-lg bg-accent text-white font-semibold" onClick={() => setMobileMenu(false)}>Get API Key</Link>
-            </div>
+          <Link to="/" className="text-lg font-semibold text-gray-700 dark:text-zinc-300" onClick={() => setMobileMenu(false)}>Home</Link>
+          <a href="#features" className="text-lg font-semibold text-gray-700 dark:text-zinc-300" onClick={() => setMobileMenu(false)}>Features</a>
+          <a href="#pricing" className="text-lg font-semibold text-gray-700 dark:text-zinc-300" onClick={() => setMobileMenu(false)}>Pricing</a>
+          <a href="#docs" className="text-lg font-semibold text-gray-700 dark:text-zinc-300" onClick={() => setMobileMenu(false)}>Docs</a>
+          <div className="border-t border-gray-100 dark:border-zinc-800/80 pt-6 flex flex-col gap-4">
+            {isDevLoggedIn ? (
+              <Link to="/developer/portal" className="w-full text-center px-5 py-3 rounded-lg text-accent border border-accent font-semibold hover:bg-gray-100 dark:hover:bg-zinc-900" onClick={() => setMobileMenu(false)}>Dashboard</Link>
+            ) : (
+              <Link to="/developer/login" className="w-full text-center px-5 py-3 rounded-lg text-accent border border-accent font-semibold hover:bg-gray-100 dark:hover:bg-zinc-900" onClick={() => setMobileMenu(false)}>Sign In</Link>
+            )}
+            <Link to="/developer/register" className="w-full text-center px-5 py-3 rounded-lg bg-accent text-white font-semibold" onClick={() => setMobileMenu(false)}>Get API Key</Link>
+          </div>
         </div>
       )}
 
@@ -276,8 +318,8 @@ curl -X POST "https://api.careersphere.indevs.in/api/v1/parse" \
           </span>
           <h1 className="text-4xl lg:text-[48px] font-black text-charcoal dark:text-white leading-[1.1] tracking-tight">
             Resume Intelligence API for{" "}
-            <FlipFadeText 
-              words={["HR Platforms", "ATS Systems", "Recruitment Apps", "Talent Pipelines"]} 
+            <FlipFadeText
+              words={["HR Platforms", "ATS Systems", "Recruitment Apps", "Talent Pipelines"]}
               className="text-amber-500 font-black"
             />
           </h1>
@@ -285,26 +327,26 @@ curl -X POST "https://api.careersphere.indevs.in/api/v1/parse" \
             Parse resumes semantically, match skills intelligently, and rank candidates — all through a simple REST API. Integrate in minutes.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto mt-2">
-             <Link to={isDevLoggedIn ? "/developer/portal" : "/developer/register"} className="flex justify-center items-center px-6 py-3.5 rounded-xl bg-accent text-white font-bold hover:bg-accent-dark transition-all hover:-translate-y-1 hover:shadow-lg hover:shadow-accent/30 gap-2">
-               {isDevLoggedIn ? "Go to Dashboard" : "Get Free API Key"} <span className="text-xl leading-none">→</span>
-             </Link>
-             <a href="#docs" className="flex justify-center items-center px-6 py-3.5 rounded-xl border-2 border-accent text-accent font-bold hover:bg-accent/5 dark:hover:bg-zinc-900 transition-all">
-               View Documentation
-             </a>
+            <Link to={isDevLoggedIn ? "/developer/portal" : "/developer/register"} className="flex justify-center items-center px-6 py-3.5 rounded-xl bg-accent text-white font-bold hover:bg-accent-dark transition-all hover:-translate-y-1 hover:shadow-lg hover:shadow-accent/30 gap-2">
+              {isDevLoggedIn ? "Go to Dashboard" : "Get Free API Key"} <span className="text-xl leading-none">→</span>
+            </Link>
+            <a href="#docs" className="flex justify-center items-center px-6 py-3.5 rounded-xl border-2 border-accent text-accent font-bold hover:bg-accent/5 dark:hover:bg-zinc-900 transition-all">
+              View Documentation
+            </a>
           </div>
           <div className="flex flex-col gap-2 mt-4 text-sm font-medium text-gray-500 dark:text-zinc-450">
-             <div className="flex items-center gap-2">
-                <Check size={16} className="text-green-500" /> No credit card required
-             </div>
-             <div className="flex items-center gap-2">
-                <Check size={16} className="text-green-500" /> 100 free parses/month
-             </div>
-             <div className="flex items-center gap-2">
-                <Check size={16} className="text-green-500" /> 99.9% uptime SLA
-             </div>
+            <div className="flex items-center gap-2">
+              <Check size={16} className="text-green-500" /> No credit card required
+            </div>
+            <div className="flex items-center gap-2">
+              <Check size={16} className="text-green-500" /> 100 free parses/month
+            </div>
+            <div className="flex items-center gap-2">
+              <Check size={16} className="text-green-500" /> 99.9% uptime SLA
+            </div>
           </div>
         </div>
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
@@ -326,148 +368,161 @@ curl -X POST "https://api.careersphere.indevs.in/api/v1/parse" \
       {/* STATS BAR */}
       <section className="w-full bg-[#111111] dark:bg-[#131316] py-8">
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-6 text-center divide-x divide-white/20">
-           <div className="flex flex-col px-4 text-white">
-             <span className="text-2xl font-bold">{platformStats.resumes_per_min || "500+"}</span>
-             <span className="text-sm font-medium text-white/90 uppercase tracking-wide">Resumes/min</span>
-           </div>
-           <div className="flex flex-col px-4 text-white">
-             <span className="text-2xl font-bold">{platformStats.latency || "<10ms"}</span>
-             <span className="text-sm font-medium text-white/90 uppercase tracking-wide">Latency</span>
-           </div>
-           <div className="flex flex-col px-4 text-white">
-             <span className="text-2xl font-bold">{platformStats.uptime || "99.9%"}</span>
-             <span className="text-sm font-medium text-white/90 uppercase tracking-wide">Uptime</span>
-           </div>
-           <div className="flex flex-col px-4 text-white">
-             <span className="text-2xl font-bold">{platformStats.skills || "5,000+"}</span>
-             <span className="text-sm font-medium text-white/90 uppercase tracking-wide">Skills</span>
-           </div>
+          <div className="flex flex-col px-4 text-white">
+            <span className="text-2xl font-bold">{platformStats.resumes_per_min || "500+"}</span>
+            <span className="text-sm font-medium text-white/90 uppercase tracking-wide">Resumes/min</span>
+          </div>
+          <div className="flex flex-col px-4 text-white">
+            <span className="text-2xl font-bold">{platformStats.latency || "<10ms"}</span>
+            <span className="text-sm font-medium text-white/90 uppercase tracking-wide">Latency</span>
+          </div>
+          <div className="flex flex-col px-4 text-white">
+            <span className="text-2xl font-bold">{platformStats.uptime || "99.9%"}</span>
+            <span className="text-sm font-medium text-white/90 uppercase tracking-wide">Uptime</span>
+          </div>
+          <div className="flex flex-col px-4 text-white">
+            <span className="text-2xl font-bold">{platformStats.skills || "5,000+"}</span>
+            <span className="text-sm font-medium text-white/90 uppercase tracking-wide">Skills</span>
+          </div>
         </div>
       </section>
 
       {/* HOW IT WORKS */}
       <section className="py-24 max-w-7xl mx-auto px-6" id="how-it-works">
-         <div className="text-center mb-16">
-           <h2 className="text-3xl font-bold text-charcoal dark:text-white">How it works</h2>
-           <p className="text-gray-500 dark:text-zinc-400 mt-4">Integrate automated intelligence into your platform in 3 easy steps.</p>
-         </div>
-         <div className="flex flex-col md:flex-row gap-8 items-start relative">
-            <div className="hidden md:block absolute top-[44px] left-[15%] right-[15%] h-[2px] bg-gray-200 dark:bg-zinc-800 z-0"></div>
-            
-            <div className="flex-1 flex flex-col items-center text-center relative z-10">
-               <div className="w-24 h-24 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800/80 dev-step-circle flex items-center justify-center text-4xl mb-6 font-bold text-accent">1</div>
-               <h3 className="text-xl font-bold mb-3 text-charcoal dark:text-white flex items-center justify-center gap-2">Get API Key</h3>
-               <p className="text-gray-500 dark:text-zinc-400 font-medium">Create an account and generate a live API key in your developer dashboard to authenticate your application.</p>
-            </div>
-            
-            <div className="flex-1 flex flex-col items-center text-center relative z-10">
-               <div className="w-24 h-24 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800/80 dev-step-circle flex items-center justify-center text-4xl mb-6 font-bold text-accent">2</div>
-               <h3 className="text-xl font-bold mb-3 text-charcoal dark:text-white flex items-center justify-center gap-2">Send Resumes</h3>
-               <p className="text-gray-500 dark:text-zinc-400 font-medium">Post PDF, DOCX, ZIP files or raw text to our secure endpoints. We process them synchronously or asynchronously.</p>
-            </div>
-            
-            <div className="flex-1 flex flex-col items-center text-center relative z-10">
-               <div className="w-24 h-24 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800/80 dev-step-circle flex items-center justify-center text-4xl mb-6 font-bold text-accent">3</div>
-               <h3 className="text-xl font-bold mb-3 text-charcoal dark:text-white flex items-center justify-center gap-2">Get Results</h3>
-               <p className="text-gray-500 dark:text-zinc-400 font-medium">Receive structured JSON containing normalized skills, normalized job titles, experience data and contextual rankings.</p>
-            </div>
-         </div>
+        <div className="text-center mb-16">
+          <h2 className="text-3xl font-bold text-charcoal dark:text-white">How it works</h2>
+          <p className="text-gray-500 dark:text-zinc-400 mt-4">Integrate automated intelligence into your platform in 3 easy steps.</p>
+        </div>
+        <div className="flex flex-col md:flex-row gap-8 items-start relative">
+          <div className="hidden md:block absolute top-[44px] left-[15%] right-[15%] h-[2px] bg-gray-200 dark:bg-zinc-800 z-0"></div>
+
+          <div className="flex-1 flex flex-col items-center text-center relative z-10">
+            <div className="w-24 h-24 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800/80 dev-step-circle flex items-center justify-center text-4xl mb-6 font-bold text-accent">1</div>
+            <h3 className="text-xl font-bold mb-3 text-charcoal dark:text-white flex items-center justify-center gap-2">Get API Key</h3>
+            <p className="text-gray-500 dark:text-zinc-400 font-medium">Create an account and generate a live API key in your developer dashboard to authenticate your application.</p>
+          </div>
+
+          <div className="flex-1 flex flex-col items-center text-center relative z-10">
+            <div className="w-24 h-24 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800/80 dev-step-circle flex items-center justify-center text-4xl mb-6 font-bold text-accent">2</div>
+            <h3 className="text-xl font-bold mb-3 text-charcoal dark:text-white flex items-center justify-center gap-2">Send Resumes</h3>
+            <p className="text-gray-500 dark:text-zinc-400 font-medium">Post PDF, DOCX, ZIP files or raw text to our secure endpoints. We process them synchronously or asynchronously.</p>
+          </div>
+
+          <div className="flex-1 flex flex-col items-center text-center relative z-10">
+            <div className="w-24 h-24 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800/80 dev-step-circle flex items-center justify-center text-4xl mb-6 font-bold text-accent">3</div>
+            <h3 className="text-xl font-bold mb-3 text-charcoal dark:text-white flex items-center justify-center gap-2">Get Results</h3>
+            <p className="text-gray-500 dark:text-zinc-400 font-medium">Receive structured JSON containing normalized skills, normalized job titles, experience data and contextual rankings.</p>
+          </div>
+        </div>
       </section>
 
       {/* FEATURES GRID */}
       <section className="py-24 bg-white dark:bg-zinc-950 border-y border-gray-100 dark:border-zinc-800/80" id="features">
-         <div className="max-w-7xl mx-auto px-6">
-           <div className="mb-16">
-             <h2 className="text-3xl lg:text-4xl font-bold text-charcoal dark:text-white text-center">Everything you need for intelligent hiring</h2>
-           </div>
-           
-           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-             
-             <div className="p-8 rounded-2xl bg-gray-50 dark:bg-zinc-900/50 border-2 border-transparent hover:border-accent hover:bg-white dark:hover:bg-zinc-900 hover:shadow-xl dark:hover:shadow-none hover:shadow-amber-500/5 transition-all duration-300 group">
-               <Search size={32} className="text-accent mb-4 group-hover:scale-110 transition-transform origin-left" />
-               <h3 className="text-xl font-bold mb-3 text-charcoal dark:text-white">Semantic Matching</h3>
-               <p className="text-gray-500 dark:text-zinc-400 leading-relaxed font-medium">"React.js = ReactJS = react js — we understand it all."</p>
-             </div>
-             
-             <div className="p-8 rounded-2xl bg-gray-50 dark:bg-zinc-900/50 border-2 border-transparent hover:border-accent hover:bg-white dark:hover:bg-zinc-900 hover:shadow-xl dark:hover:shadow-none hover:shadow-amber-500/5 transition-all duration-300 group">
-               <FileText size={32} className="text-accent mb-4 group-hover:scale-110 transition-transform origin-left" />
-               <h3 className="text-xl font-bold mb-3 text-charcoal dark:text-white">Multi-Format Parsing</h3>
-               <p className="text-gray-500 dark:text-zinc-400 leading-relaxed font-medium">"PDF, DOCX, plain text, ZIP archives, Google Drive directly connected."</p>
-             </div>
-             
-             <div className="p-8 rounded-2xl bg-gray-50 dark:bg-zinc-900/50 border-2 border-transparent hover:border-accent hover:bg-white dark:hover:bg-zinc-900 hover:shadow-xl dark:hover:shadow-none hover:shadow-amber-500/5 transition-all duration-300 group">
-               <Brain size={32} className="text-accent mb-4 group-hover:scale-110 transition-transform origin-left" />
-               <h3 className="text-xl font-bold mb-3 text-charcoal dark:text-white">Skill Normalization</h3>
-               <p className="text-gray-500 dark:text-zinc-400 leading-relaxed font-medium">"Auto-maps synonyms, infers related skills implicitly mentioned, detects proficiency levels."</p>
-             </div>
-             
-             <div className="p-8 rounded-2xl bg-gray-50 dark:bg-zinc-900/50 border-2 border-transparent hover:border-accent hover:bg-white dark:hover:bg-zinc-900 hover:shadow-xl dark:hover:shadow-none hover:shadow-amber-500/5 transition-all duration-300 group">
-               <Cpu size={32} className="text-accent mb-4 group-hover:scale-110 transition-transform origin-left" />
-               <h3 className="text-xl font-bold mb-3 text-charcoal dark:text-white">AI Chatbot API</h3>
-               <p className="text-gray-500 dark:text-zinc-400 leading-relaxed font-medium">"Query your candidate database in natural language through our API interface."</p>
-             </div>
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold text-charcoal dark:text-white text-center">Everything you need for intelligent hiring</h2>
+          </div>
 
-             <div className="p-8 rounded-2xl bg-gray-50 dark:bg-zinc-900/50 border-2 border-transparent hover:border-accent hover:bg-white dark:hover:bg-zinc-900 hover:shadow-xl dark:hover:shadow-none hover:shadow-amber-500/5 transition-all duration-300 group">
-               <Zap size={32} className="text-accent mb-4 group-hover:scale-110 transition-transform origin-left" />
-               <h3 className="text-xl font-bold mb-3 text-charcoal dark:text-white">Batch Processing</h3>
-               <p className="text-gray-500 dark:text-zinc-400 leading-relaxed font-medium">"Process 500 resumes asynchronously at once with webhook notifications on completion."</p>
-             </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-             <div className="p-8 rounded-2xl bg-gray-50 dark:bg-zinc-900/50 border-2 border-transparent hover:border-accent hover:bg-white dark:hover:bg-zinc-900 hover:shadow-xl dark:hover:shadow-none hover:shadow-amber-500/5 transition-all duration-300 group">
-               <Lock size={32} className="text-accent mb-4 group-hover:scale-110 transition-transform origin-left" />
-               <h3 className="text-xl font-bold mb-3 text-charcoal dark:text-white">Enterprise Security</h3>
-               <p className="text-gray-500 dark:text-zinc-400 leading-relaxed font-medium">"Secure API keys, strict rate limiting, domain whitelisting, and CORS compliant."</p>
-             </div>
+            <div className="p-8 rounded-2xl bg-gray-50 dark:bg-zinc-900/50 border-2 border-transparent hover:border-accent hover:bg-white dark:hover:bg-zinc-900 hover:shadow-xl dark:hover:shadow-none hover:shadow-amber-500/5 transition-all duration-300 group">
+              <Search size={32} className="text-accent mb-4 group-hover:scale-110 transition-transform origin-left" />
+              <h3 className="text-xl font-bold mb-3 text-charcoal dark:text-white">Semantic Matching</h3>
+              <p className="text-gray-500 dark:text-zinc-400 leading-relaxed font-medium">"React.js = ReactJS = react js — we understand it all."</p>
+            </div>
 
-           </div>
-         </div>
+            <div className="p-8 rounded-2xl bg-gray-50 dark:bg-zinc-900/50 border-2 border-transparent hover:border-accent hover:bg-white dark:hover:bg-zinc-900 hover:shadow-xl dark:hover:shadow-none hover:shadow-amber-500/5 transition-all duration-300 group">
+              <FileText size={32} className="text-accent mb-4 group-hover:scale-110 transition-transform origin-left" />
+              <h3 className="text-xl font-bold mb-3 text-charcoal dark:text-white">Multi-Format Parsing</h3>
+              <p className="text-gray-500 dark:text-zinc-400 leading-relaxed font-medium">"PDF, DOCX, plain text, ZIP archives, Google Drive directly connected."</p>
+            </div>
+
+            <div className="p-8 rounded-2xl bg-gray-50 dark:bg-zinc-900/50 border-2 border-transparent hover:border-accent hover:bg-white dark:hover:bg-zinc-900 hover:shadow-xl dark:hover:shadow-none hover:shadow-amber-500/5 transition-all duration-300 group">
+              <Brain size={32} className="text-accent mb-4 group-hover:scale-110 transition-transform origin-left" />
+              <h3 className="text-xl font-bold mb-3 text-charcoal dark:text-white">Skill Normalization</h3>
+              <p className="text-gray-500 dark:text-zinc-400 leading-relaxed font-medium">"Auto-maps synonyms, infers related skills implicitly mentioned, detects proficiency levels."</p>
+            </div>
+
+            <div className="p-8 rounded-2xl bg-gray-50 dark:bg-zinc-900/50 border-2 border-transparent hover:border-accent hover:bg-white dark:hover:bg-zinc-900 hover:shadow-xl dark:hover:shadow-none hover:shadow-amber-500/5 transition-all duration-300 group">
+              <Cpu size={32} className="text-accent mb-4 group-hover:scale-110 transition-transform origin-left" />
+              <h3 className="text-xl font-bold mb-3 text-charcoal dark:text-white">AI Chatbot API</h3>
+              <p className="text-gray-500 dark:text-zinc-400 leading-relaxed font-medium">"Query your candidate database in natural language through our API interface."</p>
+            </div>
+
+            <div className="p-8 rounded-2xl bg-gray-50 dark:bg-zinc-900/50 border-2 border-transparent hover:border-accent hover:bg-white dark:hover:bg-zinc-900 hover:shadow-xl dark:hover:shadow-none hover:shadow-amber-500/5 transition-all duration-300 group">
+              <Zap size={32} className="text-accent mb-4 group-hover:scale-110 transition-transform origin-left" />
+              <h3 className="text-xl font-bold mb-3 text-charcoal dark:text-white">Batch Processing</h3>
+              <p className="text-gray-500 dark:text-zinc-400 leading-relaxed font-medium">"Process 500 resumes asynchronously at once with webhook notifications on completion."</p>
+            </div>
+
+            <div className="p-8 rounded-2xl bg-gray-50 dark:bg-zinc-900/50 border-2 border-transparent hover:border-accent hover:bg-white dark:hover:bg-zinc-900 hover:shadow-xl dark:hover:shadow-none hover:shadow-amber-500/5 transition-all duration-300 group">
+              <Lock size={32} className="text-accent mb-4 group-hover:scale-110 transition-transform origin-left" />
+              <h3 className="text-xl font-bold mb-3 text-charcoal dark:text-white">Enterprise Security</h3>
+              <p className="text-gray-500 dark:text-zinc-400 leading-relaxed font-medium">"Secure API keys, strict rate limiting, domain whitelisting, and CORS compliant."</p>
+            </div>
+
+          </div>
+        </div>
       </section>
 
       {/* 3D TECH STACK ORBIT */}
-       <section className="py-16 bg-gray-50/50 dark:bg-zinc-900/30 border-b border-gray-100 dark:border-zinc-800/80 overflow-hidden">
-         <div className="max-w-7xl mx-auto px-6">
-           <div className="text-center max-w-2xl mx-auto mb-6">
-             <span className="px-3.5 py-1 rounded-full bg-accent/10 text-accent font-bold text-xs uppercase tracking-wider">
-               Language Agnostic
-             </span>
-             <h2 className="text-3xl font-extrabold text-charcoal dark:text-white mt-2">
-               Plug into any tech stack
-             </h2>
-             <p className="text-gray-500 dark:text-zinc-400 mt-2 text-sm">
-               Our REST API & Webhooks connect natively with React, Python, Node, Go, Rust, Flutter, and custom internal backends.
-             </p>
-           </div>
+      <section className="py-16 bg-gray-50/50 dark:bg-zinc-900/30 border-b border-gray-100 dark:border-zinc-800/80 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center max-w-2xl mx-auto mb-6">
+            <span className="px-3.5 py-1 rounded-full bg-accent/10 text-accent font-bold text-xs uppercase tracking-wider">
+              Language Agnostic
+            </span>
+            <h2 className="text-3xl font-extrabold text-charcoal dark:text-white mt-2">
+              Plug into any tech stack
+            </h2>
+            <p className="text-gray-500 dark:text-zinc-400 mt-2 text-sm">
+              Our REST API & Webhooks connect natively with React, Python, Node, Go, Rust, Flutter, and custom internal backends.
+            </p>
+          </div>
 
-           <div className="py-4">
-             <SolarSystem />
-           </div>
-         </div>
-       </section>
+          <div className="py-4">
+            <SolarSystem />
+          </div>
+        </div>
+      </section>
 
       {/* CODE EXAMPLES */}
       <section className="py-24 max-w-5xl mx-auto px-6" id="docs">
         <div className="text-center mb-12">
-           <h2 className="text-3xl font-bold text-charcoal dark:text-white">Integration is a breeze</h2>
-           <p className="text-gray-500 dark:text-zinc-400 mt-4">Available via standard REST interfaces in any language.</p>
-         </div>
-         <div className="bg-[#1E1E1E] rounded-2xl overflow-hidden shadow-2xl border border-gray-800">
-            <div className="flex border-b border-gray-700 bg-[#2D2D2D]">
+          <h2 className="text-3xl font-bold text-charcoal dark:text-white">Integration is a breeze</h2>
+          <p className="text-gray-500 dark:text-zinc-400 mt-4">Available via standard REST interfaces in any language.</p>
+        </div>
+        <div className="bg-[#1E1E1E] rounded-2xl overflow-hidden shadow-2xl border border-gray-800">
+          <div className="flex justify-between items-center border-b border-gray-800 bg-[#252526]">
+            <div className="flex">
               {Object.keys(tabs).map(tab => (
-                 <button 
-                  key={tab} 
+                <button
+                  key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`px-6 py-4 text-sm font-semibold transition-colors ${activeTab === tab ? 'text-white border-b-2 border-white bg-[#1E1E1E]' : 'text-gray-400 hover:text-white'}`}
-                 >
-                   {tab}
-                 </button>
+                  className={`px-6 py-3.5 text-sm transition-all duration-200 ${
+                    activeTab === tab 
+                      ? 'text-white font-bold border-b-2 border-accent bg-[#1E1E1E]' 
+                      : 'text-zinc-400 dark:text-zinc-400 hover:text-zinc-100 dark:hover:text-zinc-100 hover:bg-[#2A2A2B] font-medium'
+                  }`}
+                >
+                  {tab}
+                </button>
               ))}
             </div>
-            <div className="p-6 relative text-sm">
-               <SyntaxHighlighter language={activeTab === "Python" ? "python" : activeTab === "cURL" ? "bash" : "javascript"} style={vs2015} customStyle={{ background: "transparent", padding: 0, margin: 0, lineHeight: "1.6" }}>
-                 {tabs[activeTab]}
-               </SyntaxHighlighter>
-            </div>
-         </div>
+            <button 
+              onClick={handleCopyCode}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 mr-3 rounded-lg bg-gray-700/80 hover:bg-gray-600 text-xs font-bold text-gray-200 transition-all active:scale-95 cursor-pointer shadow-sm"
+            >
+              {copiedCode ? <Check size={14} className="text-green-400" /> : <Copy size={14} />}
+              <span>{copiedCode ? "Copied!" : "Copy Code"}</span>
+            </button>
+          </div>
+          <div className="p-6 relative text-sm">
+            <SyntaxHighlighter language={activeTab === "Python" ? "python" : activeTab === "cURL" ? "bash" : "javascript"} style={vs2015} customStyle={{ background: "transparent", padding: 0, margin: 0, lineHeight: "1.6" }}>
+              {tabs[activeTab]}
+            </SyntaxHighlighter>
+          </div>
+        </div>
       </section>
 
       {/* DEVELOPER ECOSYSTEM SOLAR SYSTEM */}
@@ -493,67 +548,67 @@ curl -X POST "https://api.careersphere.indevs.in/api/v1/parse" \
 
       {/* PRICING */}
       <section className="py-24 bg-gray-50 dark:bg-[#0b0b0d] border-t border-gray-100 dark:border-zinc-800/80" id="pricing">
-         <div className="max-w-7xl mx-auto px-6">
-           <div className="text-center mb-16">
-             <h2 className="text-3xl font-bold text-charcoal dark:text-white">Simple, transparent pricing</h2>
-             <p className="text-gray-500 dark:text-zinc-400 mt-4">Start for free. Pay as you scale.</p>
-           </div>
-           
-           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center max-w-5xl mx-auto">
-             {plans.map((plan) => (
-                <div key={plan.id} className={`bg-white dark:bg-zinc-950 rounded-3xl p-8 shadow-xl ${plan.id === 'starter' ? 'border-2 border-accent md:-translate-y-4 shadow-amber-500/10' : 'border border-gray-100 dark:border-zinc-850'}`}>
-                   {plan.id === "starter" && <p className="text-accent text-sm font-bold uppercase tracking-wider mb-2">Most Popular</p>}
-                   <h3 className="text-2xl font-bold mb-2 text-charcoal dark:text-white">{plan.name}</h3>
-                   <div className="flex items-baseline gap-1 mb-8 border-b border-gray-100 dark:border-zinc-800/50 pb-8">
-                     <span className="text-4xl font-black text-charcoal dark:text-white">₹{plan.price}</span>
-                     <span className="text-gray-500 dark:text-zinc-400">/month</span>
-                   </div>
-                   
-                   <ul className="flex flex-col gap-4 mb-8">
-                     {plan.features?.map((f, i) => (
-                        <li key={i} className="flex items-center gap-3 font-medium text-gray-600 dark:text-zinc-350">
-                          <Check size={18} className="text-green-500 shrink-0" /> {f}
-                        </li>
-                     ))}
-                   </ul>
-                   
-                   {isDevLoggedIn ? (
-                      plan.id === tier ? (
-                        <button disabled className="w-full block text-center py-3.5 rounded-xl font-bold bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-900/50 cursor-not-allowed">
-                          Current Plan
-                        </button>
-                      ) : (
-                        <Link to="/developer/portal/billing" className={`w-full block text-center py-3.5 rounded-xl font-bold transition-all ${plan.id === 'starter' ? 'bg-accent text-white hover:bg-accent-dark shadow-md shadow-accent/20' : 'bg-gray-100 dark:bg-zinc-900 text-charcoal dark:text-zinc-100 hover:bg-gray-200 dark:hover:bg-zinc-800'}`}>
-                          Subscribe now
-                        </Link>
-                      )
-                    ) : (
-                      <Link to="/developer/register" className={`w-full block text-center py-3.5 rounded-xl font-bold transition-all ${plan.id === 'starter' ? 'bg-accent text-white hover:bg-accent-dark shadow-md shadow-accent/20' : 'bg-gray-100 dark:bg-zinc-900 text-charcoal dark:text-zinc-100 hover:bg-gray-200 dark:hover:bg-zinc-800'}`}>
-                        {plan.price === 0 ? "Start for free" : "Subscribe now"}
-                      </Link>
-                    )}
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-charcoal dark:text-white">Simple, transparent pricing</h2>
+            <p className="text-gray-500 dark:text-zinc-400 mt-4">Start for free. Pay as you scale.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center max-w-5xl mx-auto">
+            {plans.map((plan) => (
+              <div key={plan.id} className={`bg-white dark:bg-zinc-950 rounded-3xl p-8 shadow-xl ${plan.id === 'starter' ? 'border-2 border-accent md:-translate-y-4 shadow-amber-500/10' : 'border border-gray-100 dark:border-zinc-850'}`}>
+                {plan.id === "starter" && <p className="text-accent text-sm font-bold uppercase tracking-wider mb-2">Most Popular</p>}
+                <h3 className="text-2xl font-bold mb-2 text-charcoal dark:text-white">{plan.name}</h3>
+                <div className="flex items-baseline gap-1 mb-8 border-b border-gray-100 dark:border-zinc-800/50 pb-8">
+                  <span className="text-4xl font-black text-charcoal dark:text-white">₹{plan.price}</span>
+                  <span className="text-gray-500 dark:text-zinc-400">/month</span>
                 </div>
-             ))}
-           </div>
-         </div>
+
+                <ul className="flex flex-col gap-4 mb-8">
+                  {plan.features?.map((f, i) => (
+                    <li key={i} className="flex items-center gap-3 font-medium text-gray-600 dark:text-zinc-350">
+                      <Check size={18} className="text-green-500 shrink-0" /> {f}
+                    </li>
+                  ))}
+                </ul>
+
+                {isDevLoggedIn ? (
+                  plan.id === tier ? (
+                    <button disabled className="w-full block text-center py-3.5 rounded-xl font-bold bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-900/50 cursor-not-allowed">
+                      Current Plan
+                    </button>
+                  ) : (
+                    <Link to="/developer/portal/billing" className={`w-full block text-center py-3.5 rounded-xl font-bold transition-all ${plan.id === 'starter' ? 'bg-accent text-white hover:bg-accent-dark shadow-md shadow-accent/20' : 'bg-gray-100 dark:bg-zinc-900 text-charcoal dark:text-zinc-100 hover:bg-gray-200 dark:hover:bg-zinc-800'}`}>
+                      Subscribe now
+                    </Link>
+                  )
+                ) : (
+                  <Link to="/developer/register" className={`w-full block text-center py-3.5 rounded-xl font-bold transition-all ${plan.id === 'starter' ? 'bg-accent text-white hover:bg-accent-dark shadow-md shadow-accent/20' : 'bg-gray-100 dark:bg-zinc-900 text-charcoal dark:text-zinc-100 hover:bg-gray-200 dark:hover:bg-zinc-800'}`}>
+                    {plan.price === 0 ? "Start for free" : "Subscribe now"}
+                  </Link>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* FOOTER */}
       <Footer />
 
-       {showDevReviewModal && (
-         <WriteReviewModal
-           isOpen={showDevReviewModal}
-           onClose={() => setShowDevReviewModal(false)}
-           userRole="developer"
-           customSubmit={portalReviews.createReview}
-           onSubmit={(newRev) => {
-             setShowDevReviewModal(false);
-             setDevReviews(prev => [newRev, ...prev.filter(r => r.id !== newRev.id)]);
-             toast.success("Thank you for reviewing CareerSphere API Platform!");
-           }}
-         />
-       )}
-     </div>
-   );
- }
+      {showDevReviewModal && (
+        <WriteReviewModal
+          isOpen={showDevReviewModal}
+          onClose={() => setShowDevReviewModal(false)}
+          userRole="developer"
+          customSubmit={portalReviews.createReview}
+          onSubmit={(newRev) => {
+            setShowDevReviewModal(false);
+            setDevReviews(prev => [newRev, ...prev.filter(r => r.id !== newRev.id)]);
+            toast.success("Thank you for reviewing CareerSphere API Platform!");
+          }}
+        />
+      )}
+    </div>
+  );
+}

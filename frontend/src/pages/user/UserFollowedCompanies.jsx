@@ -253,8 +253,11 @@ function CompanyFollowCard({ company, onUnfollow, isUnfollowing }) {
           {openings} open roles
         </span>
         <span className="flex items-center gap-1">
-          <Star className="h-3.5 w-3.5 shrink-0 fill-[var(--google-yellow)] text-[var(--google-yellow)]" />
-          {rating}
+          {company.reviews_count > 0 || (company.rating && company.rating > 0) ? (
+            <><Star className="h-3.5 w-3.5 shrink-0 fill-[var(--google-yellow)] text-[var(--google-yellow)]" />{company.rating}</>
+          ) : (
+            <><Star className="h-3.5 w-3.5 shrink-0 text-muted-foreground/40" />No reviews</>
+          )}
         </span>
         <span className="flex items-center gap-1">
           <Users2 className="h-3.5 w-3.5 shrink-0" />

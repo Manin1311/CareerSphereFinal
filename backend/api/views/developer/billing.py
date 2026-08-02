@@ -33,7 +33,6 @@ PLAN_DETAILS = {
             "500 matches/month",
             "100 Safety scans/month",
             "5 API keys",
-            "Webhooks",
             "All upload methods",
             "Email support",
             "Batch processing"
@@ -48,7 +47,6 @@ PLAN_DETAILS = {
             "Unlimited matching",
             "1,000 Safety scans/month",
             "Unlimited API keys",
-            "Embed widget",
             "Priority support",
             "Custom weights",
             "Advanced analytics"

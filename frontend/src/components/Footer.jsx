@@ -28,7 +28,6 @@ const Footer = () => {
     "Developer Portal": "/developer",
     "API Documentation": "/developer/portal/docs",
     "API Keys": "/developer/portal/keys",
-    "Webhooks": "/developer/portal/webhooks",
     "Usage & Billing": "/developer/portal/usage",
     "Job Seeker Portal": "/jobs",
     "Recruiter Workspace": "/login",
@@ -76,7 +75,7 @@ const Footer = () => {
 
         {[
           { title: "Job Seekers", links: ["Find Jobs", "Explore Companies", "AI Resume Builder", "Hiring Safety", "Market Trends", "AI Mock Interview", "Premium Plans"] },
-          { title: "Developers & API", links: ["Developer Portal", "API Documentation", "API Keys", "Webhooks", "Usage & Billing"] },
+          { title: "Developers & API", links: ["Developer Portal", "API Documentation", "API Keys", "Usage & Billing"] },
           { title: "Portals & Login", links: ["Job Seeker Portal", "Recruiter Workspace", "Developer Portal", "Admin Login"] },
           { title: "Company & Legal", links: ["About Us", "Contact Support", "Support & Appeals", "Terms of Service", "Privacy Policy", "Refund Policy"] }
         ].map((column, i) => (

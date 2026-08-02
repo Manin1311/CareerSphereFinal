@@ -127,18 +127,11 @@ function DeveloperKeyRow({ apiKey, onUpdate }) {
 
           <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
             <button 
-              onClick={() => handleCopy(apiKey.secret_key || "", 'secret')}
+              onClick={() => handleCopy(apiKey.public_key || apiKey.key_name || "", 'public')}
               className="p-1.5 text-gray-600 hover:text-accent hover:bg-blue-50 rounded-lg transition-colors"
-              title="Copy secret key"
+              title="Copy API key"
             >
-              {copiedType === 'secret' ? <Check size={14} className="text-green-500" /> : <Key size={14} />}
-            </button>
-            <button 
-              onClick={() => handleCopy(apiKey.public_key || "", 'masked')}
-              className="p-1.5 text-gray-600 hover:text-charcoal hover:bg-gray-100 rounded-lg transition-colors"
-              title="Copy public key"
-            >
-              {copiedType === 'masked' ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
+              {copiedType === 'public' ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
             </button>
             <button 
               onClick={handleRevoke}
@@ -151,6 +144,7 @@ function DeveloperKeyRow({ apiKey, onUpdate }) {
             <button
               onClick={() => setExpanded(!expanded)}
               className="p-1.5 text-gray-600 hover:text-charcoal hover:bg-gray-150 rounded-lg transition-colors"
+              title={expanded ? "Collapse details" : "Expand details"}
             >
               {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
             </button>
@@ -448,29 +442,72 @@ export default function DeveloperKeys({ defaultTab }) {
   ];
 
   const tabs = {
-    cURL: `curl -X POST \\
-  https://api.careersphere.indevs.in/api/v1/parse \\
-  -H "X-API-Key: YOUR_KEY" \\
-  -F "files=@resume.pdf"`,
-    Python: `import requests
- 
-response = requests.post(
-    "https://api.careersphere.indevs.in/api/v1/parse",
-    headers={"X-API-Key": "YOUR_KEY"},
-    files={"files": open("resume.pdf", "rb")}
-)
-print(response.json())`,
-    JavaScript: `const formData = new FormData();
-formData.append('files', resumeFile);
- 
-const response = await fetch('https://api.careersphere.indevs.in/api/v1/parse', {
-  method: 'POST',
-  headers: { 'X-API-Key': 'YOUR_KEY' },
-  body: formData
-});
-const data = await response.json();`
+    cURL: `# Pretty Print JSON Output in Terminal via python -m json.tool
+curl -s -X POST "http://localhost:8000/api/v1/parse" \\
+  -H "X-API-Key: YOUR_API_KEY" \\
+  -F "file=@resume.pdf" | python -m json.tool`,
+
+    Python: `import os
+import json
+import requests
+
+def parse_resume(file_path, api_key):
+    url = "http://localhost:8000/api/v1/parse"
+    headers = {"X-API-Key": api_key}
+
+    if not os.path.exists(file_path):
+        print(f"Error: File '{file_path}' not found.")
+        return
+
+    with open(file_path, "rb") as f:
+        files = {"file": f}
+        response = requests.post(url, headers=headers, files=files)
+
+    result = response.json()
+    # Pretty print indented JSON
+    print(json.dumps(result, indent=2))
+
+# Replace with your actual key and file path
+parse_resume("./resume.pdf", "YOUR_API_KEY")`,
+
+    JavaScript: `const fs = require('fs');
+const axios = require('axios');
+const FormData = require('form-data');
+
+async function parseResume(filePath, apiKey) {
+  try {
+    const formData = new FormData();
+    formData.append('file', fs.createReadStream(filePath));
+
+    const response = await axios.post(
+      'http://localhost:8000/api/v1/parse',
+      formData,
+      {
+        headers: {
+          ...formData.getHeaders(),
+          'X-API-Key': apiKey
+        }
+      }
+    );
+
+    // Pretty print indented JSON
+    console.log(JSON.stringify(response.data, null, 2));
+  } catch (error) {
+    console.error('Request Error:', error.response?.data || error.message);
+  }
+}
+
+parseResume('./resume.pdf', 'YOUR_API_KEY');`
   };
   const [activeCodeTab, setActiveCodeTab] = useState("cURL");
+  const [copiedCode, setCopiedCode] = useState(false);
+
+  const handleCopyCode = () => {
+    navigator.clipboard.writeText(tabs[activeCodeTab]);
+    setCopiedCode(true);
+    toast.success("Code copied to clipboard!");
+    setTimeout(() => setCopiedCode(false), 2000);
+  };
 
   const tabItems = [
     { id: 'profile', label: 'Workspace profile', icon: Building },
@@ -679,17 +716,26 @@ const data = await response.json();`
                     <h3 className="font-bold text-white text-md">Quick Integration Guide</h3>
                     <p className="text-gray-300 text-xs mt-1">Make your first parse request using your API key.</p>
                  </div>
-                 <div className="flex bg-[#2D2D2D] border-b border-gray-700 px-2">
-                   {Object.keys(tabs).map(tab => (
-                      <button 
-                       key={tab} 
-                       onClick={() => setActiveCodeTab(tab)}
-                       className={`px-6 py-3 text-xs font-bold transition-colors ${activeCodeTab === tab ? 'text-white border-b-2 border-white bg-[#1E1E1E]' : 'text-gray-300 hover:text-white'}`}
-                      >
-                        {tab}
-                      </button>
-                   ))}
-                 </div>
+                 <div className="flex justify-between items-center bg-[#2D2D2D] border-b border-gray-700 px-2">
+                    <div className="flex">
+                      {Object.keys(tabs).map(tab => (
+                         <button 
+                          key={tab} 
+                          onClick={() => setActiveCodeTab(tab)}
+                          className={`px-6 py-3 text-xs font-bold transition-colors ${activeCodeTab === tab ? 'text-white border-b-2 border-white bg-[#1E1E1E]' : 'text-gray-300 hover:text-white'}`}
+                         >
+                           {tab}
+                         </button>
+                      ))}
+                    </div>
+                    <button 
+                      onClick={handleCopyCode}
+                      className="flex items-center gap-1.5 px-3.5 py-1.5 mr-2 rounded-lg bg-gray-700/80 hover:bg-gray-600 text-xs font-bold text-gray-200 transition-all active:scale-95 cursor-pointer shadow-sm"
+                    >
+                      {copiedCode ? <Check size={14} className="text-green-400" /> : <Copy size={14} />}
+                      <span>{copiedCode ? "Copied!" : "Copy Code"}</span>
+                    </button>
+                  </div>
                  <div className="p-6 relative text-xs font-mono">
                     <SyntaxHighlighter language={activeCodeTab === "Python" ? "python" : activeCodeTab === "cURL" ? "bash" : "javascript"} style={vs2015} customStyle={{ background: "transparent", padding: 0, margin: 0, lineHeight: "1.6" }}>
                       {tabs[activeCodeTab]}

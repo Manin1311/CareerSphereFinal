@@ -118,8 +118,6 @@ export default function DeveloperPortalLayout() {
     { name: "Overview", href: "/developer/portal/dashboard", icon: LayoutDashboard, tourAttr: 'dev-nav-dashboard' },
     { name: "API Keys", href: "/developer/portal/keys", icon: Key, tourAttr: 'dev-nav-keys' },
     { name: "Usage & Logs", href: "/developer/portal/usage", icon: BarChart2, tourAttr: 'dev-nav-usage' },
-    { name: "Webhooks", href: "/developer/portal/webhooks", icon: Webhook },
-    { name: "Embed", href: "/developer/portal/embed", icon: Code },
     { name: "Billing", href: "/developer/portal/billing", icon: CreditCard, tourAttr: 'dev-nav-billing' },
   ];
 

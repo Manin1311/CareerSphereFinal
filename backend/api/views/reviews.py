@@ -13,6 +13,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Avg, Count
 from django.core.cache import cache
+from django.utils import timezone
 
 from api.models import Review, JobSeekerAccount, Company, DeveloperAccount
 from api.views.seeker_auth import require_seeker_jwt
@@ -425,6 +426,7 @@ def seeker_reviews_root(request):
         if review:
             review.rating = rating
             review.text = text
+            review.updated_at = timezone.now()
             review.save()
         else:
             review = Review.objects.create(
@@ -433,8 +435,12 @@ def seeker_reviews_root(request):
                 user_type="job_seeker",
                 rating=rating,
                 text=text,
+                created_at=timezone.now(),
+                updated_at=timezone.now(),
             )
             review_created = True
+
+        cache.clear()
 
         # Send in-app notification & email to company recruiter if review is for a company
         if review_created and company:
@@ -518,6 +524,7 @@ def developer_reviews_root(request):
         if review:
             review.rating = rating
             review.text = text
+            review.updated_at = timezone.now()
             review.save()
         else:
             review = Review.objects.create(
@@ -526,8 +533,11 @@ def developer_reviews_root(request):
                 user_type="developer",
                 rating=rating,
                 text=text,
+                created_at=timezone.now(),
+                updated_at=timezone.now(),
             )
 
+        cache.clear()
         serialized = _serialize_review(review, str(dev.id), "developer")
         return JsonResponse(success_response(serialized), status=200 if review else 201)
     except Exception as e:
@@ -574,6 +584,7 @@ def recruiter_reviews_root(request):
         if review:
             review.rating = rating
             review.text = text
+            review.updated_at = timezone.now()
             review.save()
         else:
             review = Review.objects.create(
@@ -582,8 +593,11 @@ def recruiter_reviews_root(request):
                 user_type="recruiter",
                 rating=rating,
                 text=text,
+                created_at=timezone.now(),
+                updated_at=timezone.now(),
             )
 
+        cache.clear()
         serialized = _serialize_review(review, str(recruiter.id), "recruiter")
         return JsonResponse(success_response(serialized), status=200 if review else 201)
     except Exception as e:

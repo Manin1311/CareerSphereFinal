@@ -4,6 +4,7 @@ import logging
 from django.urls import path, include, re_path
 from django.views.static import serve
 from django.conf import settings
+from django.contrib import admin
 
 logger = logging.getLogger(__name__)
 
@@ -141,6 +142,9 @@ def health_check(request):
     }, status=200)
 
 urlpatterns = [
+    # Django built-in admin panel
+    path('django-admin/', admin.site.urls),
+
     # Health checks for UptimeRobot, Render & Load Balancers
     path('health', health_check, name='root-health'),
     path('healthz', health_check, name='root-healthz'),

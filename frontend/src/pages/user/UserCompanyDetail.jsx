@@ -171,9 +171,10 @@ export default function UserCompanyDetail() {
   }
 
   const totalReviewsCount = reviews.length > 0 ? reviews.length : (company?.reviewCount || 0);
-  const avgRating = reviews.length > 0
-    ? (reviews.reduce((acc, r) => acc + (Number(r.rating) || 5), 0) / reviews.length).toFixed(1)
-    : (company?.rating ? Number(company.rating).toFixed(1) : "5.0");
+  const hasReviews = totalReviewsCount > 0;
+  const avgRating = hasReviews
+    ? (reviews.reduce((acc, r) => acc + (Number(r.rating) || 5), 0) / (reviews.length || 1)).toFixed(1)
+    : (company?.rating && company.rating > 0 ? Number(company.rating).toFixed(1) : null);
 
   return (
     <div className="min-h-screen bg-background">
@@ -214,7 +215,11 @@ export default function UserCompanyDetail() {
                 {company.founded && (
                   <span className="flex items-center gap-1.5"><Calendar className="h-4 w-4" />Founded {company.founded}</span>
                 )}
-                <span className="flex items-center gap-1.5"><Star className="h-4 w-4 fill-[var(--google-yellow)] text-[var(--google-yellow)]" />{avgRating} ({totalReviewsCount} {totalReviewsCount === 1 ? 'review' : 'reviews'})</span>
+                {avgRating ? (
+                  <span className="flex items-center gap-1.5"><Star className="h-4 w-4 fill-[var(--google-yellow)] text-[var(--google-yellow)]" />{avgRating} ({totalReviewsCount} {totalReviewsCount === 1 ? 'review' : 'reviews'})</span>
+                ) : (
+                  <span className="flex items-center gap-1.5 text-muted-foreground/70"><Star className="h-4 w-4 text-muted-foreground/40" />No reviews yet</span>
+                )}
               </div>
             </div>
           </div>

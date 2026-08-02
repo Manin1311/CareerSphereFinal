@@ -187,27 +187,27 @@ export default function DeveloperDashboard() {
                  const isUnlimited = limit === -1;
                  
                  return (
-                   <div key={type} className="flex flex-col gap-2">
-                     <div className="flex justify-between items-end">
-                       <span className="text-sm font-bold capitalize text-charcoal">{type}</span>
-                       <span className="text-xs font-black text-gray-900">
-                         {(count || 0).toLocaleString()} / {isUnlimited ? "∞" : (limit || 0).toLocaleString()}
-                       </span>
-                     </div>
-                     <div className="flex items-center gap-3">
-                       <div className="flex-1 overflow-hidden bg-gray-100 rounded-full h-2 relative">
-                         {isUnlimited ? (
-                           <div className="absolute top-0 left-0 h-full w-full bg-green-400 rounded-full"></div>
-                         ) : (
-                           <div className="absolute top-0 left-0 h-full bg-accent rounded-full transition-all duration-1000 ease-out" style={{ width: `${Math.min(pct, 100)}%` }}></div>
-                         )}
-                       </div>
-                       <span className={`text-xs font-bold w-10 text-right ${isUnlimited ? "text-green-600" : pct > 80 ? "text-amber-600" : "text-gray-800"}`}>
-                         {isUnlimited ? "UNL" : `${Math.round(pct)}%`}
-                       </span>
-                     </div>
-                   </div>
-                 );
+                    <div key={type} className="flex flex-col gap-2">
+                      <div className="flex justify-between items-end">
+                        <span className="text-sm font-bold capitalize text-charcoal">{type}</span>
+                        <span className="text-xs font-black text-gray-900">
+                          {(count || 0).toLocaleString()} / {isUnlimited ? "Unlimited" : (limit || 0).toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="flex-1 overflow-hidden bg-gray-100 rounded-full h-2 relative">
+                          {isUnlimited ? (
+                            <div className="absolute top-0 left-0 h-full w-full bg-emerald-100 dark:bg-emerald-950/40 rounded-full"></div>
+                          ) : (
+                            <div className="absolute top-0 left-0 h-full bg-accent rounded-full transition-all duration-1000 ease-out" style={{ width: `${Math.min(pct, 100)}%` }}></div>
+                          )}
+                        </div>
+                        <span className={`text-xs font-bold text-right min-w-[60px] ${isUnlimited ? "text-emerald-600 dark:text-emerald-400" : pct > 80 ? "text-amber-600" : "text-gray-800"}`}>
+                          {isUnlimited ? "Unlimited" : `${Math.round(pct)}%`}
+                        </span>
+                      </div>
+                    </div>
+                  );
                })}
             </div>
          </div>

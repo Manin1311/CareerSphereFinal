@@ -3,16 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { useSeekerAuthStore } from '../stores/seekerAuthStore';
 import { usePortalAuthStore } from '../stores/portalAuthStore';
-import { authAPI, seekerAPI } from '../lib/api';
+import { authAPI, seekerAPI, publicAPI } from '../lib/api';
 import { portalAuth } from '../lib/portalApi';
 import { toast } from 'react-hot-toast';
-import { Loader2, ShieldCheck, Mail, User, Phone, MapPin, Briefcase, Globe, Landmark, Users, ArrowRight } from 'lucide-react';
+import { Loader2, ShieldCheck, Mail, User, Phone, MapPin, Briefcase, Globe, Landmark, Users, ArrowRight, UploadCloud, Sparkles, Check } from 'lucide-react';
 import { LocationSelector } from '../components/ui/LocationSelector';
 import { IndustrySelector } from '../components/ui/IndustrySelector';
 import VerificationModal from '../components/VerificationModal';
-
-import { publicAPI } from '../lib/api';
-import { UploadCloud, Sparkles, Check } from 'lucide-react';
+import ThemeToggle from '../components/ThemeToggle';
 
 export default function CompleteProfilePage() {
   const navigate = useNavigate();
@@ -49,6 +47,9 @@ export default function CompleteProfilePage() {
     }
   };
   
+  // Name / Company Name State (Editable)
+  const [profileName, setProfileName] = useState('');
+
   // Seeker Form State
   const [phone, setPhone] = useState('');
   const [location, setLocation] = useState('');
@@ -82,6 +83,11 @@ export default function CompleteProfilePage() {
     try {
       const parsed = JSON.parse(raw);
       setOauthData(parsed);
+
+      const defaultName = parsed.role === 'seeker'
+        ? (parsed.data?.seeker?.full_name || '')
+        : (parsed.data?.name || parsed.data?.company_name || parsed.data?.company?.name || '');
+      setProfileName(defaultName);
       
       // Pre-fill fields if they happen to already exist
       if (parsed.role === 'seeker' && parsed.data?.seeker) {
@@ -105,15 +111,14 @@ export default function CompleteProfilePage() {
 
   if (!oauthData) {
     return (
-      <div className="min-h-screen bg-[#09090b] flex items-center justify-center font-sans">
-        <Loader2 className="animate-spin text-blue-500 w-8 h-8" />
+      <div className="min-h-screen bg-slate-50 dark:bg-[#09090b] flex items-center justify-center font-sans">
+        <Loader2 className="animate-spin text-blue-600 dark:text-blue-500 w-8 h-8" />
       </div>
     );
   }
 
   const { role, data } = oauthData;
   const email = role === 'seeker' ? data.seeker?.email : data.email;
-  const name = role === 'seeker' ? data.seeker?.full_name : (data.name || data.company_name);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -121,7 +126,7 @@ export default function CompleteProfilePage() {
 
     try {
       if (role === 'seeker') {
-        if (!phone.trim() || !location.trim() || !headline.trim()) {
+        if (!profileName.trim() || !phone.trim() || !location.trim() || !headline.trim()) {
           toast.error('All details are required');
           setLoading(false);
           return;
@@ -131,6 +136,7 @@ export default function CompleteProfilePage() {
         localStorage.setItem('cs_seeker_token', data.seeker_token);
         
         const updated = await seekerAPI.updateProfile({
+          full_name: profileName.trim(),
           phone: phone.trim(),
           location: location.trim(),
           headline: headline.trim(),
@@ -142,16 +148,16 @@ export default function CompleteProfilePage() {
         // Save final logged in state
         const finalAuthData = {
           seeker_token: data.seeker_token,
-          seeker: { ...data.seeker, ...updated, requires_profile_completion: false }
+          seeker: { ...data.seeker, ...updated, full_name: profileName.trim(), requires_profile_completion: false }
         };
         seekerAuth.setAuth(finalAuthData);
         sessionStorage.removeItem('temp_oauth_data');
-        toast.success(`Welcome, ${name}! Your profile is now set up.`);
+        toast.success(`Welcome, ${profileName.trim()}! Your profile is now set up.`);
         navigate('/jobs/dashboard');
 
       } else if (role === 'developer') {
-        if (!websiteUrl.trim()) {
-          toast.error('Website URL is required');
+        if (!profileName.trim() || !websiteUrl.trim()) {
+          toast.error('Name and Website URL are required');
           setLoading(false);
           return;
         }
@@ -159,12 +165,16 @@ export default function CompleteProfilePage() {
         localStorage.setItem('portal_jwt', data.jwt_token);
 
         const updated = await portalAuth.updateProfile({
+          full_name: profileName.trim(),
+          company_name: profileName.trim(),
           website_url: websiteUrl.trim()
         });
 
         const finalAuthData = {
           ...data,
           ...updated,
+          full_name: profileName.trim(),
+          company_name: profileName.trim(),
           requires_profile_completion: false
         };
         developerAuth.setAuth(finalAuthData);
@@ -174,7 +184,7 @@ export default function CompleteProfilePage() {
         navigate('/developer/portal/dashboard');
 
       } else if (role === 'recruiter') {
-        if (!industry.trim() || !hqLocation.trim() || !companySize.trim() || !recruiterWebsite.trim()) {
+        if (!profileName.trim() || !industry.trim() || !hqLocation.trim() || !companySize.trim() || !recruiterWebsite.trim()) {
           toast.error('All fields are required');
           setLoading(false);
           return;
@@ -183,6 +193,7 @@ export default function CompleteProfilePage() {
         localStorage.setItem('cs_jwt', data.jwt_token);
 
         const updated = await authAPI.updateProfile({
+          name: profileName.trim(),
           industry: industry.trim(),
           hq_location: hqLocation.trim(),
           company_size: companySize,
@@ -192,6 +203,8 @@ export default function CompleteProfilePage() {
         const finalAuthData = {
           ...data,
           ...updated,
+          name: profileName.trim(),
+          company_name: profileName.trim(),
           requires_profile_completion: false
         };
         
@@ -212,19 +225,24 @@ export default function CompleteProfilePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#09090b] flex items-center justify-center p-4 font-sans text-zinc-100 relative overflow-hidden">
-      {/* Background Glows */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl -z-10 animate-pulse"></div>
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl -z-10"></div>
+    <div className="min-h-screen bg-slate-50 dark:bg-[#09090b] flex items-center justify-center p-4 font-sans text-slate-800 dark:text-zinc-100 relative overflow-hidden transition-colors duration-300">
+      {/* Theme Toggle in top-right corner */}
+      <div className="absolute top-5 right-5 z-30">
+        <ThemeToggle />
+      </div>
 
-      <div className="w-full max-w-lg bg-zinc-900/60 border border-zinc-800/80 rounded-3xl p-8 backdrop-blur-xl shadow-2xl relative z-10">
+      {/* Background Glows */}
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 dark:bg-blue-600/10 rounded-full blur-3xl -z-10 animate-pulse"></div>
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-indigo-500/10 dark:bg-indigo-600/10 rounded-full blur-3xl -z-10"></div>
+
+      <div className="w-full max-w-lg bg-white dark:bg-zinc-900/90 border border-slate-200 dark:border-zinc-800/80 rounded-3xl p-8 backdrop-blur-xl shadow-xl dark:shadow-2xl relative z-10">
         <div className="flex flex-col items-center mb-8 text-center">
-          <div className="w-12 h-12 bg-blue-500/10 border border-blue-500/25 rounded-2xl flex items-center justify-center text-blue-400 mb-4 shadow-[0_0_15px_rgba(59,130,246,0.1)]">
+          <div className="w-12 h-12 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/25 rounded-2xl flex items-center justify-center text-blue-600 dark:text-blue-400 mb-4 shadow-sm">
             <ShieldCheck size={24} />
           </div>
-          <span className="text-[11px] font-black tracking-widest text-zinc-500 uppercase">Profile Verification</span>
-          <h1 className="text-2xl font-black text-white mt-1">Complete Your Details</h1>
-          <p className="text-xs text-zinc-400 mt-2 max-w-sm">
+          <span className="text-[11px] font-black tracking-widest text-slate-400 dark:text-zinc-500 uppercase">Profile Verification</span>
+          <h1 className="text-2xl font-black text-slate-900 dark:text-white mt-1">Complete Your Details</h1>
+          <p className="text-xs text-slate-500 dark:text-zinc-400 mt-2 max-w-sm">
             You signed in using {role === 'seeker' ? 'Google/GitHub' : 'Social SSO'}. Please complete the required profile details below to access your dashboard.
           </p>
         </div>
@@ -232,41 +250,43 @@ export default function CompleteProfilePage() {
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Email (Prefilled & Disabled) */}
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Email Address</label>
+            <label className="text-[10px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider block">Email Address</label>
             <div className="relative">
-              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-600" size={16} />
+              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-600" size={16} />
               <input
                 type="email"
                 value={email || ''}
                 disabled
-                className="w-full text-xs p-3.5 pl-11 bg-zinc-950/50 border border-zinc-800/60 rounded-xl text-zinc-500 cursor-not-allowed focus:outline-none"
+                className="w-full text-xs p-3.5 pl-11 bg-slate-100 dark:bg-zinc-950/50 border border-slate-200 dark:border-zinc-800/60 rounded-xl text-slate-500 dark:text-zinc-500 cursor-not-allowed focus:outline-none"
               />
             </div>
           </div>
 
-          {/* Name (Prefilled & Disabled) */}
+          {/* Name / Company Name (Editable) */}
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">
-              {role === 'recruiter' ? 'Company Name' : 'Full Name'}
+            <label className="text-[10px] font-bold text-slate-600 dark:text-zinc-400 uppercase tracking-wider block">
+              {role === 'recruiter' ? 'Company Name*' : 'Full Name*'}
             </label>
             <div className="relative">
-              <User className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-600" size={16} />
+              <User className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-400" size={16} />
               <input
                 type="text"
-                value={name || ''}
-                disabled
-                className="w-full text-xs p-3.5 pl-11 bg-zinc-950/50 border border-zinc-800/60 rounded-xl text-zinc-500 cursor-not-allowed focus:outline-none"
+                required
+                value={profileName}
+                onChange={(e) => setProfileName(e.target.value)}
+                placeholder={role === 'recruiter' ? 'e.g. Acme Corporation' : 'e.g. John Doe'}
+                className="w-full text-xs p-3.5 pl-11 bg-white dark:bg-zinc-950/60 border border-slate-300 dark:border-zinc-800/80 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus:border-blue-600 dark:focus:border-blue-500 focus:outline-none transition-colors"
               />
             </div>
           </div>
 
-          <div className="border-t border-zinc-800/40 my-6"></div>
+          <div className="border-t border-slate-200 dark:border-zinc-800/40 my-6"></div>
 
           {/* Role specific inputs */}
           {role === 'seeker' && (
             <>
               {/* ⚡ Resume Upload Dropzone */}
-              <div className="mb-6 p-4 border-2 border-dashed border-blue-500/30 bg-blue-950/20 hover:bg-blue-950/40 hover:border-blue-500/60 rounded-2xl transition-colors text-center group">
+              <div className="mb-6 p-4 border-2 border-dashed border-blue-300 dark:border-blue-500/30 bg-blue-50/60 dark:bg-blue-950/20 hover:bg-blue-100/60 dark:hover:bg-blue-950/40 hover:border-blue-400 dark:hover:border-blue-500/60 rounded-2xl transition-colors text-center group cursor-pointer">
                 <input 
                   type="file" 
                   id="oauth-resume-upload" 
@@ -277,31 +297,31 @@ export default function CompleteProfilePage() {
                 />
                 <label htmlFor="oauth-resume-upload" className="cursor-pointer block space-y-1.5">
                   {parsingResume ? (
-                    <Loader2 className="mx-auto text-blue-400 animate-spin w-6 h-6" />
+                    <Loader2 className="mx-auto text-blue-600 dark:text-blue-400 animate-spin w-6 h-6" />
                   ) : (
-                    <UploadCloud className="mx-auto text-blue-400 group-hover:scale-110 transition-transform w-6 h-6" />
+                    <UploadCloud className="mx-auto text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform w-6 h-6" />
                   )}
-                  <div className="text-xs font-bold text-blue-300 flex items-center justify-center gap-1">
-                    <Sparkles size={14} className="text-blue-400" />
+                  <div className="text-xs font-bold text-blue-700 dark:text-blue-300 flex items-center justify-center gap-1">
+                    <Sparkles size={14} className="text-blue-600 dark:text-blue-400" />
                     <span>{parsingResume ? "Parsing resume details..." : "Auto-fill profile using Resume PDF / DOCX"}</span>
                   </div>
-                  <p className="text-[10px] text-blue-400/80 font-medium">Upload resume to extract Phone, Location & Headline automatically</p>
+                  <p className="text-[10px] text-blue-600/80 dark:text-blue-400/80 font-medium">Upload resume to extract Phone, Location & Headline automatically</p>
                 </label>
               </div>
 
               {/* Phone */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Phone Number*</label>
+                <label className="text-[10px] font-bold text-slate-600 dark:text-zinc-400 uppercase tracking-wider block">Phone Number*</label>
                 <div className="flex gap-2">
                   <div className="relative flex-1">
-                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400" size={16} />
+                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-400" size={16} />
                     <input
                       type="tel"
                       required
                       placeholder="e.g. +91 98765 43210"
                       value={phone}
                       onChange={(e) => handlePhoneChange(e.target.value)}
-                      className="w-full text-xs p-3.5 pl-11 bg-zinc-950/60 border border-zinc-800/80 rounded-xl text-white placeholder-zinc-500 focus:border-blue-500 focus:outline-none transition-colors"
+                      className="w-full text-xs p-3.5 pl-11 bg-white dark:bg-zinc-950/60 border border-slate-300 dark:border-zinc-800/80 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus:border-blue-600 dark:focus:border-blue-500 focus:outline-none transition-colors"
                     />
                   </div>
                   {phone && (
@@ -317,11 +337,11 @@ export default function CompleteProfilePage() {
                       }}
                       className={`px-4 text-xs font-bold rounded-xl transition-all ${
                         phoneVerified 
-                          ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-800/50 cursor-default'
+                          ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800/50 cursor-default'
                           : 'bg-blue-600 hover:bg-blue-700 text-white'
                       }`}
                     >
-                      {phoneVerified ? <span className="flex items-center gap-1">Verified <Check className="w-3.5 h-3.5 inline text-emerald-400" /></span> : 'Verify'}
+                      {phoneVerified ? <span className="flex items-center gap-1">Verified <Check className="w-3.5 h-3.5 inline text-emerald-600 dark:text-emerald-400" /></span> : 'Verify'}
                     </button>
                   )}
                 </div>
@@ -329,26 +349,26 @@ export default function CompleteProfilePage() {
 
               {/* Location */}
               <div className="space-y-1.5 location-selector-complete-profile">
-                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Current Location*</label>
+                <label className="text-[10px] font-bold text-slate-600 dark:text-zinc-400 uppercase tracking-wider block">Current Location*</label>
                 <LocationSelector
                   value={location}
                   onChange={setLocation}
-                  isLight={false}
+                  isLight={true}
                 />
               </div>
 
               {/* Headline */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Professional Headline*</label>
+                <label className="text-[10px] font-bold text-slate-600 dark:text-zinc-400 uppercase tracking-wider block">Professional Headline*</label>
                 <div className="relative">
-                  <Briefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400" size={16} />
+                  <Briefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-400" size={16} />
                   <input
                     type="text"
                     required
                     placeholder="e.g. Senior Full Stack Developer | React & Python"
                     value={headline}
                     onChange={(e) => setHeadline(e.target.value)}
-                    className="w-full text-xs p-3.5 pl-11 bg-zinc-950/60 border border-zinc-800/80 rounded-xl text-white placeholder-zinc-500 focus:border-blue-500 focus:outline-none transition-colors"
+                    className="w-full text-xs p-3.5 pl-11 bg-white dark:bg-zinc-950/60 border border-slate-300 dark:border-zinc-800/80 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus:border-blue-600 dark:focus:border-blue-500 focus:outline-none transition-colors"
                   />
                 </div>
               </div>
@@ -359,16 +379,16 @@ export default function CompleteProfilePage() {
             <>
               {/* Website URL */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Website / Portal URL*</label>
+                <label className="text-[10px] font-bold text-slate-600 dark:text-zinc-400 uppercase tracking-wider block">Website / Portal URL*</label>
                 <div className="relative">
-                  <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400" size={16} />
+                  <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-400" size={16} />
                   <input
                     type="url"
                     required
                     placeholder="e.g. https://yourcompany.com"
                     value={websiteUrl}
                     onChange={(e) => setWebsiteUrl(e.target.value)}
-                    className="w-full text-xs p-3.5 pl-11 bg-zinc-950/60 border border-zinc-800/80 rounded-xl text-white placeholder-zinc-500 focus:border-blue-500 focus:outline-none transition-colors"
+                    className="w-full text-xs p-3.5 pl-11 bg-white dark:bg-zinc-950/60 border border-slate-300 dark:border-zinc-800/80 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus:border-blue-600 dark:focus:border-blue-500 focus:outline-none transition-colors"
                   />
                 </div>
               </div>
@@ -379,55 +399,55 @@ export default function CompleteProfilePage() {
             <>
               {/* Recruiter Website */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Company Website*</label>
+                <label className="text-[10px] font-bold text-slate-600 dark:text-zinc-400 uppercase tracking-wider block">Company Website*</label>
                 <div className="relative">
-                  <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400" size={16} />
+                  <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-400" size={16} />
                   <input
                     type="url"
                     required
                     placeholder="e.g. https://yourcompany.com"
                     value={recruiterWebsite}
                     onChange={(e) => setRecruiterWebsite(e.target.value)}
-                    className="w-full text-xs p-3.5 pl-11 bg-zinc-950/60 border border-zinc-800/80 rounded-xl text-white placeholder-zinc-500 focus:border-blue-500 focus:outline-none transition-colors"
+                    className="w-full text-xs p-3.5 pl-11 bg-white dark:bg-zinc-950/60 border border-slate-300 dark:border-zinc-800/80 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus:border-blue-600 dark:focus:border-blue-500 focus:outline-none transition-colors"
                   />
                 </div>
               </div>
 
               {/* Industry */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Industry Segment*</label>
+                <label className="text-[10px] font-bold text-slate-600 dark:text-zinc-400 uppercase tracking-wider block">Industry Segment*</label>
                 <IndustrySelector
                   value={industry}
                   onChange={setIndustry}
-                  isLight={false}
+                  isLight={true}
                 />
               </div>
 
               {/* HQ Location */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">HQ Location*</label>
+                <label className="text-[10px] font-bold text-slate-600 dark:text-zinc-400 uppercase tracking-wider block">HQ Location*</label>
                 <LocationSelector
                   value={hqLocation}
                   onChange={setHqLocation}
-                  isLight={false}
+                  isLight={true}
                 />
               </div>
 
               {/* Company Size */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Company Size*</label>
+                <label className="text-[10px] font-bold text-slate-600 dark:text-zinc-400 uppercase tracking-wider block">Company Size*</label>
                 <div className="relative">
-                  <Users className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400" size={16} />
+                  <Users className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-400" size={16} />
                   <select
                     value={companySize}
                     onChange={(e) => setCompanySize(e.target.value)}
-                    className="w-full text-xs p-3.5 pl-11 bg-zinc-950/60 border border-zinc-800/80 rounded-xl text-white focus:border-blue-500 focus:outline-none transition-colors appearance-none"
+                    className="w-full text-xs p-3.5 pl-11 bg-white dark:bg-zinc-950/60 border border-slate-300 dark:border-zinc-800/80 rounded-xl text-slate-900 dark:text-white focus:border-blue-600 focus:outline-none transition-colors appearance-none"
                   >
-                    <option value="1-10" className="bg-zinc-900">1-10 employees</option>
-                    <option value="11-50" className="bg-zinc-900">11-50 employees</option>
-                    <option value="51-200" className="bg-zinc-900">51-200 employees</option>
-                    <option value="201-500" className="bg-zinc-900">201-500 employees</option>
-                    <option value="501+" className="bg-zinc-900">501+ employees</option>
+                    <option value="1-10" className="bg-white dark:bg-zinc-900 text-slate-900 dark:text-white">1-10 employees</option>
+                    <option value="11-50" className="bg-white dark:bg-zinc-900 text-slate-900 dark:text-white">11-50 employees</option>
+                    <option value="51-200" className="bg-white dark:bg-zinc-900 text-slate-900 dark:text-white">51-200 employees</option>
+                    <option value="201-500" className="bg-white dark:bg-zinc-900 text-slate-900 dark:text-white">201-500 employees</option>
+                    <option value="501+" className="bg-white dark:bg-zinc-900 text-slate-900 dark:text-white">501+ employees</option>
                   </select>
                 </div>
               </div>
@@ -438,7 +458,7 @@ export default function CompleteProfilePage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-6 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:opacity-50 text-white py-3.5 rounded-xl font-bold transition-all shadow-lg shadow-blue-500/10 hover:shadow-blue-500/20 flex items-center justify-center gap-2 hover:-translate-y-0.5 text-xs uppercase tracking-wider"
+            className="w-full mt-6 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:opacity-50 text-white py-3.5 rounded-xl font-bold transition-all shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 flex items-center justify-center gap-2 hover:-translate-y-0.5 text-xs uppercase tracking-wider"
           >
             {loading ? (
               <>

@@ -28,7 +28,9 @@ def parse_resume(request):
         return JsonResponse(error_response("Method not allowed"), status=405)
 
     try:
-        file = request.FILES.get("file")
+        file = request.FILES.get("file") or request.FILES.get("files")
+        if not file and request.FILES:
+            file = list(request.FILES.values())[0]
         if not file:
             return JsonResponse(error_response("No file provided"), status=400)
 

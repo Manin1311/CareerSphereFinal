@@ -121,23 +121,26 @@ export default function DeveloperUsage() {
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[
-            { label: "Resume Parsing", used: parseUsage, limit: summary?.limits?.parse?.limit || 1000, color: "bg-blue-600" },
-            { label: "Job Matching", used: matchUsage, limit: summary?.limits?.match?.limit || 500, color: "bg-emerald-600" },
-            { label: "AI Chatbot", used: chatUsage, limit: summary?.limits?.chat?.limit || 500, color: "bg-purple-600" },
+            { label: "Resume Parsing", used: parseUsage, limit: summary?.limits?.parse?.limit ?? 100, color: "bg-blue-600" },
+            { label: "Job Matching", used: matchUsage, limit: summary?.limits?.match?.limit ?? 50, color: "bg-emerald-600" },
+            { label: "AI Chatbot", used: chatUsage, limit: summary?.limits?.chat?.limit ?? 20, color: "bg-purple-600" },
+            { label: "Safety Scans", used: scanUsage, limit: summary?.limits?.scan?.limit ?? 0, color: "bg-amber-600" },
           ].map((item, idx) => {
-            const pct = Math.min(100, Math.round((item.used / (item.limit || 1)) * 100));
+            const isUnlimited = item.limit === -1;
+            const pct = isUnlimited ? 0 : Math.min(100, Math.round((item.used / (item.limit || 1)) * 100));
+            const limitText = isUnlimited ? "Unlimited" : (item.limit || 0).toLocaleString();
             return (
               <div key={idx} className="bg-gray-50 border border-gray-100 rounded-xl p-4 flex flex-col justify-between">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-xs font-extrabold text-gray-700">{item.label}</span>
-                  <span className="text-xs font-black text-gray-900">{pct}%</span>
+                  <span className="text-xs font-black text-gray-900">{isUnlimited ? "∞" : `${pct}%`}</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2.5 mb-2 overflow-hidden">
-                  <div className={`h-2.5 rounded-full ${item.color} transition-all duration-500`} style={{ width: `${pct}%` }}></div>
+                  <div className={`h-2.5 rounded-full ${item.color} transition-all duration-500`} style={{ width: isUnlimited ? '100%' : `${pct}%`, opacity: isUnlimited ? 0.3 : 1 }}></div>
                 </div>
                 <div className="flex justify-between text-[11px] font-bold text-gray-500">
                   <span>{item.used.toLocaleString()} calls used</span>
-                  <span>Limit: {item.limit.toLocaleString()}</span>
+                  <span>Limit: {limitText}</span>
                 </div>
               </div>
             );
@@ -203,33 +206,36 @@ export default function DeveloperUsage() {
                      <th className="pb-3 px-2 text-right">Error Rate</th>
                    </tr>
                  </thead>
-                 <tbody>
-                   {(endpoints || []).sort((a,b)=>b.calls-a.calls).map((ep, i) => (
-                     <tr key={i} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors">
-                       <td className="py-3 px-2 font-bold text-charcoal">{ep.path}</td>
-                       <td className="py-3 px-2 font-bold text-gray-900">{(ep.calls || 0).toLocaleString()}</td>
-                       <td className="py-3 px-2 text-right font-bold text-gray-800">{ep.latency}ms</td>
-                       <td className="py-3 px-2 text-right">
-                          <span className={`inline-block px-2 py-0.5 rounded-md text-xs font-bold ${
-                             ep.error_rate < 1 ? "bg-green-100 text-green-700" :
-                             ep.error_rate <= 5 ? "bg-gray-100 text-amber-700" :
-                             "bg-red-100 text-red-700"
-                          }`}>{ep.error_rate}%</span>
-                       </td>
-                     </tr>
-                   ))}
-                 </tbody>
+                  <tbody>
+                    {(endpoints || []).sort((a,b) => (b.count || b.calls || 0) - (a.count || a.calls || 0)).map((ep, i) => {
+                      const epPath = ep.endpoint || ep.path || ep.name || "/api/v1/parse";
+                      const epCalls = ep.count ?? ep.calls ?? 0;
+                      const epLatency = ep.avg_latency_ms ?? ep.latency ?? 0;
+                      const epError = ep.error_rate ?? 0;
+                      return (
+                        <tr key={i} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors">
+                          <td className="py-3 px-2 font-bold text-charcoal">{epPath}</td>
+                          <td className="py-3 px-2 font-bold text-gray-900">{epCalls.toLocaleString()}</td>
+                          <td className="py-3 px-2 text-right font-bold text-gray-800">{epLatency}ms</td>
+                          <td className="py-3 px-2 text-right">
+                             <span className={`inline-block px-2 py-0.5 rounded-md text-xs font-bold ${
+                                epError < 1 ? "bg-green-100 text-green-700" :
+                                epError <= 5 ? "bg-gray-100 text-amber-700" :
+                                "bg-red-100 text-red-700"
+                             }`}>{epError}%</span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
                </table>
             </div>
          </div>
 
          {/* Monthly History */}
          <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm flex flex-col">
-            <div className="flex justify-between items-center mb-4">
+            <div className="mb-4">
                <h3 className="font-bold text-lg text-charcoal">Monthly History</h3>
-               <button onClick={downloadCSV} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-charcoal bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
-                 <Download size={14}/> CSV
-               </button>
             </div>
             <div className="flex-1 overflow-x-auto">
                <table className="w-full text-left text-sm">

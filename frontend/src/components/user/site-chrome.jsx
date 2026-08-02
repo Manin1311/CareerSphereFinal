@@ -523,19 +523,11 @@ export function Footer() {
             onMouseEnter={() => setLogoHovered(true)}
             onMouseLeave={() => setLogoHovered(false)}
           >
-            <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-white font-display font-bold text-sm bg-[#2A2A2A] p-1.5 border border-white/10 shrink-0 shadow-sm transition-all duration-300 ${logoHovered ? 'scale-105 shadow-md ring-2 ring-blue-500/20' : ''}`}>
-              <svg viewBox="0 0 100 100" className="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                  <linearGradient id="logo-grad-footer-chrome" x1="0%" y1="100%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#38bdf8" />
-                    <stop offset="100%" stopColor="#2563eb" />
-                  </linearGradient>
-                </defs>
-                <line x1="32" y1="68" x2="68" y2="32" stroke="url(#logo-grad-footer-chrome)" strokeWidth="14" strokeLinecap="round" />
-                <circle cx="32" cy="68" r="16" fill="#38bdf8" />
-                <circle cx="68" cy="32" r="24" fill="#2563eb" />
-              </svg>
-            </div>
+            <img 
+              src="/logo.png" 
+              alt="CareerSphere" 
+              className={`w-9 h-9 object-contain shrink-0 rounded-lg transition-all duration-300 ${logoHovered ? 'scale-105 shadow-md ring-2 ring-blue-500/20' : ''}`} 
+            />
             <span className={`font-display text-2xl font-bold tracking-tight transition-all duration-300 ${
               logoHovered 
                 ? "text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-blue-600" 
