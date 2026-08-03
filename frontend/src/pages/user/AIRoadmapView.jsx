@@ -119,7 +119,7 @@ export default function AIRoadmapView() {
     // Check if all questions answered
     const unanswered = quizList.some((_, qIdx) => quizAnswers[`${weekIdx}-${qIdx}`] === undefined);
     if (unanswered) {
-      toast.error("Please answer all 4 quiz questions before submitting!");
+      toast.error(`Please answer all ${quizList.length} quiz questions before submitting!`);
       return;
     }
 
@@ -143,7 +143,7 @@ export default function AIRoadmapView() {
         setCompletedWeeks(prev => [...prev, weekIdx]);
       }
     } else {
-      toast.error(`Score: ${correctCount}/${total}. You need at least 3/4 correct to complete this module. Review the chapters & retake!`);
+      toast.error(`Score: ${correctCount}/${total} (${Math.round(scorePercent)}%). You need at least 70% to pass. Review the chapters & retake!`);
     }
   };
 
@@ -384,7 +384,7 @@ export default function AIRoadmapView() {
                             {node.skill_name}
                           </p>
                           <p className="text-[11px] text-muted-foreground truncate">
-                            {node.chapters?.length || 3} Chapters • 4 Quiz Qs
+                            {node.chapters?.length || 3} Chapters • {node.quiz?.length || 10} Quiz Qs
                           </p>
                         </div>
 
@@ -469,7 +469,7 @@ export default function AIRoadmapView() {
                         }`}
                       >
                         <HelpCircle className="h-4 w-4" />
-                        4. Final Quiz &amp; Test (4 Qs)
+                        4. Final Quiz &amp; Test ({activeNode.quiz?.length || 10} Qs)
                         {completedWeeks.includes(activeWeekIndex) && (
                           <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
                         )}
@@ -631,18 +631,18 @@ export default function AIRoadmapView() {
                               <HelpCircle className="h-5 w-5 text-purple-500" />
                               Week {activeWeekIndex + 1} Knowledge Assessment
                             </h3>
-                            <p className="text-xs text-muted-foreground mt-0.5">Answer 4 questions. Score 70%+ to complete this module.</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">Answer all {activeNode.quiz?.length || 10} questions. Score 70%+ (7/{activeNode.quiz?.length || 10} minimum) to complete this module.</p>
                           </div>
 
                           {quizSubmitted[activeWeekIndex] && (
                             <div className="flex items-center gap-2">
                               {quizScores[activeWeekIndex]?.passed ? (
                                 <span className="text-xs font-bold text-emerald-600 bg-emerald-500/15 border border-emerald-500/20 px-3 py-1 rounded-full flex items-center gap-1">
-                                  <CheckCircle2 className="h-3.5 w-3.5" /> Passed ({quizScores[activeWeekIndex].correct}/4)
+                                  <CheckCircle2 className="h-3.5 w-3.5" /> Passed ({quizScores[activeWeekIndex].correct}/{quizScores[activeWeekIndex].total})
                                 </span>
                               ) : (
                                 <span className="text-xs font-bold text-destructive bg-destructive/15 border border-destructive/20 px-3 py-1 rounded-full flex items-center gap-1">
-                                  <XCircle className="h-3.5 w-3.5" /> Score: {quizScores[activeWeekIndex]?.correct}/4 (Needs Retake)
+                                  <XCircle className="h-3.5 w-3.5" /> Score: {quizScores[activeWeekIndex]?.correct}/{quizScores[activeWeekIndex]?.total} (Needs Retake)
                                 </span>
                               )}
                             </div>
