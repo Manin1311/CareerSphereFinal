@@ -601,26 +601,89 @@ export default function AIRoadmapView() {
                     )}
 
                     {/* ── TAB 3: PRACTICAL TASK ── */}
-                    {activeModuleTab === "task" && (
-                      <div className="space-y-6">
-                        <div className="bg-gradient-to-br from-emerald-500/8 to-blue-500/8 border border-emerald-500/20 rounded-3xl p-6 space-y-4">
-                          <h3 className="text-base font-bold text-foreground flex items-center gap-2">
-                            <Code2 className="h-5 w-5 text-emerald-600" />
-                            Hands-On Practical Building Task
-                          </h3>
-                          <p className="text-xs text-foreground bg-background/90 border border-border p-5 rounded-2xl leading-relaxed">
-                            🛠️ {activeNode.practical_task}
-                          </p>
-                        </div>
+                    {activeModuleTab === "task" && (() => {
+                      const task = activeNode.practical_task;
+                      const isObj = task && typeof task === "object";
+                      const taskTitle = isObj ? task.title : "Hands-On Practical Building Task";
+                      const taskDesc = isObj ? task.description : (task || "Build a hands-on project for this week's skill.");
+                      const taskTools = isObj ? (task.tools_needed || []) : [];
+                      const taskSteps = isObj ? (task.steps || []) : [];
+                      const taskOutput = isObj ? task.expected_output : null;
 
-                        <button
-                          onClick={() => setActiveModuleTab("quiz")}
-                          className="w-full pill bg-purple-600 hover:bg-purple-700 text-white py-3 text-xs font-bold transition-all shadow-md shadow-purple-600/20 flex items-center justify-center gap-2"
-                        >
-                          Step 4: Take Knowledge Test &amp; Quiz <ArrowRight className="h-4 w-4" />
-                        </button>
-                      </div>
-                    )}
+                      return (
+                        <div className="space-y-5">
+                          {/* Header Card */}
+                          <div className="bg-gradient-to-br from-emerald-500/10 to-teal-500/8 border border-emerald-500/25 rounded-3xl p-6 space-y-3">
+                            <div className="flex items-center gap-2">
+                              <div className="w-9 h-9 rounded-xl bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                <Code2 className="h-5 w-5 text-emerald-600" />
+                              </div>
+                              <div>
+                                <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">Week {activeWeekIndex + 1} • Hands-On Project</p>
+                                <h3 className="text-sm font-bold text-foreground leading-tight">{taskTitle}</h3>
+                              </div>
+                            </div>
+                            <p className="text-xs text-muted-foreground leading-relaxed pl-11">{taskDesc}</p>
+                          </div>
+
+                          {/* Tools Needed */}
+                          {taskTools.length > 0 && (
+                            <div className="bg-card border border-border rounded-2xl p-4 space-y-2">
+                              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                                🛠️ Tools & Tech Required
+                              </p>
+                              <div className="flex flex-wrap gap-2 pt-1">
+                                {taskTools.map((tool, ti) => (
+                                  <span key={ti} className="text-[11px] font-semibold bg-primary/10 text-primary border border-primary/20 px-3 py-1 rounded-full">
+                                    {tool}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Step-by-Step Instructions */}
+                          {taskSteps.length > 0 && (
+                            <div className="space-y-2">
+                              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-1 flex items-center gap-1.5">
+                                📋 Step-by-Step Instructions
+                              </p>
+                              <div className="space-y-2">
+                                {taskSteps.map((step, si) => (
+                                  <div key={si} className="flex gap-3 items-start bg-card border border-border rounded-2xl p-4">
+                                    <div className="w-7 h-7 rounded-xl bg-primary/15 text-primary text-[11px] font-bold flex items-center justify-center shrink-0">
+                                      {si + 1}
+                                    </div>
+                                    <p className="text-xs text-foreground leading-relaxed pt-0.5">
+                                      {step.replace(/^Step \d+:\s*/i, "")}
+                                    </p>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Expected Output */}
+                          {taskOutput && (
+                            <div className="bg-gradient-to-br from-amber-500/8 to-orange-500/8 border border-amber-500/20 rounded-2xl p-4 flex gap-3 items-start">
+                              <span className="text-lg shrink-0">🎯</span>
+                              <div>
+                                <p className="text-[10px] font-bold text-amber-600 uppercase tracking-wider mb-1">Expected Output</p>
+                                <p className="text-xs text-foreground leading-relaxed">{taskOutput}</p>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* CTA to Quiz */}
+                          <button
+                            onClick={() => setActiveModuleTab("quiz")}
+                            className="w-full pill bg-purple-600 hover:bg-purple-700 text-white py-3 text-xs font-bold transition-all shadow-md shadow-purple-600/20 flex items-center justify-center gap-2"
+                          >
+                            Step 4: Take Knowledge Test &amp; Quiz <ArrowRight className="h-4 w-4" />
+                          </button>
+                        </div>
+                      );
+                    })()}
 
                     {/* ── TAB 4: KNOWLEDGE QUIZ & TEST (4 Qs) ── */}
                     {activeModuleTab === "quiz" && (

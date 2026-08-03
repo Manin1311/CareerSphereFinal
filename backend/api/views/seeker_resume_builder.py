@@ -1393,7 +1393,12 @@ def generate_job_roadmap(request):
         "    * code_example: Write a realistic 6-12 line code snippet or CLI command block with inline explanatory comments.\n"
         "    * key_takeaways: array of 3 specific technical takeaway points.\n"
         "- youtube_query: realistic, targeted YouTube search query for video courses (e.g. 'Complete React.js Crash Course 2026').\n"
-        "- practical_task: detailed hands-on coding mini-project task with step-by-step instructions.\n"
+        "- practical_task: a structured hands-on mini-project object with the following fields:\n"
+        "    * title: short task title (e.g. 'Build a Sales Dashboard with Matplotlib')\n"
+        "    * description: 2-3 sentence overview of what the candidate will build and why it matters\n"
+        "    * tools_needed: array of 3-5 specific tools/libraries/tech required (e.g. ['Python 3.x', 'pandas', 'matplotlib', 'VS Code'])\n"
+        "    * steps: array of 4-6 clear step-by-step numbered instructions (e.g. 'Step 1: Install pandas and matplotlib using pip install pandas matplotlib')\n"
+        "    * expected_output: 1-2 sentences describing what the finished result looks like\n"
         "- quiz: array of EXACTLY 5 interactive multiple-choice questions testing the chapters. Each question has:\n"
         "    * question: string\n"
         "    * options: array of 4 distinct option strings\n"
@@ -1422,7 +1427,13 @@ def generate_job_roadmap(request):
         "        }\n"
         "      ],\n"
         "      \"youtube_query\": \"<search string>\",\n"
-        "      \"practical_task\": \"<task description>\",\n"
+        "      \"practical_task\": {\n"
+        "        \"title\": \"<task title>\",\n"
+        "        \"description\": \"<2-3 sentence project overview>\",\n"
+        "        \"tools_needed\": [\"Tool 1\", \"Tool 2\", \"Tool 3\"],\n"
+        "        \"steps\": [\"Step 1: ...\", \"Step 2: ...\", \"Step 3: ...\", \"Step 4: ...\"],\n"
+        "        \"expected_output\": \"<what the finished project looks like>\"\n"
+        "      },\n"
         "      \"quiz\": [\n"
         "        {\n"
         "          \"question\": \"<question text 1>\",\n"
@@ -1498,7 +1509,19 @@ def generate_job_roadmap(request):
                 "why_it_matters": f"Mastering {skill_item} is essential for fulfilling the target job requirements.",
                 "chapters": [],
                 "youtube_query": f"{skill_item} tutorial 2026",
-                "practical_task": f"Build a practical project utilizing {skill_item}.",
+                "practical_task": {
+                    "title": f"Build a {skill_item} Project",
+                    "description": f"Create a hands-on project that demonstrates your understanding of {skill_item} in a real-world context.",
+                    "tools_needed": [skill_item, "VS Code", "Git"],
+                    "steps": [
+                        f"Step 1: Set up your development environment and install {skill_item} dependencies",
+                        f"Step 2: Create the project structure and initialize version control with Git",
+                        f"Step 3: Implement the core functionality using {skill_item}",
+                        f"Step 4: Test your implementation and fix any bugs",
+                        f"Step 5: Document your code and push to a GitHub repository"
+                    ],
+                    "expected_output": f"A working {skill_item} project pushed to GitHub with a clear README explaining what it does and how to run it."
+                },
                 "quiz": []
             })
 
@@ -1517,23 +1540,23 @@ def generate_job_roadmap(request):
                 {
                     "chapter_num": 1,
                     "title": f"Ch 1: Introduction & Fundamentals of {skill_title}",
-                    "summary": f"Learn the core architecture, syntax, and fundamental concepts of {skill_title}. Understand why engineering teams adopt it in production and how it solves real-world challenges.",
-                    "code_example": f"// Core syntax & initialization example for {skill_title}\nconsole.log('Initializing {skill_title} module...');",
-                    "key_takeaways": ["Master foundational syntax & core concepts", "Set up local environment & tooling", "Understand core architecture & component lifecycles"]
+                    "summary": f"Learn the core architecture, syntax, and fundamental concepts of {skill_title}. Understand why engineering teams adopt it in production and how it solves real-world challenges like scalability, maintainability, and developer productivity.",
+                    "code_example": f"# Setup and initialization for {skill_title}\n# Step 1: Install dependencies\npip install {skill_title.lower().replace(' ', '-')}\n\n# Step 2: Initialize your project\nmkdir my-project && cd my-project\ngit init\n\n# Step 3: Create entry point\ncat > main.py << 'EOF'\nprint('Hello from {skill_title}!')\nEOF\npython main.py",
+                    "key_takeaways": [f"Understand what {skill_title} is and its core use cases in modern engineering", "Set up a local development environment and install required dependencies", "Learn the foundational concepts, syntax, and architecture patterns"]
                 },
                 {
                     "chapter_num": 2,
                     "title": f"Ch 2: Production Patterns & Best Practices",
-                    "summary": f"Deep dive into enterprise design patterns, modular architecture, state management, and performance optimization strategies for {skill_title}.",
-                    "code_example": f"// Production-grade pattern implementation for {skill_title}\n// Implements error handling, caching, and clean abstraction layer",
-                    "key_takeaways": ["Implement clean, maintainable design patterns", "Optimize performance & resource management", "Handle async states and edge cases safely"]
+                    "summary": f"Deep dive into enterprise design patterns, error handling, and performance optimization strategies used by professional engineers when working with {skill_title} in real-world production systems.",
+                    "code_example": f"# Production-grade pattern for {skill_title}\nimport logging\n\nlogging.basicConfig(level=logging.INFO)\nlogger = logging.getLogger(__name__)\n\ndef run_with_error_handling(fn, *args):\n    try:\n        result = fn(*args)\n        logger.info('Success: %s', result)\n        return result\n    except Exception as e:\n        logger.error('Error in {skill_title}: %s', str(e))\n        raise\n\n# Usage: wrap your {skill_title} calls with this handler",
+                    "key_takeaways": ["Apply clean code principles and modular architecture", "Handle errors and edge cases with proper logging", "Optimize for performance, caching, and resource efficiency"]
                 },
                 {
                     "chapter_num": 3,
                     "title": f"Ch 3: Advanced Integration, Testing & Deployment",
-                    "summary": f"Explore end-to-end integration of {skill_title} with backend microservices, CI/CD pipelines, automated unit testing, and cloud infrastructure.",
-                    "code_example": f"// Integration testing & deployment configuration for {skill_title}",
-                    "key_takeaways": ["Write automated unit & integration tests", "Configure CI/CD automated deployment pipelines", "Monitor health, logging, and production performance"]
+                    "summary": f"Explore how to integrate {skill_title} with CI/CD pipelines, write automated unit tests, and deploy containerized applications to cloud infrastructure reliably and at scale.",
+                    "code_example": f"# GitHub Actions CI/CD pipeline for {skill_title}\n# File: .github/workflows/deploy.yml\nname: CI/CD Pipeline\non:\n  push:\n    branches: [main]\njobs:\n  test-and-deploy:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v3\n      - name: Set up Python\n        uses: actions/setup-python@v4\n        with:\n          python-version: '3.11'\n      - name: Install dependencies\n        run: pip install -r requirements.txt\n      - name: Run tests\n        run: python -m pytest tests/ -v\n      - name: Deploy to production\n        run: echo 'Deploy {skill_title} app here'",
+                    "key_takeaways": ["Write automated unit and integration tests using pytest", "Configure GitHub Actions CI/CD pipelines for automated deployment", "Monitor application health, logs, and performance in production"]
                 }
             ]
             # Keep existing chapters and fill up to 3
@@ -1542,43 +1565,70 @@ def generate_job_roadmap(request):
         
         node["chapters"] = ch_list
         node["youtube_query"] = node.get("youtube_query") or f"{skill_title} complete crash course 2026"
-        node["practical_task"] = node.get("practical_task") or f"Build a practical hands-on application demonstrating {skill_title}."
+        existing_task = node.get("practical_task")
+        if not existing_task or isinstance(existing_task, str):
+            node["practical_task"] = {
+                "title": f"Build a {skill_title} Hands-On Project",
+                "description": f"Create a practical project that showcases your command of {skill_title}. This task will solidify your understanding through real implementation.",
+                "tools_needed": [skill_title, "VS Code", "Git", "Terminal"],
+                "steps": [
+                    f"Step 1: Install all required dependencies for {skill_title} on your local machine",
+                    f"Step 2: Create a new project directory and initialize a Git repository",
+                    f"Step 3: Implement the core {skill_title} functionality based on what you learned in the chapters",
+                    f"Step 4: Add error handling and edge case management to make it production-ready",
+                    f"Step 5: Write a README.md documenting setup instructions and project purpose",
+                    f"Step 6: Push your completed project to GitHub and share the repository link"
+                ],
+                "expected_output": f"A working {skill_title} application or script hosted on GitHub with a README, demonstrating the concepts covered in this week's chapters."
+            }
 
-        # Ensure quiz array exists
+        # Ensure quiz array has minimum 5 questions with valid 4 options each
         quiz_list = node.get("quiz") or []
-        if len(quiz_list) == 0:
-            quiz_list = [
-                {
-                    "question": f"What is the primary architectural purpose of {skill_title} in modern applications?",
-                    "options": ["To build reusable, modular, and scalable software components", "To serve static HTML files without JavaScript", "To replace database storage completely", "To eliminate the need for network calls"],
-                    "correct_index": 0,
-                    "explanation": f"{skill_title} is primarily used to build modular, maintainable, and scalable software components in modern architectures."
-                },
-                {
-                    "question": f"Which best practice should be followed when implementing {skill_title} in production?",
-                    "options": ["Follow clean code principles, handle error states, and optimize performance", "Write all logic in a single monolithic file", "Disable error handling to improve execution speed", "Hardcode production API credentials in source code"],
-                    "correct_index": 0,
-                    "explanation": "Production best practices require clean code principles, robust error handling, and performance optimization."
-                },
-                {
-                    "question": f"How do engineers effectively test and verify {skill_title} modules?",
-                    "options": ["By writing automated unit, integration, and end-to-end test suites", "By manually refreshing the browser once", "By skipping testing and deploying directly to production", "By relying only on user bug reports"],
-                    "correct_index": 0,
-                    "explanation": "Automated unit and integration testing ensures that modules function correctly across edge cases before deployment."
-                },
-                {
-                    "question": f"What is a common pitfall when scaling {skill_title} applications?",
-                    "options": ["Neglecting proper state management and unoptimized network requests", "Writing docstrings and comments in the codebase", "Using version control like Git", "Breaking code into small reusable components"],
-                    "correct_index": 0,
-                    "explanation": "Poor state management and unoptimized network/database calls are common causes of performance bottlenecks when scaling."
-                },
-                {
-                    "question": f"How does {skill_title} integrate with modern CI/CD pipelines?",
-                    "options": ["By running automated build, test, and containerized deployment scripts on code push", "By manually copying files via FTP to the server", "CI/CD cannot be used with this technology", "By running scripts locally on a developer laptop"],
-                    "correct_index": 0,
-                    "explanation": "Modern CI/CD pipelines automate testing, building, and deploying containerized applications seamlessly."
-                }
-            ]
+        
+        # Sanitize existing questions: ensure 4 options and required fields
+        for q in quiz_list:
+            opts = q.get("options") or []
+            while len(opts) < 4:
+                opts.append(f"Option {len(opts)+1}")
+            q["options"] = opts[:4]
+            q.setdefault("correct_index", 0)
+            q.setdefault("explanation", f"Refer to the chapter notes for {skill_title} for a detailed explanation.")
+        
+        fallback_questions = [
+            {
+                "question": f"What is the primary architectural purpose of {skill_title} in modern applications?",
+                "options": ["To build reusable, modular, and scalable software components", "To serve static HTML files without JavaScript", "To replace database storage completely", "To eliminate the need for network calls"],
+                "correct_index": 0,
+                "explanation": f"{skill_title} is primarily used to build modular, maintainable, and scalable software components in modern architectures."
+            },
+            {
+                "question": f"Which best practice should be followed when implementing {skill_title} in production?",
+                "options": ["Follow clean code principles, handle error states, and optimize performance", "Write all logic in a single monolithic file", "Disable error handling to improve execution speed", "Hardcode production API credentials in source code"],
+                "correct_index": 0,
+                "explanation": "Production best practices require clean code principles, robust error handling, and performance optimization."
+            },
+            {
+                "question": f"How do engineers effectively test and verify {skill_title} modules?",
+                "options": ["By writing automated unit, integration, and end-to-end test suites", "By manually refreshing the browser once", "By skipping testing and deploying directly to production", "By relying only on user bug reports"],
+                "correct_index": 0,
+                "explanation": "Automated unit and integration testing ensures that modules function correctly across edge cases before deployment."
+            },
+            {
+                "question": f"What is a common pitfall when scaling {skill_title} applications?",
+                "options": ["Neglecting proper state management and unoptimized network requests", "Writing docstrings and comments in the codebase", "Using version control like Git", "Breaking code into small reusable components"],
+                "correct_index": 0,
+                "explanation": "Poor state management and unoptimized network/database calls are common causes of performance bottlenecks when scaling."
+            },
+            {
+                "question": f"How does {skill_title} integrate with modern CI/CD pipelines?",
+                "options": ["By running automated build, test, and containerized deployment scripts on code push", "By manually copying files via FTP to the server", "CI/CD cannot be used with this technology", "By running scripts locally on a developer laptop"],
+                "correct_index": 0,
+                "explanation": "Modern CI/CD pipelines automate testing, building, and deploying containerized applications seamlessly."
+            }
+        ]
+        # Pad quiz with fallback questions if fewer than 5 exist
+        if len(quiz_list) < 5:
+            quiz_list.extend(fallback_questions[len(quiz_list):])
         node["quiz"] = quiz_list
 
     output = {
