@@ -288,6 +288,13 @@ urlpatterns = [
     # Returns: { current_match, potential_match, gap_summary, roadmap: [...] }
     path('api/v1/seeker/resume/generate-job-roadmap', seeker_resume_builder.generate_job_roadmap, name='seeker-generate-job-roadmap'),
 
+    # ── Roadmap Progress Persistence ────────────────────────────────────────────
+    # GET  - load saved roadmap + progress (has_saved, roadmap_data, completed_weeks, quiz_scores, quiz_submitted)
+    # POST - save new generated roadmap (resets progress)
+    # PATCH - update only progress (completed_weeks, quiz_scores, quiz_submitted)
+    path('api/v1/seeker/roadmap/progress', seeker_resume_builder.get_roadmap_progress, name='seeker-roadmap-progress-get'),
+    path('api/v1/seeker/roadmap/progress/save', seeker_resume_builder.save_roadmap_progress, name='seeker-roadmap-progress-save'),
+
     # ── Seeker Billing ─────────────────────────────────────────────────────────
     path('api/v1/seeker/billing/plans', seeker_billing.get_plans, name='seeker-billing-plans'),
     path('api/v1/seeker/billing/subscribe', seeker_billing.subscribe, name='seeker-billing-subscribe'),

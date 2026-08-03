@@ -779,3 +779,36 @@ class AdminAuditLog(models.Model):
     class Meta:
         db_table = "admin_audit_log"
         ordering = ["-timestamp"]
+
+
+class SeekerRoadmapProgress(models.Model):
+    """
+    Persists a seeker's AI-generated roadmap data and learning progress.
+    One record per seeker (latest roadmap). Old roadmap is overwritten when
+    a new one is generated.
+    """
+    id               = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    seeker           = models.OneToOneField(
+        JobSeekerAccount,
+        on_delete=models.CASCADE,
+        db_column="seeker_id",
+        related_name="roadmap_progress"
+    )
+    # Full AI-generated roadmap payload (gap_summary, matched_skills, roadmap[])
+    roadmap_data     = models.JSONField(default=dict)
+    # The JD text used to generate this roadmap (stored for reference/display)
+    jd_text          = models.TextField(blank=True, default="")
+    # Progress tracking: list of week indices the user has passed (e.g. [0, 1])
+    completed_weeks  = models.JSONField(default=list)
+    # Per-week quiz scores: { "0": { "correct": 4, "total": 5, "passed": true }, ... }
+    quiz_scores      = models.JSONField(default=dict)
+    # Per-week submission flag: { "0": true, "1": false, ... }
+    quiz_submitted   = models.JSONField(default=dict)
+    created_at       = models.DateTimeField(default=timezone.now)
+    updated_at       = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "seeker_roadmap_progress"
+
+    def __str__(self):
+        return f"Roadmap Progress for {self.seeker.full_name} ({len(self.completed_weeks)} weeks done)"

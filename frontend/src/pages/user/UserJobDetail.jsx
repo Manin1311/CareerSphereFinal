@@ -1,20 +1,24 @@
 import { useState, useEffect } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useLocation } from "react-router-dom";
 import { Header, Footer } from "../../components/user/site-chrome";
 import { CompanyLogo } from "../../components/user/company-logo";
 import { seekerAPI } from "../../lib/api";
 import LoadingSkeleton from "../../components/LoadingSkeleton";
 import VerifiedBadge from "../../components/VerifiedBadge";
-import { ArrowLeft, Bookmark, Share2, MapPin, Clock, Briefcase, DollarSign, CheckCircle2, XCircle, Check, Star, BookOpen, TrendingUp, Award } from "lucide-react";
+import { ArrowLeft, Bookmark, Share2, MapPin, Clock, Briefcase, DollarSign, CheckCircle2, XCircle, Check, Star, BookOpen, TrendingUp, Award, AlertTriangle } from "lucide-react";
 import toast from "react-hot-toast";
 import { BookmarkIconButton } from "../../components/ui/bookmark-icon-button";
 
 export default function UserJobDetail() {
   const { jobId } = useParams();
+  const location = useLocation();
+  const jobInfo = location.state?.jobInfo;
+
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [related, setRelated] = useState([]);
+  const [jobNotFound, setJobNotFound] = useState(false);
 
   useEffect(() => {
     if (!jobId) return;
@@ -70,8 +74,15 @@ export default function UserJobDetail() {
         setJob(mappedJob);
       })
       .catch((err) => {
-        console.error(err);
-        toast.error("Failed to load job details");
+        const msg = (err?.message || "").toLowerCase();
+        if (msg.includes("not found") || msg.includes("404") || msg.includes("no job")) {
+          // Job was deleted or never existed — handle silently
+          console.warn("[UserJobDetail] Job not found (404):", jobId);
+          setJobNotFound(true);
+        } else {
+          console.error(err);
+          toast.error("Failed to load job details");
+        }
       })
       .finally(() => {
         setLoading(false);
@@ -146,9 +157,60 @@ export default function UserJobDetail() {
     return (
       <div className="min-h-screen bg-background flex flex-col justify-between">
         <Header />
-        <div className="flex-1 flex flex-col items-center justify-center p-12 text-center text-muted-foreground">
-          <p>Job not found or failed to load.</p>
-          <Link to="/jobs/search" className="text-primary underline mt-2">Back to jobs</Link>
+        <div className="flex-1 flex items-center justify-center px-6 py-16">
+          <div className="max-w-lg w-full bg-card border border-border rounded-3xl p-8 text-center space-y-6 shadow-elevation-1">
+            
+            {/* If we have jobInfo from state, show rich company & position card */}
+            {jobInfo ? (
+              <div className="space-y-4">
+                <div className="flex flex-col items-center justify-center gap-3">
+                  <CompanyLogo name={jobInfo.company} logoPath={jobInfo.logoPath} color="#4F46E5" size={64} />
+                  <div>
+                    <h2 className="font-display text-xl font-bold tracking-tight text-foreground">{jobInfo.title}</h2>
+                    <p className="text-sm font-medium text-muted-foreground">{jobInfo.company}</p>
+                  </div>
+                </div>
+
+                {jobInfo.status && (
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-600 border border-amber-500/20 uppercase tracking-wider">
+                    Status: {jobInfo.status}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="mx-auto w-16 h-16 rounded-2xl bg-muted flex items-center justify-center">
+                <AlertTriangle className="w-8 h-8 text-amber-500" />
+              </div>
+            )}
+
+            <div className="space-y-2 border-t border-border pt-5">
+              <h1 className="font-display text-lg font-semibold tracking-tight text-foreground">
+                {jobNotFound ? "Position No Longer Active" : "Failed to Load Job Details"}
+              </h1>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                {jobNotFound
+                  ? "This job posting was closed or unpublished by the recruiter after your application/offer was created. Your status in the pipeline is recorded safely, but detailed requirements for this past listing are no longer accessible."
+                  : "We couldn't retrieve the job details right now. Please check your connection or try again later."
+                }
+              </p>
+            </div>
+
+            <div className="flex items-center justify-center gap-3 pt-2">
+              <Link
+                to="/jobs/dashboard"
+                className="pill border border-border bg-background px-5 py-2.5 text-xs font-semibold hover:bg-muted transition-all inline-flex items-center gap-1.5"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                Back to Dashboard
+              </Link>
+              <Link
+                to="/jobs/search"
+                className="pill bg-primary text-primary-foreground px-5 py-2.5 text-xs font-semibold hover:opacity-90 transition-all"
+              >
+                Explore Other Jobs
+              </Link>
+            </div>
+          </div>
         </div>
         <Footer />
       </div>

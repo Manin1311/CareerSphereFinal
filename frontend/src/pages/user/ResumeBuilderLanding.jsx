@@ -64,10 +64,12 @@ export default function ResumeBuilderLanding() {
   const [loading, setLoading] = useState(true);
   const [btnLoading, setBtnLoading] = useState(false);
   
-  // ATS Scan on existing profile resume state
   const [atsLoading, setAtsLoading] = useState(false);
   const [atsReport, setAtsReport] = useState(null);
   const [atsError, setAtsError] = useState(null);
+
+  // Roadmap progress summary
+  const [roadmapProgress, setRoadmapProgress] = useState(null);
 
   // -- Parse Result Modal State -----------------------------------------------
   const [parseResult, setParseResult] = useState(null);
@@ -77,14 +79,16 @@ export default function ResumeBuilderLanding() {
   const fetchLandingData = async () => {
     try {
       setLoading(true);
-      const [draftsData, recsData, profileData] = await Promise.all([
+      const [draftsData, recsData, profileData, roadmapData] = await Promise.all([
         seekerAPI.getDrafts(),
         seekerAPI.recommendTemplates().catch(() => ({ recommendations: [] })),
-        seekerAPI.getMe().catch(() => null)
+        seekerAPI.getMe().catch(() => null),
+        seekerAPI.getRoadmapProgress().catch(() => null),
       ]);
       setDrafts(draftsData || []);
       setRecommendations(recsData?.recommendations || []);
       setSeeker(profileData);
+      if (roadmapData?.has_saved) setRoadmapProgress(roadmapData);
     } catch (err) {
       console.error(err);
       toast.error("Failed to load drafts");
@@ -316,7 +320,6 @@ export default function ResumeBuilderLanding() {
                 />
               </label>
 
-              {/* Dedicated Full-Screen AI Target Job Roadmap */}
               <button
                 disabled={btnLoading}
                 onClick={() => navigate("/resume-builder/roadmap")}
@@ -325,6 +328,39 @@ export default function ResumeBuilderLanding() {
                 <Map className="h-4 w-4" />
                 AI Target Job Roadmap
               </button>
+
+              {/* Roadmap progress quick-resume card */}
+              {roadmapProgress && (() => {
+                const totalWeeks = roadmapProgress.roadmap_data?.roadmap?.length || 0;
+                const doneWeeks = roadmapProgress.completed_weeks?.length || 0;
+                const passedQuizzes = Object.values(roadmapProgress.quiz_scores || {}).filter(s => s?.passed).length;
+                const pct = totalWeeks > 0 ? Math.round((doneWeeks / totalWeeks) * 100) : 0;
+                return (
+                  <div className="w-full border border-primary/15 bg-primary/4 rounded-2xl px-4 py-3 flex items-center gap-4">
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <p className="text-xs font-bold text-foreground truncate">
+                        📚 {totalWeeks}-Week Roadmap · {doneWeeks}/{totalWeeks} weeks · {passedQuizzes} quiz{passedQuizzes !== 1 ? "zes" : ""} passed
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 h-1.5 bg-border rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-gradient-to-r from-primary to-emerald-500 rounded-full transition-all"
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                        <span className="text-[10px] font-bold text-primary shrink-0">{pct}%</span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => navigate("/resume-builder/roadmap")}
+                      className="pill bg-primary text-primary-foreground px-3 py-1.5 text-xs font-bold shrink-0 hover:opacity-90 transition-all flex items-center gap-1.5"
+                    >
+                      <BookOpen className="h-3 w-3" />
+                      Continue
+                    </button>
+                  </div>
+                );
+              })()}
 
               <button
                 disabled={btnLoading}

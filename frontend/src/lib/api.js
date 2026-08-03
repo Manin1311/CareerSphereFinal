@@ -560,6 +560,14 @@ export const seekerAPI = {
   // body: { job_description: <string> }
   // Returns: { current_match, potential_match, gap_summary, roadmap: [...] }
   generateJobRoadmap: (payload) => seekerReq('POST', '/api/v1/seeker/resume/generate-job-roadmap', payload),
+
+  // ── Roadmap Progress Persistence ────────────────────────────────────────────
+  // GET  → load saved roadmap + progress from DB
+  getRoadmapProgress: () => seekerReq('GET', '/api/v1/seeker/roadmap/progress'),
+  // POST → save a newly generated roadmap (resets all progress)
+  saveRoadmapToDb: (payload) => seekerReq('POST', '/api/v1/seeker/roadmap/progress/save', payload),
+  // PATCH → update only progress fields (completed_weeks, quiz_scores, quiz_submitted)
+  updateRoadmapProgress: (payload) => seekerReq('PATCH', '/api/v1/seeker/roadmap/progress/save', payload),
 };
 
 // ── PUBLIC API (no auth required) ──────────────────────────────────────────────

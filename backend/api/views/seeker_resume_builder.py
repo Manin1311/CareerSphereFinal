@@ -8,7 +8,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 
-from api.models import JobSeekerAccount, ResumeDraft, ResumeVersion
+from api.models import JobSeekerAccount, ResumeDraft, ResumeVersion, SeekerRoadmapProgress
 from api.views.seeker_auth import require_seeker_jwt
 from models.schemas import success_response, error_response
 from agents.ats_compatibility_agent import AtsCompatibilityAgent
@@ -1641,4 +1641,95 @@ def generate_job_roadmap(request):
     logger.info("generate_job_roadmap: %d nodes, %d matched, %d missing for seeker %s",
                 len(output["roadmap"]), len(output["matched_skills"]),
                 len(output["missing_skills"]), seeker.id)
-    return JsonResponse(success_response(output))
+    return JsonResponse(success_response(output))
+
+
+# ── Roadmap Progress Persistence ───────────────────────────────────────────────
+
+@csrf_exempt
+@require_seeker_jwt
+def get_roadmap_progress(request):
+    """
+    GET /api/v1/seeker/roadmap/progress
+    Returns the seeker's saved roadmap data + learning progress.
+    Returns 404-style empty data if no roadmap saved yet.
+    """
+    if request.method != "GET":
+        return JsonResponse(error_response("Method not allowed"), status=405)
+
+    seeker = request.seeker
+    try:
+        record = SeekerRoadmapProgress.objects.get(seeker=seeker)
+        return JsonResponse(success_response({
+            "has_saved": True,
+            "jd_text": record.jd_text,
+            "roadmap_data": record.roadmap_data,
+            "completed_weeks": record.completed_weeks,
+            "quiz_scores": record.quiz_scores,
+            "quiz_submitted": record.quiz_submitted,
+            "updated_at": record.updated_at.isoformat(),
+        }))
+    except SeekerRoadmapProgress.DoesNotExist:
+        return JsonResponse(success_response({"has_saved": False}))
+
+
+@csrf_exempt
+@require_seeker_jwt
+def save_roadmap_progress(request):
+    """
+    POST /api/v1/seeker/roadmap/progress/save
+        body: { jd_text, roadmap_data } — saves a freshly generated roadmap (resets progress)
+
+    PATCH /api/v1/seeker/roadmap/progress/save
+        body: { completed_weeks?, quiz_scores?, quiz_submitted? } — updates only progress fields
+    """
+    if request.method not in ("POST", "PATCH"):
+        return JsonResponse(error_response("Method not allowed"), status=405)
+
+    seeker = request.seeker
+
+    try:
+        body = json.loads(request.body)
+    except (json.JSONDecodeError, Exception):
+        return JsonResponse(error_response("Invalid JSON body"), status=400)
+
+    if request.method == "POST":
+        # Full save: new roadmap generated — reset all progress
+        roadmap_data = body.get("roadmap_data")
+        jd_text = body.get("jd_text", "")
+        if not roadmap_data:
+            return JsonResponse(error_response("roadmap_data is required"), status=400)
+
+        record, created = SeekerRoadmapProgress.objects.update_or_create(
+            seeker=seeker,
+            defaults={
+                "roadmap_data": roadmap_data,
+                "jd_text": jd_text[:5000],  # cap JD at 5k chars
+                "completed_weeks": [],
+                "quiz_scores": {},
+                "quiz_submitted": {},
+            }
+        )
+        logger.info("save_roadmap_progress: %s roadmap for seeker %s",
+                    "created" if created else "updated", seeker.id)
+        return JsonResponse(success_response({"saved": True, "created": created}))
+
+    else:  # PATCH — update only progress fields
+        updates = {}
+        if "completed_weeks" in body:
+            updates["completed_weeks"] = body["completed_weeks"]
+        if "quiz_scores" in body:
+            updates["quiz_scores"] = body["quiz_scores"]
+        if "quiz_submitted" in body:
+            updates["quiz_submitted"] = body["quiz_submitted"]
+
+        if not updates:
+            return JsonResponse(error_response("No progress fields provided"), status=400)
+
+        updated = SeekerRoadmapProgress.objects.filter(seeker=seeker).update(**updates)
+        if updated == 0:
+            return JsonResponse(error_response("No saved roadmap found. Generate a roadmap first."), status=404)
+
+        logger.info("save_roadmap_progress PATCH: updated progress for seeker %s", seeker.id)
+        return JsonResponse(success_response({"saved": True}))
+

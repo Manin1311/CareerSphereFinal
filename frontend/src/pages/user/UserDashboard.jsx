@@ -272,6 +272,7 @@ export default function UserDashboard() {
                     <Link
                       key={a.id}
                       to={`/jobs/${a.jobId}`}
+                      state={{ jobInfo: a }}
                       className="block rounded-2xl border border-border bg-background p-4 transition hover:bg-muted"
                     >
                       <div className="flex items-center gap-3">

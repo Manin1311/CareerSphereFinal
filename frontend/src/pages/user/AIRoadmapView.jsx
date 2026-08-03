@@ -24,7 +24,8 @@ import {
   Copy,
   ArrowRight,
   FileCode,
-  GraduationCap
+  GraduationCap,
+  Lock
 } from "lucide-react";
 import toast from "react-hot-toast";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
@@ -62,6 +63,8 @@ export default function AIRoadmapView() {
   const [loading, setLoading] = useState(false);
   const [roadmapData, setRoadmapData] = useState(null);
   const [error, setError] = useState(null);
+  const [progressSaving, setProgressSaving] = useState(false); // subtle save indicator
+  const [savedProgress, setSavedProgress] = useState(null);   // DB saved roadmap (null = not loaded yet)
 
   // Active Week & Module Tab State
   const [activeWeekIndex, setActiveWeekIndex] = useState(0);
@@ -74,9 +77,36 @@ export default function AIRoadmapView() {
   const [quizScores, setQuizScores] = useState({}); // { [weekIdx]: { correct: int, total: int, passed: bool } }
   const [completedWeeks, setCompletedWeeks] = useState([]); // [weekIdx]
 
+  // ── On mount: load seeker info AND check for saved roadmap in DB ──
   useEffect(() => {
     seekerAPI.getMe().then(setSeeker).catch(() => null);
+
+    // Load saved progress into separate state — user will explicitly choose to continue
+    seekerAPI.getRoadmapProgress().then(res => {
+      if (res?.has_saved) setSavedProgress(res);
+      else setSavedProgress({}); // no saved data
+    }).catch(() => setSavedProgress({})); // silently ignore errors
   }, []);
+
+  // ── Restore saved roadmap when user clicks "Continue Learning" ──
+  const handleContinueSaved = () => {
+    if (!savedProgress?.roadmap_data) return;
+    setRoadmapData(savedProgress.roadmap_data);
+    setJdText(savedProgress.jd_text || "");
+    setCompletedWeeks(savedProgress.completed_weeks || []);
+    setQuizScores(
+      Object.fromEntries(
+        Object.entries(savedProgress.quiz_scores || {}).map(([k, v]) => [Number(k), v])
+      )
+    );
+    setQuizSubmitted(
+      Object.fromEntries(
+        Object.entries(savedProgress.quiz_submitted || {}).map(([k, v]) => [Number(k), v])
+      )
+    );
+    setActiveWeekIndex(0);
+    setActiveModuleTab("chapters");
+  };
 
   const handleGenerateRoadmap = async () => {
     if (!jdText.trim() || jdText.trim().length < 40) {
@@ -97,6 +127,9 @@ export default function AIRoadmapView() {
       const res = await seekerAPI.generateJobRoadmap({ job_description: jdText });
       setRoadmapData(res);
       toast.success("AI Skill Bridge Learning Path generated! 🚀");
+
+      // ── Auto-save to DB (fire-and-forget) ──
+      seekerAPI.saveRoadmapToDb({ roadmap_data: res, jd_text: jdText }).catch(() => null);
     } catch (err) {
       console.error(err);
       setError(err.message || "Failed to generate roadmap. Please check your network and try again.");
@@ -134,17 +167,32 @@ export default function AIRoadmapView() {
     const scorePercent = (correctCount / total) * 100;
     const passed = scorePercent >= 70; // 70%+ to pass
 
-    setQuizSubmitted(prev => ({ ...prev, [weekIdx]: true }));
-    setQuizScores(prev => ({ ...prev, [weekIdx]: { correct: correctCount, total, passed } }));
+    const newSubmitted = { ...quizSubmitted, [weekIdx]: true };
+    const newScores = { ...quizScores, [weekIdx]: { correct: correctCount, total, passed } };
+    const newCompleted = passed && !completedWeeks.includes(weekIdx)
+      ? [...completedWeeks, weekIdx]
+      : completedWeeks;
+
+    setQuizSubmitted(newSubmitted);
+    setQuizScores(newScores);
+    setCompletedWeeks(newCompleted);
 
     if (passed) {
       toast.success(`🎉 Great Job! You passed Week ${weekIdx + 1} Quiz (${correctCount}/${total})!`);
-      if (!completedWeeks.includes(weekIdx)) {
-        setCompletedWeeks(prev => [...prev, weekIdx]);
-      }
     } else {
       toast.error(`Score: ${correctCount}/${total} (${Math.round(scorePercent)}%). You need at least 70% to pass. Review the chapters & retake!`);
     }
+
+    // ── Auto-save progress to DB (fire-and-forget) ──
+    setProgressSaving(true);
+    const progressPayload = {
+      completed_weeks: newCompleted,
+      quiz_scores: Object.fromEntries(Object.entries(newScores).map(([k, v]) => [String(k), v])),
+      quiz_submitted: Object.fromEntries(Object.entries(newSubmitted).map(([k, v]) => [String(k), v])),
+    };
+    seekerAPI.updateRoadmapProgress(progressPayload)
+      .catch(() => null)
+      .finally(() => setProgressSaving(false));
   };
 
   const handleRetakeQuiz = (weekIdx) => {
@@ -206,73 +254,152 @@ export default function AIRoadmapView() {
         </div>
 
         {/* ── STEP 1: JD Input Section ── */}
-        {!roadmapData && (
-          <div className="bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
-            <div className="max-w-3xl space-y-2">
-              <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-primary" />
-                Target Job Description Input
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                Paste the job description you are aiming for. AI will analyze your profile skills, detect gaps, and generate your structured week-by-week learning curriculum.
-              </p>
-            </div>
+        {!roadmapData && (() => {
+          const hasSaved = savedProgress?.has_saved && savedProgress?.roadmap_data;
+          const savedWeeksTotal = savedProgress?.roadmap_data?.roadmap?.length || 0;
+          const savedCompleted = savedProgress?.completed_weeks?.length || 0;
+          const savedScores = savedProgress?.quiz_scores || {};
+          const passedQuizzes = Object.values(savedScores).filter(s => s?.passed).length;
+          const savedDate = savedProgress?.updated_at
+            ? new Date(savedProgress.updated_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
+            : null;
 
-            {/* Quick Sample JD Pills */}
-            <div className="space-y-2">
-              <p className="text-xs font-semibold text-muted-foreground">Quick test with sample JDs:</p>
-              <div className="flex flex-wrap gap-2">
-                {SAMPLE_JDS.map((s, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => { setJdText(s.text); setError(null); }}
-                    className="text-xs font-medium bg-muted hover:bg-primary/10 hover:text-primary border border-border px-3 py-1.5 rounded-xl transition-all"
-                  >
-                    + {s.title}
-                  </button>
-                ))}
-              </div>
-            </div>
+          return (
+            <div className="space-y-5">
+              {/* ── Previous Roadmap Resume Card ── */}
+              {hasSaved && (
+                <div className="bg-gradient-to-br from-blue-500/8 via-purple-500/6 to-emerald-500/8 border border-primary/20 rounded-3xl p-5 sm:p-6 shadow-sm">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-start gap-4">
+                      <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white shadow-md shadow-primary/20 shrink-0">
+                        <GraduationCap className="h-5 w-5" />
+                      </div>
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-[10px] font-bold text-primary uppercase tracking-wider bg-primary/10 border border-primary/20 px-2.5 py-0.5 rounded-full">
+                            📚 Saved Roadmap
+                          </span>
+                          {savedDate && (
+                            <span className="text-[10px] text-muted-foreground">
+                              Last updated {savedDate}
+                            </span>
+                          )}
+                        </div>
+                        <h3 className="text-sm font-bold text-foreground">
+                          {savedWeeksTotal}-Week Learning Curriculum
+                        </h3>
+                        <p className="text-xs text-muted-foreground">
+                          {savedCompleted > 0
+                            ? `${savedCompleted}/${savedWeeksTotal} weeks completed • ${passedQuizzes} quiz${passedQuizzes !== 1 ? "zes" : ""} passed`
+                            : "Not started yet — pick up where you left off"}
+                        </p>
+                        {/* Progress bar */}
+                        {savedWeeksTotal > 0 && (
+                          <div className="flex items-center gap-2 pt-1">
+                            <div className="flex-1 h-1.5 bg-border rounded-full overflow-hidden max-w-48">
+                              <div
+                                className="h-full bg-gradient-to-r from-primary to-emerald-500 rounded-full transition-all"
+                                style={{ width: `${Math.round((savedCompleted / savedWeeksTotal) * 100)}%` }}
+                              />
+                            </div>
+                            <span className="text-[10px] font-bold text-primary">
+                              {Math.round((savedCompleted / savedWeeksTotal) * 100)}%
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
 
-            {/* Textarea */}
-            <div className="space-y-2">
-              <textarea
-                value={jdText}
-                onChange={e => { setJdText(e.target.value); setError(null); }}
-                placeholder="Paste the target job description here... (role title, required tech stack, responsibilities, experience needed)"
-                rows={9}
-                className="w-full rounded-2xl border border-border bg-muted/20 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary resize-none transition-all"
-              />
-              <p className="text-xs text-muted-foreground text-right">{jdText.length} characters</p>
-            </div>
-
-            {error && (
-              <div className="flex items-start gap-2.5 text-destructive text-xs bg-destructive/10 border border-destructive/20 rounded-2xl p-4">
-                <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-                <span>{error}</span>
-              </div>
-            )}
-
-            <button
-              onClick={handleGenerateRoadmap}
-              disabled={loading || jdText.trim().length < 40}
-              className="w-full sm:w-auto pill bg-gradient-to-r from-primary via-blue-600 to-purple-600 hover:opacity-95 text-white px-8 py-3.5 text-sm font-bold transition-all shadow-lg shadow-primary/25 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Generating AI Curriculum &amp; Chapter Notes...
-                </>
-              ) : (
-                <>
-                  <Zap className="h-4 w-4" />
-                  Generate AI Learning Curriculum
-                </>
+                    <button
+                      onClick={handleContinueSaved}
+                      className="pill bg-gradient-to-r from-primary to-purple-600 hover:opacity-90 text-white px-5 py-2.5 text-xs font-bold transition-all shadow-md shadow-primary/25 flex items-center gap-2 shrink-0"
+                    >
+                      <BookOpen className="h-3.5 w-3.5" />
+                      Continue Learning
+                    </button>
+                  </div>
+                </div>
               )}
-            </button>
-          </div>
-        )}
+
+              {/* ── Generate New Section ── */}
+              {hasSaved && (
+                <div className="flex items-center gap-3">
+                  <div className="flex-1 h-px bg-border" />
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-2">
+                    Or Generate New Roadmap
+                  </span>
+                  <div className="flex-1 h-px bg-border" />
+                </div>
+              )}
+
+              <div className="bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
+                <div className="max-w-3xl space-y-2">
+                  <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-primary" />
+                    Target Job Description Input
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    Paste the job description you are aiming for. AI will analyze your profile skills, detect gaps, and generate your structured week-by-week learning curriculum.
+                  </p>
+                </div>
+
+                {/* Quick Sample JD Pills */}
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground">Quick test with sample JDs:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {SAMPLE_JDS.map((s, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => { setJdText(s.text); setError(null); }}
+                        className="text-xs font-medium bg-muted hover:bg-primary/10 hover:text-primary border border-border px-3 py-1.5 rounded-xl transition-all"
+                      >
+                        + {s.title}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Textarea */}
+                <div className="space-y-2">
+                  <textarea
+                    value={jdText}
+                    onChange={e => { setJdText(e.target.value); setError(null); }}
+                    placeholder="Paste the target job description here... (role title, required tech stack, responsibilities, experience needed)"
+                    rows={9}
+                    className="w-full rounded-2xl border border-border bg-muted/20 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary resize-none transition-all"
+                  />
+                  <p className="text-xs text-muted-foreground text-right">{jdText.length} characters</p>
+                </div>
+
+                {error && (
+                  <div className="flex items-start gap-2.5 text-destructive text-xs bg-destructive/10 border border-destructive/20 rounded-2xl p-4">
+                    <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                    <span>{error}</span>
+                  </div>
+                )}
+
+                <button
+                  onClick={handleGenerateRoadmap}
+                  disabled={loading || jdText.trim().length < 40}
+                  className="w-full sm:w-auto pill bg-gradient-to-r from-primary via-blue-600 to-purple-600 hover:opacity-95 text-white px-8 py-3.5 text-sm font-bold transition-all shadow-lg shadow-primary/25 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Generating AI Curriculum &amp; Chapter Notes...
+                    </>
+                  ) : (
+                    <>
+                      <Zap className="h-4 w-4" />
+                      Generate AI Learning Curriculum
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* ── STEP 2: Full-Screen Interactive Learning Curriculum ── */}
         {roadmapData && (
@@ -353,16 +480,31 @@ export default function AIRoadmapView() {
                 </div>
 
                 <div className="space-y-2">
-                  {(roadmapData.roadmap || []).map((node, idx) => {
-                    const isActive = idx === activeWeekIndex;
-                    const isDone = completedWeeks.includes(idx);
+                {(roadmapData.roadmap || []).map((node, idx) => {
+                    const isActive   = idx === activeWeekIndex;
+                    const isDone     = completedWeeks.includes(idx);
+                    // Week 1 (idx=0) always unlocked; any other week needs prev week passed
+                    const isLocked   = idx > 0 && !completedWeeks.includes(idx - 1);
+
+                    const handleWeekClick = () => {
+                      if (isLocked) {
+                        toast.error(`🔒 Complete Week ${idx} quiz (70%+) to unlock Week ${idx + 1}!`);
+                        return;
+                      }
+                      setActiveWeekIndex(idx);
+                      setActiveModuleTab("chapters");
+                      setExpandedChapter(0);
+                    };
 
                     return (
                       <button
                         key={node.id || idx}
-                        onClick={() => { setActiveWeekIndex(idx); setActiveModuleTab("chapters"); setExpandedChapter(0); }}
+                        onClick={handleWeekClick}
+                        title={isLocked ? `Complete Week ${idx} quiz to unlock` : node.skill_name}
                         className={`w-full text-left p-4 rounded-2xl border transition-all flex items-center gap-3 ${
-                          isActive
+                          isLocked
+                            ? "bg-muted/30 border-border/40 text-muted-foreground/50 cursor-not-allowed opacity-60"
+                            : isActive
                             ? "bg-primary/10 border-primary text-foreground shadow-sm"
                             : isDone
                             ? "bg-emerald-500/8 border-emerald-500/30 text-foreground hover:bg-emerald-500/15"
@@ -370,25 +512,32 @@ export default function AIRoadmapView() {
                         }`}
                       >
                         <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold shrink-0 ${
-                          isDone
+                          isLocked
+                            ? "bg-muted text-muted-foreground/40"
+                            : isDone
                             ? "bg-emerald-500 text-white"
                             : isActive
                             ? "bg-primary text-primary-foreground"
                             : "bg-muted text-muted-foreground"
                         }`}>
-                          {isDone ? <Check className="h-4 w-4" /> : `W${idx + 1}`}
+                          {isLocked ? <Lock className="h-3.5 w-3.5" /> : isDone ? <Check className="h-4 w-4" /> : `W${idx + 1}`}
                         </div>
 
                         <div className="flex-1 min-w-0">
-                          <p className={`text-xs font-bold truncate ${isActive ? "text-primary" : "text-foreground"}`}>
+                          <p className={`text-xs font-bold truncate ${isLocked ? "text-muted-foreground/40" : isActive ? "text-primary" : "text-foreground"}`}>
                             {node.skill_name}
                           </p>
-                          <p className="text-[11px] text-muted-foreground truncate">
-                            {node.chapters?.length || 3} Chapters • {node.quiz?.length || 5} Quiz Qs
+                          <p className="text-[11px] text-muted-foreground/60 truncate">
+                            {isLocked
+                              ? `🔒 Unlock after Week ${idx}`
+                              : `${node.chapters?.length || 3} Chapters • ${node.quiz?.length || 5} Quiz Qs`}
                           </p>
                         </div>
 
-                        <ChevronRight className={`h-4 w-4 shrink-0 transition-transform ${isActive ? "rotate-90 text-primary" : "text-muted-foreground"}`} />
+                        {isLocked
+                          ? <Lock className="h-3.5 w-3.5 shrink-0 text-muted-foreground/30" />
+                          : <ChevronRight className={`h-4 w-4 shrink-0 transition-transform ${isActive ? "rotate-90 text-primary" : "text-muted-foreground"}`} />
+                        }
                       </button>
                     );
                   })}
@@ -802,7 +951,9 @@ export default function AIRoadmapView() {
                               </button>
                             )}
 
-                            {activeWeekIndex < (roadmapData.roadmap?.length || 1) - 1 && (
+                            {/* Proceed to next week — ONLY if current quiz is PASSED */}
+                            {quizScores[activeWeekIndex]?.passed &&
+                             activeWeekIndex < (roadmapData.roadmap?.length || 1) - 1 && (
                               <button
                                 type="button"
                                 onClick={() => {
@@ -814,6 +965,13 @@ export default function AIRoadmapView() {
                               >
                                 Proceed to Week {activeWeekIndex + 2} Module <ArrowRight className="h-4 w-4" />
                               </button>
+                            )}
+
+                            {/* If failed — encourage retake, don't show proceed */}
+                            {!quizScores[activeWeekIndex]?.passed && quizSubmitted[activeWeekIndex] && (
+                              <p className="text-center text-xs text-muted-foreground pt-1">
+                                🔒 Pass this quiz (70%+) to unlock Week {activeWeekIndex + 2}
+                              </p>
                             )}
                           </div>
                         )}

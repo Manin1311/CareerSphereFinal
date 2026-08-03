@@ -791,53 +791,6 @@ function Home() {
         </div>
       </motion.section>
 
-      {/* Market insights */}
-      <motion.section
-        className="mx-auto max-w-7xl px-6 py-10"
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-80px" }}
-        variants={staggerContainerVariants}
-      >
-        <div className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]">
-          <motion.div variants={slideInLeftVariants}>
-            <div className="text-[11px] font-medium uppercase tracking-wider text-[var(--google-green)]">Market insights</div>
-            <h2 className="mt-1.5 font-display text-2xl font-semibold tracking-tight sm:text-3xl">Know your worth before you apply</h2>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Live salary benchmarks, demand growth and emerging tooling — pulled from 50,000+ verified offers across the network.
-            </p>
-            <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
-              {[
-                { k: "Demand growth", v: stats?.demand_growth ?? "+18%", sub: "YoY tech roles", c: "var(--google-green)" },
-                { k: "Median salary", v: stats?.median_salary ?? "$142k", sub: "Senior engineer", c: "var(--google-blue)" },
-                { k: "Time to offer", v: stats?.time_to_offer ?? "21d", sub: "Across platform", c: "var(--google-yellow)" },
-              ].map((s) => (
-                <div key={s.k} className="rounded-2xl border border-border bg-card p-4">
-                  <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{s.k}</div>
-                  <div className="mt-1 font-display text-xl font-semibold" style={{ color: s.c }}>{s.v}</div>
-                  <div className="text-[11px] text-muted-foreground">{s.sub}</div>
-                </div>
-              ))}
-            </div>
-            <div className="mt-5">
-              <Link to="/jobs/search" className="pill inline-flex items-center gap-1.5 border border-border px-4 py-2 text-xs font-medium hover:bg-muted">
-                Explore salary data <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            </div>
-          </motion.div>
-          <motion.div variants={slideInRightVariants}>
-            <img
-              src={spotDashboard}
-              alt="Dashboard analytics illustration"
-              width={640}
-              height={640}
-              loading="lazy"
-              className="mx-auto w-full max-w-[420px]"
-            />
-          </motion.div>
-        </div>
-      </motion.section>
-
       <ScrollingAnimation />
 
       {/* Testimonials — Filtered for Job Seekers */}
