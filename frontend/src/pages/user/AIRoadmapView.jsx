@@ -384,7 +384,7 @@ export default function AIRoadmapView() {
                             {node.skill_name}
                           </p>
                           <p className="text-[11px] text-muted-foreground truncate">
-                            {node.chapters?.length || 3} Chapters • {node.quiz?.length || 10} Quiz Qs
+                            {node.chapters?.length || 3} Chapters • {node.quiz?.length || 5} Quiz Qs
                           </p>
                         </div>
 
@@ -469,7 +469,7 @@ export default function AIRoadmapView() {
                         }`}
                       >
                         <HelpCircle className="h-4 w-4" />
-                        4. Final Quiz &amp; Test ({activeNode.quiz?.length || 10} Qs)
+                        4. Final Quiz &amp; Test ({activeNode.quiz?.length || 5} Qs)
                         {completedWeeks.includes(activeWeekIndex) && (
                           <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
                         )}
@@ -631,7 +631,7 @@ export default function AIRoadmapView() {
                               <HelpCircle className="h-5 w-5 text-purple-500" />
                               Week {activeWeekIndex + 1} Knowledge Assessment
                             </h3>
-                            <p className="text-xs text-muted-foreground mt-0.5">Answer all {activeNode.quiz?.length || 10} questions. Score 70%+ (7/{activeNode.quiz?.length || 10} minimum) to complete this module.</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">Answer all {activeNode.quiz?.length || 5} questions. Score 70%+ (minimum {Math.ceil((activeNode.quiz?.length || 5) * 0.7)}/{activeNode.quiz?.length || 5}) to complete this module.</p>
                           </div>
 
                           {quizSubmitted[activeWeekIndex] && (
