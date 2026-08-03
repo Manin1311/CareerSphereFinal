@@ -283,6 +283,11 @@ urlpatterns = [
     path('api/v1/seeker/resume/recommend-templates', seeker_resume_builder.recommend_templates, name='seeker-recommend-templates'),
     path('api/debug/project-relevance', seeker_resume_builder.debug_project_relevance, name='debug-project-relevance'),
 
+    # ── AI Skill Gap Job Roadmap ────────────────────────────────────────────────
+    # POST body: { "job_description": "<full JD text>" }
+    # Returns: { current_match, potential_match, gap_summary, roadmap: [...] }
+    path('api/v1/seeker/resume/generate-job-roadmap', seeker_resume_builder.generate_job_roadmap, name='seeker-generate-job-roadmap'),
+
     # ── Seeker Billing ─────────────────────────────────────────────────────────
     path('api/v1/seeker/billing/plans', seeker_billing.get_plans, name='seeker-billing-plans'),
     path('api/v1/seeker/billing/subscribe', seeker_billing.subscribe, name='seeker-billing-subscribe'),

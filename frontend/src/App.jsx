@@ -41,6 +41,7 @@ const UserJobDetail = lazy(() => import('./pages/user/UserJobDetail'));
 const JobsTrendsPage = lazy(() => import('./pages/JobsTrendsPage'));
 const ResumeBuilderLanding = lazy(() => import('./pages/user/ResumeBuilderLanding'));
 const ResumeEditor = lazy(() => import('./pages/user/ResumeEditor'));
+const AIRoadmapView = lazy(() => import('./pages/user/AIRoadmapView'));
 const MockInterviewPage = lazy(() => import('./pages/user/MockInterviewPage'));
 const SeekerPublicProfile = lazy(() => import('./pages/user/SeekerPublicProfile'));
 const DeveloperPublicProfile = lazy(() => import('./pages/developer/DeveloperPublicProfile'));
@@ -257,6 +258,7 @@ export default function App() {
           <Route path="/jobs/mock-interview" element={<MockInterviewPage />} />
           <Route path="/jobs/:jobId" element={<UserJobDetail />} />
           <Route path="/resume-builder" element={<ResumeBuilderLanding />} />
+          <Route path="/resume-builder/roadmap" element={<AIRoadmapView />} />
           <Route path="/resume-builder/edit/:resumeId" element={<ResumeEditor />} />
 
           {/* Job Seeker Portal — Auth */}

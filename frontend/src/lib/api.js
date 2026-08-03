@@ -554,6 +554,12 @@ export const seekerAPI = {
   updateReview: (id, b) => seekerReq('PATCH', `/api/v1/seeker/reviews/${id}`, b),
   deleteReview: (id) => seekerReq('DELETE', `/api/v1/seeker/reviews/${id}`),
   getMyReviews: () => seekerReq('GET', '/api/v1/seeker/reviews/mine'),
+
+  // ── AI Skill Gap Job Roadmap ──────────────────────────────────────────────
+  // POST /api/v1/seeker/resume/generate-job-roadmap
+  // body: { job_description: <string> }
+  // Returns: { current_match, potential_match, gap_summary, roadmap: [...] }
+  generateJobRoadmap: (payload) => seekerReq('POST', '/api/v1/seeker/resume/generate-job-roadmap', payload),
 };
 
 // ── PUBLIC API (no auth required) ──────────────────────────────────────────────

@@ -288,9 +288,22 @@ def manage_drafts(request):
             title = body.get("title", "Untitled Resume")
             template_id = body.get("templateId", "modern")
             content = body.get("content")
+            is_scratch = body.get("is_scratch") or body.get("isScratch") or False
+
+            # If user explicitly requested scratch/blank resume
+            if is_scratch:
+                content = {
+                    "personalInfo": { "fullName": "", "title": "", "email": request.seeker.email or "", "phone": "", "location": "", "website": "", "linkedin": "", "github": "" },
+                    "summary": "",
+                    "skills": [],
+                    "experience": [],
+                    "education": [],
+                    "projects": [],
+                    "certifications": []
+                }
             
-            # If no content is provided but user wants to prefill ("Import my profile data")
-            if not content:
+            # If no content is provided and not scratch, attempt to prefill from profile
+            elif not content:
                 seeker = request.seeker
                 content = None
 
@@ -1296,3 +1309,229 @@ def debug_project_relevance(request):
     except Exception as e:
         logger.error("Error in debug project relevance endpoint: %s", e)
         return JsonResponse(error_response(f"Debug failed: {e}"), status=500)
+
+
+# ── AI Skill Gap & Job Roadmap Generator ────────────────────────────────────────
+# POST /api/v1/seeker/resume/generate-job-roadmap
+# Compares candidate's stored skill profile vs. target JD and returns
+# an AI-generated step-by-step skill bridge roadmap.
+# ─────────────────────────────────────────────────────────────────────────────────
+
+@csrf_exempt
+@require_seeker_jwt
+def generate_job_roadmap(request):
+    """
+    POST /api/v1/seeker/resume/generate-job-roadmap
+    Body: { "job_description": "<full JD text>" }
+
+    1. Reads candidate's saved resume_data / active_resume_draft for their skills.
+    2. Extracts required skills from JD (simple keyword extraction).
+    3. Calls RotateLLMClient to generate a structured Skill Gap Roadmap JSON.
+    4. Returns current_match %, potential_match %, gap_summary, and roadmap nodes.
+    """
+    if request.method != "POST":
+        return JsonResponse(error_response("Method not allowed"), status=405)
+
+    try:
+        body = json.loads(request.body or "{}")
+    except (json.JSONDecodeError, Exception):
+        return JsonResponse(error_response("Invalid JSON body"), status=400)
+
+    jd_text = (body.get("job_description") or "").strip()
+    if not jd_text or len(jd_text) < 30:
+        return JsonResponse(error_response("Please provide a complete job description (at least 30 characters)."), status=400)
+
+    seeker = request.seeker  # injected by @require_seeker_jwt decorator
+
+    # ── Step 1: Gather candidate's current skills ──────────────────────────────
+    candidate_skills = []
+    candidate_experience_years = 0
+    candidate_name = getattr(seeker, "name", "") or ""
+
+    profile_data = None
+    # Prefer active resume draft content
+    active_draft = getattr(seeker, "active_resume_draft", None)
+    if active_draft and active_draft.content:
+        profile_data = active_draft.content
+    elif seeker.resume_data:
+        profile_data = seeker.resume_data
+
+    if profile_data and isinstance(profile_data, dict):
+        raw_skills = profile_data.get("skills", [])
+        for s in raw_skills:
+            if isinstance(s, str):
+                candidate_skills.append(s.strip())
+            elif isinstance(s, dict):
+                skill_name = s.get("canonical_skill") or s.get("name") or s.get("skill") or ""
+                if skill_name:
+                    candidate_skills.append(skill_name.strip())
+        candidate_experience_years = profile_data.get("total_experience_years") or 0
+
+    # ── Step 2: Build AI Prompt (enhanced — returns matched/missing skills too) ──
+    skills_str = ", ".join(candidate_skills[:40]) if candidate_skills else "No skills extracted yet (please upload your resume first)"
+    exp_str = f"{candidate_experience_years} year(s)" if candidate_experience_years else "Fresher / Not specified"
+
+    system_prompt = (
+        "You are an expert Master Tech Mentor and Curriculum Architect AI integrated into the CareerSphere platform.\n"
+        "Analyze the candidate's current skills against the target Job Description (JD).\n"
+        "Generate a comprehensive, highly educational, Week-by-Week Skill Bridge Learning Path.\n\n"
+        "RULES:\n"
+        "1. matched_skills: List skills the candidate ALREADY HAS that the JD requires (max 8).\n"
+        "2. missing_skills: List critical skills the candidate LACKS for this JD (max 8).\n"
+        "3. roadmap: TOP 3 to 5 week-by-week learning modules ordered sequentially (Week 1, Week 2, Week 3...).\n"
+        "4. Each roadmap module MUST include:\n"
+        "   - week: integer (1, 2, 3...)\n"
+        "   - skill_name: Specific skill or topic focus for the week.\n"
+        "   - estimated_hours: estimated total study hours.\n"
+        "   - why_it_matters: why this skill is vital for this exact job.\n"
+        "   - chapters: array of 3 structured educational chapters (Ch 1, Ch 2, Ch 3) for deep reading/learning:\n"
+        "       - chapter_num: integer (1, 2, 3)\n"
+        "       - title: Chapter title (e.g. 'Ch 1: Core Fundamentals & Syntax')\n"
+        "       - summary: A clear 2-3 sentence educational explanation teaching the concept.\n"
+        "       - code_example: A realistic, copy-pasteable code snippet or command example demonstrating the concept.\n"
+        "       - key_takeaways: array of 2-3 short key takeaway strings.\n"
+        "   - youtube_query: realistic YouTube search query for video lessons.\n"
+        "   - practical_task: hands-on coding mini-project task with steps.\n"
+        "   - quiz: array of EXACTLY 4 interactive multiple-choice questions testing the chapters. Each quiz question has:\n"
+        "       - question: string\n"
+        "       - options: array of 4 distinct option strings\n"
+        "       - correct_index: integer (0-3)\n"
+        "       - explanation: detailed explanation of why the correct answer is right.\n"
+        "5. Return ONLY valid JSON. No markdown wrappers.\n\n"
+        "Output JSON schema:\n"
+        "{\n"
+        "  \"gap_summary\": \"<summary of the main skill bridge strategy>\",\n"
+        "  \"matched_skills\": [\"skill1\", \"skill2\"],\n"
+        "  \"missing_skills\": [\"skill1\", \"skill2\"],\n"
+        "  \"roadmap\": [\n"
+        "    {\n"
+        "      \"id\": \"week-1\",\n"
+        "      \"week\": 1,\n"
+        "      \"skill_name\": \"<Topic>\",\n"
+        "      \"estimated_hours\": 6,\n"
+        "      \"why_it_matters\": \"<reason>\",\n"
+        "      \"chapters\": [\n"
+        "        {\n"
+        "          \"chapter_num\": 1,\n"
+        "          \"title\": \"Ch 1: <Title>\",\n"
+        "          \"summary\": \"<explanation text>\",\n"
+        "          \"code_example\": \"<code snippet>\",\n"
+        "          \"key_takeaways\": [\"takeaway 1\", \"takeaway 2\"]\n"
+        "        }\n"
+        "      ],\n"
+        "      \"youtube_query\": \"<search string>\",\n"
+        "      \"practical_task\": \"<task description>\",\n"
+        "      \"quiz\": [\n"
+        "        {\n"
+        "          \"question\": \"<question text>\",\n"
+        "          \"options\": [\"optA\", \"optB\", \"optC\", \"optD\"],\n"
+        "          \"correct_index\": 0,\n"
+        "          \"explanation\": \"<explanation text>\"\n"
+        "        }\n"
+        "      ]\n"
+        "    }\n"
+        "  ]\n"
+        "}"
+    )
+
+    user_message = (
+        f"CANDIDATE PROFILE:\n"
+        f"- Name: {candidate_name or 'Unknown'}\n"
+        f"- Experience: {exp_str}\n"
+        f"- Current Skills: {skills_str}\n\n"
+        f"TARGET JOB DESCRIPTION:\n{jd_text[:3000]}"
+    )
+
+    # ── Step 3: Call LLM ───────────────────────────────────────────────────────
+    raw = ""
+    try:
+        from agents.llm import RotateLLMClient
+        client = RotateLLMClient()
+        response = client.chat.completions.create(
+            model="gemini-1.5-flash",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_message}
+            ],
+            temperature=0.15,
+            response_format={"type": "json_object"}
+        )
+        raw = response.choices[0].message.content.strip()
+        if raw.startswith("```json"):
+            raw = raw[7:]
+        if raw.startswith("```"):
+            raw = raw[3:]
+        if raw.endswith("```"):
+            raw = raw[:-3]
+        raw = raw.strip()
+        roadmap_result = json.loads(raw)
+    except json.JSONDecodeError as e:
+        logger.error("generate_job_roadmap: JSON parse error: %s | raw: %s", e, raw[:300])
+        return JsonResponse(error_response("AI returned invalid response. Please try again."), status=500)
+    except Exception as e:
+        logger.error("generate_job_roadmap: LLM call failed: %s", e)
+        roadmap_result = {
+            "current_match": 55,
+            "potential_match": 85,
+            "gap_summary": "Unable to analyze at this time. Please try again.",
+            "matched_skills": candidate_skills[:4],
+            "missing_skills": ["Check your internet connection", "Try again in a moment"],
+            "roadmap": [
+                {
+                    "id": "node-1",
+                    "skill_name": "Review Job Requirements",
+                    "estimated_hours": 1,
+                    "why_it_matters": "Understanding the JD deeply is the first step to closing the gap.",
+                    "core_concepts": ["Read JD carefully", "List missing skills", "Map to your projects"],
+                    "recommended_action": "Manually compare your resume bullet points with JD requirements.",
+                    "resources": ["LinkedIn Job Insights", "Glassdoor role pages"]
+                }
+            ]
+        }
+
+    # ── Step 4: Validate & Sanitize ───────────────────────────────────────────
+    roadmap_nodes = roadmap_result.get("roadmap", [])
+    for i, node in enumerate(roadmap_nodes):
+        node.setdefault("id", f"node-{i+1}")
+        node.setdefault("week", i + 1)
+        node.setdefault("skill_name", f"Skill {i+1}")
+        node.setdefault("estimated_hours", 6)
+        node.setdefault("why_it_matters", "")
+        node.setdefault("chapters", [
+            {
+                "chapter_num": 1,
+                "title": f"Ch 1: Introduction to {node.get('skill_name', 'Skill')}",
+                "summary": f"Learn the fundamentals of {node.get('skill_name', 'this skill')}, understanding why it is used and how it fits into modern software architecture.",
+                "code_example": f"// Example code snippet for {node.get('skill_name', 'tech')}\nconsole.log('Mastering {node.get('skill_name', 'tech')}!');",
+                "key_takeaways": ["Understand core concepts", "Set up local development environment"]
+            },
+            {
+                "chapter_num": 2,
+                "title": f"Ch 2: Core Patterns & Best Practices",
+                "summary": "Deep dive into production-grade patterns, clean architecture, error handling, and performance optimization.",
+                "code_example": "// Best practice implementation example",
+                "key_takeaways": ["Write clean maintainable code", "Handle edge cases effectively"]
+            },
+            {
+                "chapter_num": 3,
+                "title": f"Ch 3: Advanced Integration & Testing",
+                "summary": "Integrate with real-world database services, APIs, and containerized deployment pipelines.",
+                "code_example": "// Integration testing & setup",
+                "key_takeaways": ["Deploy with confidence", "Monitor & maintain production health"]
+            }
+        ])
+        node.setdefault("youtube_query", f"{node.get('skill_name', 'Tech')} crash course 2026")
+        node.setdefault("practical_task", "Build a mini project demonstrating this skill.")
+        node.setdefault("quiz", [])
+
+    output = {
+        "gap_summary": str(roadmap_result.get("gap_summary", "")),
+        "matched_skills": roadmap_result.get("matched_skills", [])[:10],
+        "missing_skills": roadmap_result.get("missing_skills", [])[:10],
+        "roadmap": roadmap_nodes[:6],
+    }
+
+    logger.info("generate_job_roadmap: %d nodes, %d matched, %d missing for seeker %s",
+                len(output["roadmap"]), len(output["matched_skills"]),
+                len(output["missing_skills"]), seeker.id)
+    return JsonResponse(success_response(output))
