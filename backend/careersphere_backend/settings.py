@@ -170,14 +170,20 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CORS Config
-CORS_ALLOW_ALL_ORIGINS = False
-CORS_ALLOW_CREDENTIALS = True
-
 allowed_origins_str = os.getenv("ALLOWED_ORIGINS", "")
 if allowed_origins_str:
-    CORS_ALLOWED_ORIGINS = [origin.strip() for origin in allowed_origins_str.split(",") if origin.strip()]
+    raw_origins = [origin.strip() for origin in allowed_origins_str.split(",") if origin.strip()]
+    if "*" in raw_origins:
+        CORS_ALLOW_ALL_ORIGINS = True
+        CORS_ALLOWED_ORIGINS = [o for o in raw_origins if o != "*"]
+    else:
+        CORS_ALLOW_ALL_ORIGINS = False
+        CORS_ALLOWED_ORIGINS = raw_origins
 else:
+    CORS_ALLOW_ALL_ORIGINS = False
     CORS_ALLOWED_ORIGINS = ["http://localhost:5173", "http://localhost:3000", "https://careersphere.indevs.in"]
+
+CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
     'accept',
     'accept-encoding',
