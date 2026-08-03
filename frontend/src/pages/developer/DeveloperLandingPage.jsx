@@ -223,7 +223,7 @@ curl -s -X POST "http://localhost:8000/api/v1/parse" \\
             <Link to="/" className="hover:text-accent dark:hover:text-white transition-colors">Home</Link>
             <a href="#features" className="hover:text-accent dark:hover:text-white transition-colors">Features</a>
             <a href="#pricing" className="hover:text-accent dark:hover:text-white transition-colors">Pricing</a>
-            <a href="#docs" className="hover:text-accent dark:hover:text-white transition-colors">Docs</a>
+            <Link to="/developer/docs" className="hover:text-accent dark:hover:text-white transition-colors">Docs</Link>
           </div>
           <div className="hidden md:flex items-center gap-4">
             {isDevLoggedIn ? (
@@ -298,7 +298,7 @@ curl -s -X POST "http://localhost:8000/api/v1/parse" \\
           <Link to="/" className="text-lg font-semibold text-gray-700 dark:text-zinc-300" onClick={() => setMobileMenu(false)}>Home</Link>
           <a href="#features" className="text-lg font-semibold text-gray-700 dark:text-zinc-300" onClick={() => setMobileMenu(false)}>Features</a>
           <a href="#pricing" className="text-lg font-semibold text-gray-700 dark:text-zinc-300" onClick={() => setMobileMenu(false)}>Pricing</a>
-          <a href="#docs" className="text-lg font-semibold text-gray-700 dark:text-zinc-300" onClick={() => setMobileMenu(false)}>Docs</a>
+          <Link to="/developer/docs" className="text-lg font-semibold text-gray-700 dark:text-zinc-300" onClick={() => setMobileMenu(false)}>Docs</Link>
           <div className="border-t border-gray-100 dark:border-zinc-800/80 pt-6 flex flex-col gap-4">
             {isDevLoggedIn ? (
               <Link to="/developer/portal" className="w-full text-center px-5 py-3 rounded-lg text-accent border border-accent font-semibold hover:bg-gray-100 dark:hover:bg-zinc-900" onClick={() => setMobileMenu(false)}>Dashboard</Link>
@@ -330,9 +330,9 @@ curl -s -X POST "http://localhost:8000/api/v1/parse" \\
             <Link to={isDevLoggedIn ? "/developer/portal" : "/developer/register"} className="flex justify-center items-center px-6 py-3.5 rounded-xl bg-accent text-white font-bold hover:bg-accent-dark transition-all hover:-translate-y-1 hover:shadow-lg hover:shadow-accent/30 gap-2">
               {isDevLoggedIn ? "Go to Dashboard" : "Get Free API Key"} <span className="text-xl leading-none">→</span>
             </Link>
-            <a href="#docs" className="flex justify-center items-center px-6 py-3.5 rounded-xl border-2 border-accent text-accent font-bold hover:bg-accent/5 dark:hover:bg-zinc-900 transition-all">
+            <Link to="/developer/docs" className="flex justify-center items-center px-6 py-3.5 rounded-xl border-2 border-accent text-accent font-bold hover:bg-accent/5 dark:hover:bg-zinc-900 transition-all">
               View Documentation
-            </a>
+            </Link>
           </div>
           <div className="flex flex-col gap-2 mt-4 text-sm font-medium text-gray-500 dark:text-zinc-450">
             <div className="flex items-center gap-2">
