@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
-import { Upload, Archive, Mail, Link as LinkIcon, Download, Zap, Settings, RefreshCw, X, ChevronDown, Check, Trash2, Building, Users, BarChart3, Search, Loader2, ArrowLeft, Network, Lock, Calendar, Sparkles, Clock, UserCheck, FileText } from 'lucide-react';
+import { Upload, Archive, Mail, Link as LinkIcon, Download, Zap, Settings, RefreshCw, X, ChevronDown, Check, Trash2, Building, Users, BarChart3, Search, Loader2, ArrowLeft, Network, Lock, Calendar, Sparkles, Clock, UserCheck, FileText, Trophy, Medal, Award } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
 
@@ -90,6 +90,10 @@ export default function SessionWorkspacePage() {
   const [filters, setFilters] = useState({ search: "", location: "", min_score: 0, skill: "", sort: "Match Score ↓" });
   const [candidatesPage, setCandidatesPage] = useState(1);
   const [activeDetailCandidate, setActiveDetailCandidate] = useState(null);
+
+  const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
+  const [leaderboardSearch, setLeaderboardSearch] = useState("");
+  const [leaderboardStatusFilter, setLeaderboardStatusFilter] = useState("all");
   
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [driveUrl, setDriveUrl] = useState("");
@@ -1260,7 +1264,13 @@ export default function SessionWorkspacePage() {
               <div className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 overflow-hidden mt-8">
                 <div className="p-5 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
                   <h3 className="font-black text-charcoal text-lg">Leading Candidates</h3>
-                  <button className="text-xs font-bold text-accent hover:text-accent-dark transition-colors px-3 py-1.5 bg-blue-50 rounded-lg">View Full Leaderboard</button>
+                  <button 
+                    onClick={() => setIsLeaderboardOpen(true)}
+                    className="text-xs font-bold text-accent hover:text-accent-dark transition-all px-3.5 py-2 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-900/60 rounded-xl cursor-pointer flex items-center gap-1.5 shadow-sm active:scale-95"
+                  >
+                    <Trophy size={14} className="text-amber-500" />
+                    View Full Leaderboard
+                  </button>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-sm whitespace-nowrap">
@@ -1574,16 +1584,193 @@ export default function SessionWorkspacePage() {
         </div>
       )}
 
-      {activeDetailCandidate && (
-        <div className="hidden">
-          <CandidateCard 
-            candidate={activeDetailCandidate}
-            sessionId={id}
-            rounds={session?.rounds || []}
-            forceOpenDetails={true}
-            onCloseDetails={() => setActiveDetailCandidate(null)}
-          />
+      {/* Full Leaderboard Modal */}
+      {isLeaderboardOpen && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/65 backdrop-blur-md p-4 animate-in fade-in duration-200">
+          <div className="bg-card dark:bg-[#121217] text-foreground rounded-3xl max-w-4xl w-full p-6 shadow-2xl relative max-h-[85vh] flex flex-col border border-border dark:border-zinc-800">
+            
+            {/* Header */}
+            <div className="flex justify-between items-center pb-4 border-b border-border dark:border-zinc-800">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-amber-500/10 text-amber-500 rounded-2xl">
+                  <Trophy size={24} />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-xl font-black text-foreground dark:text-white">Full Candidate Leaderboard</h2>
+                    <span className="text-xs bg-accent/10 text-accent font-extrabold px-2.5 py-0.5 rounded-full">
+                      {allCandidatesList.length} total
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Ranked by AI match score & technical qualification assessment.</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setIsLeaderboardOpen(false)}
+                className="p-2 hover:bg-muted rounded-xl text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Controls (Search & Status Filter) */}
+            <div className="flex flex-col sm:flex-row gap-3 my-4">
+              <div className="relative flex-1">
+                <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  type="text"
+                  value={leaderboardSearch}
+                  onChange={(e) => setLeaderboardSearch(e.target.value)}
+                  placeholder="Search candidate name, location, or skill..."
+                  className="w-full text-xs pl-10 pr-4 py-2.5 border border-border dark:border-zinc-800 rounded-xl bg-background focus:border-accent focus:outline-none"
+                />
+              </div>
+              <div className="flex gap-2">
+                <select
+                  value={leaderboardStatusFilter}
+                  onChange={(e) => setLeaderboardStatusFilter(e.target.value)}
+                  className="text-xs font-bold px-3 py-2.5 border border-border dark:border-zinc-800 rounded-xl bg-background focus:border-accent focus:outline-none"
+                >
+                  <option value="all">All Statuses</option>
+                  <option value="active">Active / New</option>
+                  <option value="hired">Hired</option>
+                  <option value="rejected">Rejected</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Leaderboard Table */}
+            <div className="flex-1 overflow-y-auto border border-border dark:border-zinc-800 rounded-2xl custom-scrollbar">
+              <table className="w-full text-left text-xs whitespace-nowrap">
+                <thead className="bg-muted/50 text-muted-foreground font-black uppercase tracking-wider text-[10px] sticky top-0 backdrop-blur-md z-10">
+                  <tr>
+                    <th className="p-3.5 pl-5">Rank</th>
+                    <th className="p-3.5">Candidate</th>
+                    <th className="p-3.5">AI Match Score</th>
+                    <th className="p-3.5">Location</th>
+                    <th className="p-3.5">Status</th>
+                    <th className="p-3.5 pr-5 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/40">
+                  {(() => {
+                    const sorted = [...allCandidatesList]
+                      .sort((a,b) => (b.match_score||0) - (a.match_score||0))
+                      .filter(cand => {
+                        const matchesSearch = !leaderboardSearch || 
+                          cand.name?.toLowerCase().includes(leaderboardSearch.toLowerCase()) ||
+                          cand.location?.toLowerCase().includes(leaderboardSearch.toLowerCase()) ||
+                          (cand.skills && cand.skills.some(s => s.toLowerCase().includes(leaderboardSearch.toLowerCase())));
+                        
+                        const matchesStatus = leaderboardStatusFilter === "all" ||
+                          (leaderboardStatusFilter === "active" && (!cand.status || cand.status.toLowerCase() === "new" || cand.status.toLowerCase() === "active")) ||
+                          (cand.status?.toLowerCase() === leaderboardStatusFilter);
+
+                        return matchesSearch && matchesStatus;
+                      });
+
+                    if (sorted.length === 0) {
+                      return (
+                        <tr>
+                          <td colSpan="6" className="p-8 text-center text-muted-foreground text-xs font-semibold">
+                            No candidates match your leaderboard search/filter.
+                          </td>
+                        </tr>
+                      );
+                    }
+
+                    return sorted.map((cand, i) => (
+                      <tr 
+                        key={cand.id}
+                        className="hover:bg-muted/40 transition-colors group cursor-pointer"
+                        onClick={() => {
+                          setActiveDetailCandidate(cand);
+                        }}
+                      >
+                        <td className="p-3.5 pl-5 font-black">
+                          {i === 0 ? (
+                            <span className="inline-flex items-center gap-1 text-amber-500 font-extrabold bg-amber-500/10 px-2 py-0.5 rounded-lg border border-amber-500/20">
+                              <Trophy size={13} /> #1
+                            </span>
+                          ) : i === 1 ? (
+                            <span className="inline-flex items-center gap-1 text-slate-400 font-extrabold bg-slate-500/10 px-2 py-0.5 rounded-lg border border-slate-500/20">
+                              <Medal size={13} /> #2
+                            </span>
+                          ) : i === 2 ? (
+                            <span className="inline-flex items-center gap-1 text-amber-700 font-extrabold bg-amber-700/10 px-2 py-0.5 rounded-lg border border-amber-700/20">
+                              <Award size={13} /> #3
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground font-bold px-2">#{i + 1}</span>
+                          )}
+                        </td>
+                        <td className="p-3.5">
+                          <div className="font-bold text-foreground group-hover:text-accent transition-colors">{cand.name}</div>
+                          {cand.skills && cand.skills.length > 0 && (
+                            <div className="text-[10px] text-muted-foreground truncate max-w-[200px]">
+                              {cand.skills.slice(0, 3).join(", ")}
+                            </div>
+                          )}
+                        </td>
+                        <td className="p-3.5">
+                          <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2.5 py-1 rounded-lg font-black border border-emerald-500/20">
+                            {cand.match_score}%
+                          </span>
+                        </td>
+                        <td className="p-3.5 text-muted-foreground font-medium text-xs">
+                          {cand.location || "Unknown"}
+                        </td>
+                        <td className="p-3.5">
+                          <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${
+                            cand.status === "hired" 
+                              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20" 
+                              : cand.status === "rejected" 
+                              ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20" 
+                              : "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20"
+                          }`}>
+                            {cand.status || "Active"}
+                          </span>
+                        </td>
+                        <td className="p-3.5 pr-5 text-right">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveDetailCandidate(cand);
+                            }}
+                            className="px-3 py-1 bg-accent/10 hover:bg-accent text-accent hover:text-white rounded-lg text-[11px] font-bold transition-all"
+                          >
+                            View Details
+                          </button>
+                        </td>
+                      </tr>
+                    ));
+                  })()}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="flex justify-between items-center pt-4 border-t border-border dark:border-zinc-800 mt-4 text-xs text-muted-foreground font-medium">
+              <span>Showing all ranked candidates in session</span>
+              <button 
+                onClick={() => setIsLeaderboardOpen(false)}
+                className="px-4 py-2 bg-muted hover:bg-muted/80 text-foreground font-bold rounded-xl transition-colors"
+              >
+                Close
+              </button>
+            </div>
+
+          </div>
         </div>
+      )}
+
+      {activeDetailCandidate && (
+        <CandidateCard 
+          candidate={activeDetailCandidate}
+          sessionId={id}
+          rounds={session?.rounds || []}
+          forceOpenDetails={true}
+          onCloseDetails={() => setActiveDetailCandidate(null)}
+        />
       )}
 
     </div>
