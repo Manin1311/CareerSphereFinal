@@ -92,6 +92,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'api.middleware.SecurityHeadersMiddleware',
     'api.middleware.ExceptionSanitizationMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -121,6 +122,7 @@ TEMPLATES = [
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 WSGI_APPLICATION = 'careersphere_backend.wsgi.application'
 ASGI_APPLICATION = 'careersphere_backend.asgi.application'
