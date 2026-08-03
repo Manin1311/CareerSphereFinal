@@ -1389,9 +1389,16 @@ def generate_job_roadmap(request):
         "- chapters: array of 3 to 4 rich, structured educational chapters (Ch 1, Ch 2, Ch 3, Ch 4) for deep reading & study:\n"
         "    * chapter_num: integer (1, 2, 3, 4)\n"
         "    * title: Chapter title (e.g. 'Ch 1: Core Architecture & Fundamentals')\n"
-        "    * summary: A comprehensive, multi-sentence educational breakdown (80-120 words) explaining core concepts, how it works, production architecture, and why developers use it.\n"
-        "    * code_example: Production-grade, realistic, multi-line code snippet or CLI command block with inline explanatory comments.\n"
-        "    * key_takeaways: array of 3 to 4 specific technical takeaway points.\n"
+        "    * summary: MANDATORY - Write a MINIMUM 100-word, multi-paragraph educational breakdown. Explain:\n"
+        "        (a) What this concept IS and how it works internally\n"
+        "        (b) Why engineers use it in production systems\n"
+        "        (c) Real-world architecture / design patterns around it\n"
+        "        (d) Common pitfalls beginners face and how to avoid them\n"
+        "        DO NOT write generic, vague, or 1-line summaries. Be specific and technical.\n"
+        "    * code_example: MANDATORY - Write a production-grade, 8-15 line realistic code snippet or CLI command block\n"
+        "        with inline # comments explaining each important line. Use real tool names, real flags, real syntax.\n"
+        "        DO NOT write placeholder or trivial hello-world examples.\n"
+        "    * key_takeaways: array of 3 to 4 specific, actionable technical takeaway points (not generic).\n"
         "- youtube_query: realistic, targeted YouTube search query for video courses (e.g. 'Complete AWS EC2 and S3 Tutorial 2026 for Engineers').\n"
         "- practical_task: detailed hands-on coding mini-project task with step-by-step instructions.\n"
         "- quiz: array of EXACTLY 10 interactive multiple-choice questions testing the chapters. Each question has:\n"
@@ -1441,7 +1448,7 @@ def generate_job_roadmap(request):
         f"- Name: {candidate_name or 'Unknown'}\n"
         f"- Experience: {exp_str}\n"
         f"- Current Skills: {skills_str}\n\n"
-        f"TARGET JOB DESCRIPTION:\n{jd_text[:3000]}"
+        f"TARGET JOB DESCRIPTION:\n{jd_text[:5000]}"
     )
 
     # ── Step 3: Call LLM ───────────────────────────────────────────────────────
@@ -1450,12 +1457,13 @@ def generate_job_roadmap(request):
         from agents.llm import RotateLLMClient
         client = RotateLLMClient()
         response = client.chat.completions.create(
-            model="gemini-1.5-flash",
+            model="gemini-1.5-pro",
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_message}
             ],
-            temperature=0.15,
+            temperature=0.45,
+            max_tokens=8192,
             response_format={"type": "json_object"}
         )
         raw = response.choices[0].message.content.strip()
