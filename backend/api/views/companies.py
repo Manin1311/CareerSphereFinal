@@ -413,37 +413,57 @@ def public_market_trends(request):
         hired_this_month_count = JobApplication.objects.filter(status="hired", updated_at__gte=start_of_month).count()
 
         # 1. Dynamic Salary Calculation from DB (in INR)
+        # Currency conversion rates to INR
+        CURRENCY_TO_INR = {"INR": 1.0, "USD": 85.0, "GBP": 107.0, "EUR": 92.0, "AUD": 55.0, "CAD": 63.0}
         db_salaries = []
         for s in all_sessions:
             crit = s.criteria if isinstance(s.criteria, dict) else {}
+            currency = crit.get("salary_currency", "INR").upper()
+            inr_rate = CURRENCY_TO_INR.get(currency, 1.0)
+
             sal_val = (
-                crit.get("max_budget") or crit.get("salary_max") or 
-                crit.get("max_salary") or crit.get("budget") or 
-                crit.get("min_budget") or crit.get("salary_min") or 
+                crit.get("salary_max") or crit.get("max_budget") or
+                crit.get("max_salary") or crit.get("budget") or
+                crit.get("salary_min") or crit.get("min_budget") or
                 crit.get("min_salary")
             )
             if isinstance(sal_val, (int, float)) and sal_val > 0:
-                val = float(sal_val)
+                val = float(sal_val) * inr_rate  # convert to INR
+                # Normalise to annual INR:
+                # < 100 → treat as LPA (e.g. 12 → ₹12L) → ×1,00,000
+                # 100–999 → likely monthly k (e.g. 150 → ₹150k/mo) → ×12,000 (month×1000)
+                # 1000–99999 → likely monthly INR → ×12 (annualise)
+                # ≥1,00,000 → already annual INR
                 if val < 100:
-                    val = val * 100000
-                elif val < 2000:
-                    val = val * 10000
-                db_salaries.append(val)
+                    val = val * 100000        # LPA to INR
+                elif val < 1000:
+                    val = val * 12000         # monthly thousands
+                elif val < 100000:
+                    val = val * 12            # monthly INR → annual
+                # else already annual INR — keep as-is
+                if val >= 200000:             # sanity: at least ₹2L/year
+                    db_salaries.append(val)
             elif isinstance(sal_val, str):
                 try:
-                    clean_str = sal_val.replace(",", "").replace("₹", "").replace("LPA", "").replace("L", "").strip()
-                    f_val = float(clean_str)
+                    clean_str = sal_val.replace(",", "").replace("₹", "").replace("$", "").replace("LPA", "").replace("L", "").strip()
+                    f_val = float(clean_str) * inr_rate
                     if f_val > 0:
                         if f_val < 100:
                             f_val = f_val * 100000
-                        elif f_val < 2000:
-                            f_val = f_val * 10000
-                        db_salaries.append(f_val)
+                        elif f_val < 1000:
+                            f_val = f_val * 12000
+                        elif f_val < 100000:
+                            f_val = f_val * 12
+                        if f_val >= 200000:
+                            db_salaries.append(f_val)
                 except Exception:
                     pass
 
         if db_salaries:
             avg_db_salary = int(sum(db_salaries) / len(db_salaries))
+            # Sanity check: if suspiciously low (< ₹2L), use default
+            if avg_db_salary < 200000:
+                avg_db_salary = 1450000
         else:
             avg_db_salary = 1450000  # Default ₹14.5 Lakhs (INR)
 
@@ -451,38 +471,48 @@ def public_market_trends(request):
         salary_change = round(8.5 + (hired_count * 0.1), 1)
 
         # 2. Dynamic Location Distribution from DB
-        INVALID_LOCS = {"Ca", "Ny", "Tx", "Fl", "In", "Up", "Mh", "Gj", "Dl", "Ka", "Tn", "Unknown", "None", "Remote"}
+        INVALID_LOCS = {"Ca", "Ny", "Tx", "Fl", "In", "Up", "Mh", "Gj", "Dl", "Ka", "Tn",
+                        "Il", "Ma", "Wa", "Uk", "Us", "Unknown", "None", "Remote"}
+        CITY_ALIASES = {
+            "Ahmedbad": "Ahmedabad",
+            "Ahmedabad": "Ahmedabad",
+            "Bangalore": "Bengaluru",
+            "Bnglr": "Bengaluru",
+            "Bombay": "Mumbai",
+        }
         location_counts = Counter()
-        for s in all_sessions:
+        # Process sessions in reverse order (newest sessions first) so tie-breakers favor recent postings
+        for s in reversed(all_sessions):
             crit = s.criteria if isinstance(s.criteria, dict) else {}
             loc_val = crit.get("location") or crit.get("preferred_locations") or crit.get("locations")
             if isinstance(loc_val, str) and loc_val.strip():
-                parts = [p.strip().title() for p in loc_val.split(",") if p.strip()]
-                for clean_loc in parts:
-                    if clean_loc not in INVALID_LOCS and len(clean_loc) > 2:
-                        location_counts[clean_loc] += 1
+                raw_city = loc_val.split(",")[0].strip().title()
+                city = CITY_ALIASES.get(raw_city, raw_city)
+                if city and city not in INVALID_LOCS and len(city) > 2:
+                    location_counts[city] += 1
             elif isinstance(loc_val, list):
                 for pl in loc_val:
                     if isinstance(pl, str) and pl.strip():
-                        parts = [p.strip().title() for p in pl.split(",") if p.strip()]
-                        for clean_pl in parts:
-                            if clean_pl not in INVALID_LOCS and len(clean_pl) > 2:
-                                location_counts[clean_pl] += 1
+                        raw_city = pl.split(",")[0].strip().title()
+                        city = CITY_ALIASES.get(raw_city, raw_city)
+                        if city and city not in INVALID_LOCS and len(city) > 2:
+                            location_counts[city] += 1
 
         db_regions = list(MarketRegionConfig.objects.filter(is_active=True))
         region_color_map = {rc.name: rc.color_hex for rc in db_regions}
-        color_palette = ["#2563EB", "#0F56B3", "#22C55E", "#8b5cf6", "#f59e0b", "#ec4899", "#14b8a6"]
+        color_palette = ["#2563EB", "#0F56B3", "#22C55E", "#8b5cf6", "#f59e0b", "#ec4899", "#14b8a6", "#06b6d4", "#f43f5e"]
 
         region_distribution = []
         if location_counts:
-            for idx, (loc_name, count_val) in enumerate(location_counts.most_common(5)):
+            # Show top 8 cities
+            for idx, (loc_name, count_val) in enumerate(location_counts.most_common(8)):
                 col = region_color_map.get(loc_name, color_palette[idx % len(color_palette)])
                 region_distribution.append({
                     "name": loc_name,
-                    "value": count_val * 10 if active_sessions_count == 0 else count_val,
+                    "value": count_val,
                     "color": col
                 })
-        
+
         if len(region_distribution) < 4:
             for idx, rc in enumerate(db_regions):
                 if not any(r["name"].lower() == rc.name.lower() for r in region_distribution):
@@ -496,10 +526,10 @@ def public_market_trends(request):
 
         if not region_distribution:
             region_distribution = [
-                {"name": "Ahmedabad", "value": 450, "color": "#2563EB"},
-                {"name": "Bengaluru", "value": 380, "color": "#0F56B3"},
-                {"name": "Mumbai", "value": 240, "color": "#22C55E"},
-                {"name": "Delhi NCR", "value": 180, "color": "#8b5cf6"}
+                {"name": "Ahmedabad", "value": 8, "color": "#2563EB"},
+                {"name": "Bengaluru", "value": 7, "color": "#0F56B3"},
+                {"name": "Mumbai", "value": 5, "color": "#22C55E"},
+                {"name": "Delhi NCR", "value": 4, "color": "#8b5cf6"}
             ]
 
         top_region = max(region_distribution, key=lambda x: x["value"])
@@ -509,18 +539,19 @@ def public_market_trends(request):
         # 3. Dynamic Salary Timeline from DB & SalaryTimelineConfig
         db_timeline_configs = list(SalaryTimelineConfig.objects.all().order_by('year'))
         salary_timeline = []
+        base_lpa = round(base_salary / 100000, 1) if base_salary and base_salary >= 200000 else 14.5
         if db_timeline_configs:
             for tc in db_timeline_configs:
                 s_val = tc.salary_k
-                if tc.is_projection and base_salary > 0:
-                    s_val = int(s_val + (base_salary / 100000))
+                if tc.is_projection and base_lpa > 0:
+                    s_val = round(s_val + (base_lpa * 0.1), 1)
                 salary_timeline.append({
                     "year": tc.year,
                     "salary": s_val
                 })
         else:
-            base_lpa = round(base_salary / 100000, 1) if base_salary else 14.5
             salary_timeline = [
+                {"year": "2022", "salary": round(max(6.0, base_lpa - 5.0), 1)},
                 {"year": "2023", "salary": round(max(8.0, base_lpa - 3.3), 1)},
                 {"year": "2024", "salary": round(max(10.0, base_lpa - 1.7), 1)},
                 {"year": "2025", "salary": base_lpa},
@@ -613,8 +644,13 @@ def public_market_trends(request):
             )
             avg_sec = sum(d.diff.total_seconds() for d in duration) / len(duration)
             avg_hrs = max(2, int(avg_sec / 3600))
+            avg_days = round(max(0.5, avg_sec / 86400), 1)
         else:
-            avg_hrs = 48
+            avg_hrs = 24
+            avg_days = 1.8
+
+        # Velocity score out of 10 (10 = instantaneous response, 1 = > 14 days)
+        velocity_score = round(max(5.0, min(9.9, 10.0 - (avg_days * 0.4))), 1)
 
         categories_list = ["Engineering", "Design", "Data & AI", "Marketing", "Healthcare", "Operations", "Education", "Finance"]
         category_counts = {}
@@ -631,14 +667,14 @@ def public_market_trends(request):
             "category_counts": category_counts,
             "demand_growth": f"+{round(10.5 + (active_sessions_count * 0.15), 1)}%",
             "median_salary": f"${int(base_salary / 1000)}k",
-            "time_to_offer": f"{max(4, int(avg_hrs / 2))}d"
+            "time_to_offer": f"{max(1, int(avg_days))}d"
         }
 
         trends = {
             "average_tech_base": base_salary,
             "average_tech_base_change": salary_change,
-            "hiring_velocity": min(9.8, round(8.4 + (hired_count * 0.1), 1)),
-            "hiring_velocity_days": min(6.0, round(3.2 + (hired_count * 0.05), 1)),
+            "hiring_velocity": velocity_score,
+            "hiring_velocity_days": avg_days,
             "top_remote_hub": top_region["name"],
             "top_remote_hub_percentage": top_hub_pct,
             "active_jds_tracked": active_sessions_count if active_sessions_count > 0 else (total_sessions_count if total_sessions_count > 0 else 2450),

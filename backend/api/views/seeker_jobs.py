@@ -250,8 +250,12 @@ CATEGORY_MAP = {
 
 def get_category_q_filter(category_str):
     category_str = (category_str or "").strip().lower()
+    if not category_str:
+        from django.db.models import Q
+        return Q()
+
     terms = CATEGORY_MAP.get(category_str)
-    if not terms:
+    if not terms and len(category_str) >= 3:
         for cat_key, keywords in CATEGORY_MAP.items():
             if cat_key in category_str or category_str in cat_key:
                 terms = keywords
@@ -262,7 +266,22 @@ def get_category_q_filter(category_str):
         for term in terms:
             q_expr |= Q(job_title__icontains=term) | Q(inferred_skills__icontains=term)
         return q_expr
-    return Q(job_title__icontains=category_str) | Q(job_description__icontains=category_str) | Q(inferred_skills__icontains=category_str)
+
+    # For short search inputs (< 3 chars, e.g. 'F' or 'Fr'), match word boundaries (word starting with 'F')
+    # so typing 'F' matches 'Frontend' or 'Full Stack', but NOT 'Soft-f-ware' or 'Dra-f-t'
+    if len(category_str) < 3:
+        import re
+        return Q(job_title__iregex=r'\b' + re.escape(category_str))
+
+    base_q = Q(job_title__icontains=category_str) | Q(job_description__icontains=category_str) | Q(inferred_skills__icontains=category_str)
+
+    # Exclude conflicting titles (e.g. searching 'frontend' shouldn't return 'Backend Engineer')
+    if "frontend" in category_str and "backend" not in category_str:
+        base_q &= ~Q(job_title__icontains="backend")
+    elif "backend" in category_str and "frontend" not in category_str:
+        base_q &= ~Q(job_title__icontains="frontend")
+
+    return base_q
 
 @csrf_exempt
 @require_seeker_jwt
@@ -284,7 +303,14 @@ def list_jobs(request):
             per_page = 10
 
         from django.db.models import Q, Count
-        sessions = Session.objects.filter(status="active").select_related("company").annotate(applicant_count=Count("seeker_applications")).order_by("-created_at")
+        sessions = (
+            Session.objects.filter(status="active")
+            .exclude(job_title__iexact="draft")
+            .exclude(job_title="")
+            .select_related("company")
+            .annotate(applicant_count=Count("seeker_applications"))
+            .order_by("-created_at")
+        )
 
         search_target = category or q
         if search_target:

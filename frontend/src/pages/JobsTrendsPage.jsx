@@ -84,7 +84,9 @@ export default function JobsTrendsPage() {
             ) : (
               <>
                 <div className="text-3xl font-black text-foreground">{trends?.hiring_velocity} / 10</div>
-                <div className="text-xs text-green-500 font-semibold flex items-center">&uarr; {trends?.hiring_velocity_days} days faster closures</div>
+                <div className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                  <span>⚡ Avg response time: {trends?.hiring_velocity_days} days</span>
+                </div>
               </>
             )}
           </div>
@@ -158,7 +160,10 @@ export default function JobsTrendsPage() {
                     <CartesianGrid strokeDasharray="3 3" stroke="#f5f4ef" />
                     <XAxis dataKey="year" stroke="#9CA3AF" fontSize={11} />
                     <YAxis stroke="#9CA3AF" fontSize={11} />
-                    <Tooltip contentStyle={{ borderRadius: 8 }} />
+                    <Tooltip 
+                      contentStyle={{ borderRadius: 8, fontSize: 12 }} 
+                      formatter={(val) => [`₹${val} LPA`, 'Base Salary']}
+                    />
                     <Area type="monotone" dataKey="salary" stroke="#2563EB" strokeWidth={2} fillOpacity={1} fill="url(#salaryGrad)" />
                   </AreaChart>
                 </ResponsiveContainer>
@@ -205,18 +210,18 @@ export default function JobsTrendsPage() {
                             <Cell key={`cell-${index}`} fill={entry.color} />
                           ))}
                         </Pie>
-                        <Tooltip contentStyle={{ fontSize: 10 }} />
+                        <Tooltip contentStyle={{ fontSize: 11, borderRadius: 6 }} formatter={(val) => [`${val} Openings`, 'Demand']} />
                       </PieChart>
                     </ResponsiveContainer>
                   </div>
-                  <div className="md:col-span-6 space-y-3">
+                  <div className="md:col-span-6 max-h-56 overflow-y-auto pr-2 space-y-2.5 custom-scrollbar">
                     {(trends?.region_distribution || defaultRegionDistribution).map((region, idx) => (
-                      <div key={idx} className="flex items-center justify-between text-xs font-semibold">
-                        <div className="flex items-center space-x-2">
-                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: region.color }} />
-                          <span className="text-muted-foreground">{region.name}</span>
+                      <div key={idx} className="flex items-center justify-between text-xs font-semibold py-0.5 border-b border-border/40 last:border-0">
+                        <div className="flex items-center space-x-2 min-w-0">
+                          <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: region.color }} />
+                          <span className="text-muted-foreground truncate">{region.name}</span>
                         </div>
-                        <span className="text-foreground">{region.value} openings</span>
+                        <span className="text-foreground shrink-0 pl-2">{region.value} {region.value === 1 ? 'opening' : 'openings'}</span>
                       </div>
                     ))}
                   </div>
