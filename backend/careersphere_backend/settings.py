@@ -164,9 +164,18 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
+from urllib.parse import urlparse
+
+def _sanitize_origin(url_str):
+    clean = url_str.strip().rstrip('/')
+    parsed = urlparse(clean)
+    if parsed.scheme and parsed.netloc:
+        return f"{parsed.scheme}://{parsed.netloc}"
+    return clean
+
 allowed_origins_str = os.getenv("ALLOWED_ORIGINS", "")
 if allowed_origins_str and allowed_origins_str.strip() != "*":
-    raw_origins = [origin.strip() for origin in allowed_origins_str.split(",") if origin.strip() and origin.strip() != "*"]
+    raw_origins = [_sanitize_origin(o) for o in allowed_origins_str.split(",") if o.strip() and o.strip() != "*"]
     if raw_origins:
         CORS_ALLOWED_ORIGINS = raw_origins
         CORS_ALLOW_ALL_ORIGINS = False
