@@ -1375,33 +1375,26 @@ def generate_job_roadmap(request):
         "You are an expert Master Tech Mentor and Lead Curriculum Architect AI integrated into the CareerSphere platform.\n"
         "Analyze the candidate's current profile skills against the target Job Description (JD).\n"
         "Generate a comprehensive, deeply educational, Week-by-Week Skill Bridge Learning Path.\n\n"
-        "DYNAMIC ROADMAP DURATION RULES:\n"
+        "CRITICAL ROADMAP RULES:\n"
         "1. Analyze all missing skills required by the JD that the candidate lacks.\n"
-        "2. Dynamically determine the roadmap length (between 2 to 6 weeks) based on missing skill complexity and density.\n"
-        "3. Group related missing skills logically into sequential weekly modules (e.g. Week 1: Linux & Fundamentals, Week 2: Docker, Week 3: Kubernetes, etc.).\n"
+        "2. You MUST generate between 3 to 5 distinct weekly modules (Week 1, Week 2, Week 3, Week 4, Week 5). NEVER generate only 1 week when there are multiple missing skills!\n"
+        "3. Group related missing skills logically into sequential weekly modules (e.g. Week 1: Core Fundamentals, Week 2: Frameworks, Week 3: Databases & Caching, Week 4: Cloud & Deployment).\n"
         "4. Output matched_skills (max 8) and missing_skills (max 10).\n\n"
         "MODULE CONTENT REQUIREMENTS:\n"
         "Each weekly module MUST include:\n"
-        "- week: integer (1, 2, 3...)\n"
+        "- week: integer (1, 2, 3, 4, 5...)\n"
         "- skill_name: Specific skill or topic focus for the week.\n"
         "- estimated_hours: estimated total study hours (e.g. 6 to 12).\n"
         "- why_it_matters: detailed explanation of why this skill is critical for this role.\n"
-        "- chapters: array of 3 to 4 rich, structured educational chapters (Ch 1, Ch 2, Ch 3, Ch 4) for deep reading & study:\n"
+        "- chapters: array of EXACTLY 3 or 4 rich educational chapters (Ch 1, Ch 2, Ch 3, Ch 4) for deep reading & study:\n"
         "    * chapter_num: integer (1, 2, 3, 4)\n"
-        "    * title: Chapter title (e.g. 'Ch 1: Core Architecture & Fundamentals')\n"
-        "    * summary: MANDATORY - Write a MINIMUM 100-word, multi-paragraph educational breakdown. Explain:\n"
-        "        (a) What this concept IS and how it works internally\n"
-        "        (b) Why engineers use it in production systems\n"
-        "        (c) Real-world architecture / design patterns around it\n"
-        "        (d) Common pitfalls beginners face and how to avoid them\n"
-        "        DO NOT write generic, vague, or 1-line summaries. Be specific and technical.\n"
-        "    * code_example: MANDATORY - Write a production-grade, 8-15 line realistic code snippet or CLI command block\n"
-        "        with inline # comments explaining each important line. Use real tool names, real flags, real syntax.\n"
-        "        DO NOT write placeholder or trivial hello-world examples.\n"
-        "    * key_takeaways: array of 3 to 4 specific, actionable technical takeaway points (not generic).\n"
-        "- youtube_query: realistic, targeted YouTube search query for video courses (e.g. 'Complete AWS EC2 and S3 Tutorial 2026 for Engineers').\n"
+        "    * title: Chapter title (e.g. 'Ch 1: Core Architecture & Syntax')\n"
+        "    * summary: Write a 60-100 word educational breakdown explaining what this concept is, why engineers use it in production, real-world patterns, and common pitfalls.\n"
+        "    * code_example: Write a realistic 6-12 line code snippet or CLI command block with inline explanatory comments.\n"
+        "    * key_takeaways: array of 3 specific technical takeaway points.\n"
+        "- youtube_query: realistic, targeted YouTube search query for video courses (e.g. 'Complete React.js Crash Course 2026').\n"
         "- practical_task: detailed hands-on coding mini-project task with step-by-step instructions.\n"
-        "- quiz: array of EXACTLY 10 interactive multiple-choice questions testing the chapters. Each question has:\n"
+        "- quiz: array of EXACTLY 5 interactive multiple-choice questions testing the chapters. Each question has:\n"
         "    * question: string\n"
         "    * options: array of 4 distinct option strings\n"
         "    * correct_index: integer (0-3)\n"
@@ -1423,7 +1416,7 @@ def generate_job_roadmap(request):
         "        {\n"
         "          \"chapter_num\": 1,\n"
         "          \"title\": \"Ch 1: <Title>\",\n"
-        "          \"summary\": \"<detailed educational text>\",\n"
+        "          \"summary\": \"<educational text>\",\n"
         "          \"code_example\": \"<code snippet>\",\n"
         "          \"key_takeaways\": [\"takeaway 1\", \"takeaway 2\", \"takeaway 3\"]\n"
         "        }\n"
@@ -1448,7 +1441,7 @@ def generate_job_roadmap(request):
         f"- Name: {candidate_name or 'Unknown'}\n"
         f"- Experience: {exp_str}\n"
         f"- Current Skills: {skills_str}\n\n"
-        f"TARGET JOB DESCRIPTION:\n{jd_text[:5000]}"
+        f"TARGET JOB DESCRIPTION:\n{jd_text[:4000]}"
     )
 
     # ── Step 3: Call LLM ───────────────────────────────────────────────────────
@@ -1462,7 +1455,7 @@ def generate_job_roadmap(request):
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_message}
             ],
-            temperature=0.45,
+            temperature=0.3,
             max_tokens=8192,
             response_format={"type": "json_object"}
         )
@@ -1486,53 +1479,107 @@ def generate_job_roadmap(request):
             "gap_summary": "Unable to analyze at this time. Please try again.",
             "matched_skills": candidate_skills[:4],
             "missing_skills": ["Check your internet connection", "Try again in a moment"],
-            "roadmap": [
-                {
-                    "id": "node-1",
-                    "skill_name": "Review Job Requirements",
-                    "estimated_hours": 1,
-                    "why_it_matters": "Understanding the JD deeply is the first step to closing the gap.",
-                    "core_concepts": ["Read JD carefully", "List missing skills", "Map to your projects"],
-                    "recommended_action": "Manually compare your resume bullet points with JD requirements.",
-                    "resources": ["LinkedIn Job Insights", "Glassdoor role pages"]
-                }
-            ]
+            "roadmap": []
         }
 
     # ── Step 4: Validate & Sanitize ───────────────────────────────────────────
+    missing_skills = roadmap_result.get("missing_skills", [])
     roadmap_nodes = roadmap_result.get("roadmap", [])
+
+    # If missing skills exist but LLM returned fewer than 3 weeks, auto-generate additional weekly modules
+    if len(missing_skills) >= 3 and len(roadmap_nodes) < 3:
+        for idx in range(len(roadmap_nodes), min(len(missing_skills), 5)):
+            skill_item = missing_skills[idx] if idx < len(missing_skills) else f"Advanced Skill {idx+1}"
+            roadmap_nodes.append({
+                "id": f"node-{idx+1}",
+                "week": idx + 1,
+                "skill_name": skill_item if isinstance(skill_item, str) else f"Skill {idx+1}",
+                "estimated_hours": 8,
+                "why_it_matters": f"Mastering {skill_item} is essential for fulfilling the target job requirements.",
+                "chapters": [],
+                "youtube_query": f"{skill_item} tutorial 2026",
+                "practical_task": f"Build a practical project utilizing {skill_item}.",
+                "quiz": []
+            })
+
     for i, node in enumerate(roadmap_nodes):
-        node.setdefault("id", f"node-{i+1}")
-        node.setdefault("week", i + 1)
-        node.setdefault("skill_name", f"Skill {i+1}")
-        node.setdefault("estimated_hours", 6)
-        node.setdefault("why_it_matters", "")
-        node.setdefault("chapters", [
-            {
-                "chapter_num": 1,
-                "title": f"Ch 1: Introduction to {node.get('skill_name', 'Skill')}",
-                "summary": f"Learn the fundamentals of {node.get('skill_name', 'this skill')}, understanding why it is used and how it fits into modern software architecture.",
-                "code_example": f"// Example code snippet for {node.get('skill_name', 'tech')}\nconsole.log('Mastering {node.get('skill_name', 'tech')}!');",
-                "key_takeaways": ["Understand core concepts", "Set up local development environment"]
-            },
-            {
-                "chapter_num": 2,
-                "title": f"Ch 2: Core Patterns & Best Practices",
-                "summary": "Deep dive into production-grade patterns, clean architecture, error handling, and performance optimization.",
-                "code_example": "// Best practice implementation example",
-                "key_takeaways": ["Write clean maintainable code", "Handle edge cases effectively"]
-            },
-            {
-                "chapter_num": 3,
-                "title": f"Ch 3: Advanced Integration & Testing",
-                "summary": "Integrate with real-world database services, APIs, and containerized deployment pipelines.",
-                "code_example": "// Integration testing & setup",
-                "key_takeaways": ["Deploy with confidence", "Monitor & maintain production health"]
-            }
-        ])
-        node.setdefault("youtube_query", f"{node.get('skill_name', 'Tech')} crash course 2026")
-        node.setdefault("practical_task", "Build a mini project demonstrating this skill.")
-        node.setdefault("quiz", [])
+        node["id"] = node.get("id") or f"node-{i+1}"
+        node["week"] = i + 1
+        skill_title = node.get("skill_name") or f"Skill {i+1}"
+        node["skill_name"] = skill_title
+        node["estimated_hours"] = node.get("estimated_hours") or 8
+        node["why_it_matters"] = node.get("why_it_matters") or f"Essential skill for modern production environments."
+
+        # Ensure at least 3 structured chapters per week
+        ch_list = node.get("chapters") or []
+        if len(ch_list) < 3:
+            default_chapters = [
+                {
+                    "chapter_num": 1,
+                    "title": f"Ch 1: Introduction & Fundamentals of {skill_title}",
+                    "summary": f"Learn the core architecture, syntax, and fundamental concepts of {skill_title}. Understand why engineering teams adopt it in production and how it solves real-world challenges.",
+                    "code_example": f"// Core syntax & initialization example for {skill_title}\nconsole.log('Initializing {skill_title} module...');",
+                    "key_takeaways": ["Master foundational syntax & core concepts", "Set up local environment & tooling", "Understand core architecture & component lifecycles"]
+                },
+                {
+                    "chapter_num": 2,
+                    "title": f"Ch 2: Production Patterns & Best Practices",
+                    "summary": f"Deep dive into enterprise design patterns, modular architecture, state management, and performance optimization strategies for {skill_title}.",
+                    "code_example": f"// Production-grade pattern implementation for {skill_title}\n// Implements error handling, caching, and clean abstraction layer",
+                    "key_takeaways": ["Implement clean, maintainable design patterns", "Optimize performance & resource management", "Handle async states and edge cases safely"]
+                },
+                {
+                    "chapter_num": 3,
+                    "title": f"Ch 3: Advanced Integration, Testing & Deployment",
+                    "summary": f"Explore end-to-end integration of {skill_title} with backend microservices, CI/CD pipelines, automated unit testing, and cloud infrastructure.",
+                    "code_example": f"// Integration testing & deployment configuration for {skill_title}",
+                    "key_takeaways": ["Write automated unit & integration tests", "Configure CI/CD automated deployment pipelines", "Monitor health, logging, and production performance"]
+                }
+            ]
+            # Keep existing chapters and fill up to 3
+            for ch_def in default_chapters[len(ch_list):]:
+                ch_list.append(ch_def)
+        
+        node["chapters"] = ch_list
+        node["youtube_query"] = node.get("youtube_query") or f"{skill_title} complete crash course 2026"
+        node["practical_task"] = node.get("practical_task") or f"Build a practical hands-on application demonstrating {skill_title}."
+
+        # Ensure quiz array exists
+        quiz_list = node.get("quiz") or []
+        if len(quiz_list) == 0:
+            quiz_list = [
+                {
+                    "question": f"What is the primary architectural purpose of {skill_title} in modern applications?",
+                    "options": ["To build reusable, modular, and scalable software components", "To serve static HTML files without JavaScript", "To replace database storage completely", "To eliminate the need for network calls"],
+                    "correct_index": 0,
+                    "explanation": f"{skill_title} is primarily used to build modular, maintainable, and scalable software components in modern architectures."
+                },
+                {
+                    "question": f"Which best practice should be followed when implementing {skill_title} in production?",
+                    "options": ["Follow clean code principles, handle error states, and optimize performance", "Write all logic in a single monolithic file", "Disable error handling to improve execution speed", "Hardcode production API credentials in source code"],
+                    "correct_index": 0,
+                    "explanation": "Production best practices require clean code principles, robust error handling, and performance optimization."
+                },
+                {
+                    "question": f"How do engineers effectively test and verify {skill_title} modules?",
+                    "options": ["By writing automated unit, integration, and end-to-end test suites", "By manually refreshing the browser once", "By skipping testing and deploying directly to production", "By relying only on user bug reports"],
+                    "correct_index": 0,
+                    "explanation": "Automated unit and integration testing ensures that modules function correctly across edge cases before deployment."
+                },
+                {
+                    "question": f"What is a common pitfall when scaling {skill_title} applications?",
+                    "options": ["Neglecting proper state management and unoptimized network requests", "Writing docstrings and comments in the codebase", "Using version control like Git", "Breaking code into small reusable components"],
+                    "correct_index": 0,
+                    "explanation": "Poor state management and unoptimized network/database calls are common causes of performance bottlenecks when scaling."
+                },
+                {
+                    "question": f"How does {skill_title} integrate with modern CI/CD pipelines?",
+                    "options": ["By running automated build, test, and containerized deployment scripts on code push", "By manually copying files via FTP to the server", "CI/CD cannot be used with this technology", "By running scripts locally on a developer laptop"],
+                    "correct_index": 0,
+                    "explanation": "Modern CI/CD pipelines automate testing, building, and deploying containerized applications seamlessly."
+                }
+            ]
+        node["quiz"] = quiz_list
 
     output = {
         "gap_summary": str(roadmap_result.get("gap_summary", "")),
