@@ -121,7 +121,7 @@ const DetailedShowcase = () => {
 
   return (
     <>
-      <div className="showcase-horizontal-wrapper" ref={containerRef}>
+      <div className="showcase-horizontal-wrapper relative" ref={containerRef}>
         <div className="sticky-container">
           <motion.div className="horizontal-track" style={{ x }}>
             <div className="showcase-slide">

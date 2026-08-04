@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { vs2015 } from "react-syntax-highlighter/dist/esm/styles/hljs";
@@ -30,6 +31,8 @@ const SECTIONS = [
 ];
 
 export default function DeveloperDocs() {
+  const location = useLocation();
+  const isPublicRoute = location.pathname === "/developer/docs";
   const [docSections, setDocSections] = useState(SECTIONS);
   const [sdksData, setSdksData] = useState([
     { lang: "Python", pkg: "careersphere-py", icon: "🐍", install: "pip install careersphere-py" },
@@ -237,7 +240,25 @@ export default function DeveloperDocs() {
   };
 
   return (
-    <div className="w-full flex text-charcoal dark:text-zinc-100">
+    <div className={isPublicRoute ? "min-h-screen bg-white dark:bg-[#0b0b0c] text-charcoal dark:text-zinc-100" : "w-full flex text-charcoal dark:text-zinc-100"}>
+      {/* Standalone Docs Navbar — only shown on public /developer/docs route */}
+      {isPublicRoute && (
+        <div className="sticky top-0 z-50 w-full border-b border-gray-100 dark:border-zinc-800 bg-white/90 dark:bg-[#0b0b0c]/90 backdrop-blur-md">
+          <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between gap-4">
+            <a href="/developer" className="flex items-center gap-2 shrink-0 font-black text-charcoal dark:text-zinc-100 text-lg hover:opacity-80 transition-opacity">
+              <img src="/logo192.png" alt="CareerSphere" className="w-7 h-7 rounded-lg" onError={e => { e.target.style.display='none'; }} />
+              CareerSphere <span className="text-gray-400 dark:text-zinc-500 font-medium text-sm ml-1">API Docs</span>
+            </a>
+            <div className="flex items-center gap-3">
+              <a href="/developer" className="text-sm font-semibold text-gray-500 dark:text-zinc-400 hover:text-accent transition-colors">← Back to Home</a>
+              <a href="/developer/portal" className="hidden sm:inline text-sm font-semibold text-gray-500 dark:text-zinc-400 hover:text-accent transition-colors border border-gray-200 dark:border-zinc-700 px-3 py-1.5 rounded-lg">Portal Login</a>
+              <a href="/developer/register" className="text-sm font-bold bg-accent text-white px-4 py-1.5 rounded-lg hover:bg-accent-dark transition-colors">Get API Key</a>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className={isPublicRoute ? "w-full max-w-7xl mx-auto px-6 pt-8 flex text-charcoal dark:text-zinc-100" : "w-full flex text-charcoal dark:text-zinc-100"}>
       {/* LEFT NAV */}
       <nav className="hidden lg:block w-64 shrink-0 pr-8 sticky top-8 max-h-[calc(100vh-64px)] overflow-y-auto custom-scrollbar">
         <h2 className="text-xl font-black text-charcoal dark:text-zinc-100 mb-6">Documentation</h2>
@@ -809,6 +830,7 @@ export default function DeveloperDocs() {
           </motion.div>
         </div>
       )}
+      </div>
     </div>
   );
 }

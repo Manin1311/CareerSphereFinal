@@ -14,7 +14,7 @@ const Navbar = ({ onSignIn, isLoggedIn }) => {
   const { scrollY } = useScroll();
 
   useEffect(() => {
-    return scrollY.onChange((latest) => {
+    return scrollY.on("change", (latest) => {
       setScrolled(latest > 50);
     });
   }, [scrollY]);

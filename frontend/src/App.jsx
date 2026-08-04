@@ -269,6 +269,7 @@ export default function App() {
 
           {/* Developer Portal Routes */}
           <Route path="/developer" element={<DeveloperLandingPage />} />
+          <Route path="/developer/docs" element={<DeveloperDocs />} />
           <Route path="/developer/login" element={<LoginPage />} />
           <Route path="/developer/register" element={<RegisterPage />} />
           <Route path="/developer/reset-password" element={<ResetPasswordPage />} />
