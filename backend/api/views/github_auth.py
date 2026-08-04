@@ -7,7 +7,6 @@ import urllib.parse
 from datetime import datetime, timedelta
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from passlib.context import CryptContext
 from jose import jwt
 
 from api.models import Company, APIKey, JobSeekerAccount, DeveloperAccount, DeveloperAPIKey, BillingSubscription
@@ -15,7 +14,7 @@ from api.decorators import JWT_SECRET, JWT_ALGORITHM
 from models.schemas import success_response, error_response
 
 logger = logging.getLogger(__name__)
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+from api.utils.password_utils import hash_password
 
 CLIENT_ID = os.getenv("GITHUB_CLIENT_ID")
 CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET")
@@ -116,7 +115,7 @@ def recruiter_auth_github(request):
             company = Company.objects.create(
                 name=name,
                 email=email,
-                password_hash=pwd_context.hash(secrets.token_urlsafe(16)),
+                password_hash=hash_password(secrets.token_urlsafe(16)),
                 tier="free",
                 email_verified=True
             )
@@ -187,7 +186,7 @@ def seeker_auth_github(request):
             seeker = JobSeekerAccount.objects.create(
                 full_name=name,
                 email=email,
-                password_hash=pwd_context.hash(secrets.token_urlsafe(16)),
+                password_hash=hash_password(secrets.token_urlsafe(16)),
                 tier="free",
                 email_verified=True
             )
@@ -259,7 +258,7 @@ def developer_auth_github(request):
             dev = DeveloperAccount.objects.create(
                 company_name=name,
                 email=email,
-                password_hash=pwd_context.hash(secrets.token_urlsafe(16)),
+                password_hash=hash_password(secrets.token_urlsafe(16)),
                 tier="free",
                 is_verified=True
             )

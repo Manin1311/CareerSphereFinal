@@ -9,16 +9,15 @@ import logging
 from datetime import datetime, timedelta, timezone
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from passlib.context import CryptContext
 from jose import jwt
 
 from api.models import Company, JobSeekerAccount
 from api.decorators import JWT_SECRET, JWT_ALGORITHM, rate_limit_ip
 from api.services.email_service import send_email, build_between_email_html
 from models.schemas import success_response, error_response
+from api.utils.password_utils import hash_password
 
 logger = logging.getLogger(__name__)
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 RESET_TOKEN_EXPIRE_MINUTES = 30
 

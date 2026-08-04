@@ -4,18 +4,16 @@ import secrets
 from datetime import datetime, timedelta, timezone
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from passlib.context import CryptContext
 from jose import jwt
 
 from api.models import Company, APIKey
 from api.decorators import require_recruiter_jwt, JWT_SECRET, JWT_ALGORITHM, redis_client, rate_limit_ip
 from models.schemas import success_response, error_response
 from api.services.email_service import send_welcome_email
+from api.utils.password_utils import hash_password, verify_password
 
 import logging
 logger = logging.getLogger(__name__)
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 @csrf_exempt
 @rate_limit_ip(5, 60, "recruiter_register")
@@ -33,7 +31,7 @@ def register(request):
             return JsonResponse(error_response("Email already registered"), status=400)
 
         company_name = data.get("name") or data.get("company_name") or "Unnamed Company"
-        hashed_pwd = pwd_context.hash(password[:72])
+        hashed_pwd = hash_password(password)
         
         industry = data.get("industry")
         hq_location = data.get("hq_location")
@@ -146,19 +144,7 @@ def login(request):
 
 
         company = Company.objects.filter(email=email).first()
-        if not company or not company.password_hash:
-            return JsonResponse(error_response("Invalid credentials"), status=401)
-
-        is_valid = False
-        try:
-            pwd_bytes = password.encode('utf-8')[:72]
-            pwd_str = pwd_bytes.decode('utf-8', errors='ignore')
-            is_valid = pwd_context.verify(pwd_str, company.password_hash)
-        except Exception as pwd_err:
-            logger.warning("Recruiter password verification failed for %s: %s", email, pwd_err)
-            is_valid = False
-
-        if not is_valid:
+        if not company or not verify_password(password, company.password_hash or ""):
             return JsonResponse(error_response("Invalid credentials"), status=401)
 
         if company.is_banned:
@@ -468,10 +454,10 @@ def change_password(request):
             return JsonResponse(error_response("old_password and new_password are required"), status=400)
 
         company = request.company
-        if not pwd_context.verify(old_password[:72], company.password_hash):
+        if not verify_password(old_password, company.password_hash or ""):
             return JsonResponse(error_response("Invalid current password"), status=401)
 
-        company.password_hash = pwd_context.hash(new_password[:72])
+        company.password_hash = hash_password(new_password)
         company.save(update_fields=["password_hash"])
         return JsonResponse(success_response({"message": "Password updated successfully"}))
     except Exception as e:

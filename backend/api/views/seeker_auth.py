@@ -10,16 +10,15 @@ import logging
 from datetime import datetime, timedelta
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from passlib.context import CryptContext
 from jose import jwt, JWTError
 
 from api.models import JobSeekerAccount
 from api.decorators import JWT_SECRET, JWT_ALGORITHM, rate_limit_ip, redis_client
 from models.schemas import success_response, error_response
 from api.services.email_service import send_welcome_email
+from api.utils.password_utils import hash_password, verify_password
 
 logger = logging.getLogger(__name__)
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 ACCESS_TOKEN_EXPIRE_DAYS = 7
 
@@ -194,7 +193,7 @@ def register(request):
         seeker = JobSeekerAccount.objects.create(
             full_name=full_name,
             email=email,
-            password_hash=pwd_context.hash(password[:72]),
+            password_hash=hash_password(password),
             phone=data.get("phone", "").strip() or None,
             location=data.get("location", "").strip() or None,
             headline=data.get("headline", "").strip() or None,
@@ -244,17 +243,8 @@ def login(request):
 
 
         seeker = JobSeekerAccount.objects.filter(email=email, is_active=True).first()
-        is_valid = False
-        if seeker and seeker.password_hash:
-            try:
-                pwd_bytes = password.encode('utf-8')[:72]
-                pwd_str = pwd_bytes.decode('utf-8', errors='ignore')
-                is_valid = pwd_context.verify(pwd_str, seeker.password_hash)
-            except Exception as pwd_err:
-                logger.warning("Seeker password verification failed for %s: %s", email, pwd_err)
-                is_valid = False
 
-        if not seeker or not is_valid:
+        if not seeker or not verify_password(password, seeker.password_hash or ""):
             return JsonResponse(error_response("Invalid email or password"), status=401)
 
         if seeker.is_banned:

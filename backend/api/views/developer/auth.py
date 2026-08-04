@@ -3,18 +3,16 @@ import secrets
 from datetime import datetime, timedelta
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from passlib.context import CryptContext
 from jose import jwt
 
 from api.models import DeveloperAccount, DeveloperAPIKey, BillingSubscription, Company
 from api.decorators import require_developer_jwt, JWT_SECRET, JWT_ALGORITHM, rate_limit_ip
 from models.schemas import success_response, error_response
 from api.services.email_service import send_welcome_email
+from api.utils.password_utils import hash_password, verify_password
 
 import logging
 logger = logging.getLogger(__name__)
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 @csrf_exempt
 @rate_limit_ip(5, 60, "developer_register")
@@ -33,7 +31,7 @@ def register(request):
         if DeveloperAccount.objects.filter(email=email).exists():
             return JsonResponse(error_response("Email already registered"), status=400)
 
-        hashed_pwd = pwd_context.hash(password[:72])
+        hashed_pwd = hash_password(password)
         verification_token = secrets.token_urlsafe(32)
 
         new_dev = DeveloperAccount.objects.create(
@@ -127,19 +125,7 @@ def login(request):
             return JsonResponse(error_response("Email and password are required"), status=400)
 
         dev = DeveloperAccount.objects.filter(email=email).first()
-        if not dev or not dev.password_hash:
-            return JsonResponse(error_response("Invalid credentials"), status=401)
-
-        is_valid = False
-        try:
-            pwd_bytes = password.encode('utf-8')[:72]
-            pwd_str = pwd_bytes.decode('utf-8', errors='ignore')
-            is_valid = pwd_context.verify(pwd_str, dev.password_hash)
-        except Exception as pwd_err:
-            logger.warning("Developer password verification failed for %s: %s", email, pwd_err)
-            is_valid = False
-
-        if not is_valid:
+        if not dev or not verify_password(password, dev.password_hash or ""):
             return JsonResponse(error_response("Invalid credentials"), status=401)
 
         comp = Company.objects.filter(email=email).first()
