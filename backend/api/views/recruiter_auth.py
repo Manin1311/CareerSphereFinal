@@ -146,10 +146,19 @@ def login(request):
 
 
         company = Company.objects.filter(email=email).first()
-        if not company:
+        if not company or not company.password_hash:
             return JsonResponse(error_response("Invalid credentials"), status=401)
 
-        if not pwd_context.verify(password[:72], company.password_hash):
+        is_valid = False
+        try:
+            pwd_bytes = password.encode('utf-8')[:72]
+            pwd_str = pwd_bytes.decode('utf-8', errors='ignore')
+            is_valid = pwd_context.verify(pwd_str, company.password_hash)
+        except Exception as pwd_err:
+            logger.warning("Recruiter password verification failed for %s: %s", email, pwd_err)
+            is_valid = False
+
+        if not is_valid:
             return JsonResponse(error_response("Invalid credentials"), status=401)
 
         if company.is_banned:

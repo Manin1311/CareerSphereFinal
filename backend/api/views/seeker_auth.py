@@ -244,7 +244,17 @@ def login(request):
 
 
         seeker = JobSeekerAccount.objects.filter(email=email, is_active=True).first()
-        if not seeker or not pwd_context.verify(password[:72], seeker.password_hash):
+        is_valid = False
+        if seeker and seeker.password_hash:
+            try:
+                pwd_bytes = password.encode('utf-8')[:72]
+                pwd_str = pwd_bytes.decode('utf-8', errors='ignore')
+                is_valid = pwd_context.verify(pwd_str, seeker.password_hash)
+            except Exception as pwd_err:
+                logger.warning("Seeker password verification failed for %s: %s", email, pwd_err)
+                is_valid = False
+
+        if not seeker or not is_valid:
             return JsonResponse(error_response("Invalid email or password"), status=401)
 
         if seeker.is_banned:

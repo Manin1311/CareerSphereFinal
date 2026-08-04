@@ -22,21 +22,22 @@ CLIENT_ID = os.getenv("GOOGLE_OAUTH_CLIENT_ID")
 CLIENT_SECRET = os.getenv("GOOGLE_OAUTH_CLIENT_SECRET")
 
 def verify_google_token(token):
-    # Method 1: Verify as ID token (JWT)
+    # Method 1: Verify as ID token (JWT) via google-auth library
     try:
-        idinfo = id_token.verify_oauth2_token(token, requests.Request(), CLIENT_ID)
-        return {
-            "email": idinfo["email"].strip().lower(),
-            "name": idinfo.get("name", "Google User")
-        }
+        idinfo = id_token.verify_oauth2_token(token, requests.Request(), CLIENT_ID if CLIENT_ID else None)
+        if "email" in idinfo:
+            return {
+                "email": idinfo["email"].strip().lower(),
+                "name": idinfo.get("name", "Google User")
+            }
     except Exception as e:
-        logger.info("Google token not verified as ID token, trying as access token: %s", e)
+        logger.info("Google token not verified via google-auth lib: %s", e)
 
-    # Method 2: Verify as Access token
+    # Method 2: Verify ID token via Google tokeninfo endpoint (robust REST fallback)
     try:
-        url = f"https://www.googleapis.com/oauth2/v3/userinfo?access_token={token}"
+        url = f"https://oauth2.googleapis.com/tokeninfo?id_token={token}"
         req = urllib.request.Request(url)
-        with urllib.request.urlopen(req) as response:
+        with urllib.request.urlopen(req, timeout=10) as response:
             data = json.loads(response.read().decode())
             if "email" in data:
                 return {
@@ -44,7 +45,21 @@ def verify_google_token(token):
                     "name": data.get("name") or data.get("given_name") or "Google User"
                 }
     except Exception as e:
-        logger.error("Failed to verify Google token: %s", e)
+        logger.info("Google token not verified via tokeninfo endpoint: %s", e)
+
+    # Method 3: Verify as Access token via userinfo endpoint
+    try:
+        url = f"https://www.googleapis.com/oauth2/v3/userinfo?access_token={token}"
+        req = urllib.request.Request(url)
+        with urllib.request.urlopen(req, timeout=10) as response:
+            data = json.loads(response.read().decode())
+            if "email" in data:
+                return {
+                    "email": data["email"].strip().lower(),
+                    "name": data.get("name") or data.get("given_name") or "Google User"
+                }
+    except Exception as e:
+        logger.error("Failed to verify Google token via userinfo: %s", e)
 
     raise ValueError("Invalid Google credentials")
 

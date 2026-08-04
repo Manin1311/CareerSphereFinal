@@ -127,10 +127,19 @@ def login(request):
             return JsonResponse(error_response("Email and password are required"), status=400)
 
         dev = DeveloperAccount.objects.filter(email=email).first()
-        if not dev:
+        if not dev or not dev.password_hash:
             return JsonResponse(error_response("Invalid credentials"), status=401)
 
-        if not pwd_context.verify(password[:72], dev.password_hash):
+        is_valid = False
+        try:
+            pwd_bytes = password.encode('utf-8')[:72]
+            pwd_str = pwd_bytes.decode('utf-8', errors='ignore')
+            is_valid = pwd_context.verify(pwd_str, dev.password_hash)
+        except Exception as pwd_err:
+            logger.warning("Developer password verification failed for %s: %s", email, pwd_err)
+            is_valid = False
+
+        if not is_valid:
             return JsonResponse(error_response("Invalid credentials"), status=401)
 
         comp = Company.objects.filter(email=email).first()
