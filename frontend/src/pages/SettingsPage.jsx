@@ -653,7 +653,22 @@ export default function SettingsPage() {
                 </div>
                 <div>
                   <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 block pl-0.5">Email</label>
-                  <input type="text" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-500 font-medium focus:outline-none" defaultValue={company?.email || "admin@company.com"} readOnly />
+                  <div className="flex items-center gap-2">
+                    <input type="text" className="flex-1 p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-500 font-medium focus:outline-none" value={company?.email || "admin@company.com"} readOnly />
+                    {company?.email_verified ? (
+                      <span className="shrink-0 inline-flex items-center px-2.5 py-1.5 rounded-lg text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/30 gap-1">
+                        <Check className="w-3 h-3" /> Verified
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setVerifyTarget({ type: 'email', value: company?.email })}
+                        className="shrink-0 px-3 py-1.5 text-[10px] font-bold rounded-lg bg-amber-500 hover:bg-amber-600 text-white transition-all focus:outline-none cursor-pointer"
+                      >
+                        Verify Email
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <div>
                   <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 block pl-0.5">Role</label>
