@@ -4,13 +4,12 @@ from unittest.mock import patch, MagicMock
 from django.test import TestCase, Client
 from django.urls import reverse
 from jose import jwt
-from passlib.context import CryptContext
 from api.models import Company, JobSeekerAccount, SupportTicket, AdminBanLog
 from api.decorators import redis_client
+from api.utils.password_utils import hash_password
 
 JWT_SECRET = os.getenv("JWT_SECRET", "supersecret")
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 class AdminViewsTest(TestCase):
     def setUp(self):
@@ -23,7 +22,7 @@ class AdminViewsTest(TestCase):
         self.seeker = JobSeekerAccount.objects.create(
             full_name="Daksh Bhavsar",
             email="daksh@example.com",
-            password_hash=pwd_context.hash("validpassword"),
+            password_hash=hash_password("validpassword"),
             is_banned=False
         )
 
@@ -31,7 +30,7 @@ class AdminViewsTest(TestCase):
         self.company = Company.objects.create(
             name="Recruiter Corp",
             email="recruiter@example.com",
-            password_hash=pwd_context.hash("validpassword"),
+            password_hash=hash_password("validpassword"),
             is_banned=False
         )
 

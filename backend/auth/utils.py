@@ -9,7 +9,7 @@ import os
 import secrets
 from datetime import datetime, timedelta, timezone
 
-from passlib.context import CryptContext
+import bcrypt as _bcrypt
 from jose import jwt, JWTError
 from dotenv import load_dotenv
 
@@ -18,8 +18,6 @@ load_dotenv()
 # ── Config ──────────────────────────────────────────────────────────────────
 SECRET_KEY = os.getenv("JWT_SECRET", os.getenv("SECRET_KEY", "change-me-in-production"))
 ALGORITHM  = os.getenv("JWT_ALGORITHM", "HS256")
-
-_pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 # ── API Key helpers ─────────────────────────────────────────────────────────
@@ -35,7 +33,8 @@ def generate_api_key() -> tuple[str, str]:
         bcrypt_hash – store in DB
     """
     raw_key = "vsh_" + secrets.token_urlsafe(32)       # ~43 chars after prefix
-    hashed  = _pwd_ctx.hash(raw_key)
+    raw_bytes = raw_key.encode("utf-8")[:72]
+    hashed = _bcrypt.hashpw(raw_bytes, _bcrypt.gensalt(rounds=12)).decode("utf-8")
     return raw_key, hashed
 
 
@@ -44,7 +43,9 @@ def verify_api_key(raw_key: str, hashed: str) -> bool:
     Constant-time bcrypt comparison of the raw key against the stored hash.
     """
     try:
-        return _pwd_ctx.verify(raw_key, hashed)
+        raw_bytes = raw_key.encode("utf-8")[:72]
+        hash_bytes = hashed.encode("utf-8") if isinstance(hashed, str) else hashed
+        return _bcrypt.checkpw(raw_bytes, hash_bytes)
     except Exception:
         return False
 
