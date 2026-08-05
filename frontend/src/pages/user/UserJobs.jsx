@@ -310,8 +310,52 @@ export default function UserJobs() {
   const toggle = (arr, set, v) =>
     set(arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
 
+const SEARCH_CATEGORY_MAP = {
+  "engineering": ["engineer", "developer", "frontend", "backend", "full-stack", "fullstack", "devops", "systems", "software", "coder", "coding"],
+  "data & ai": ["data", "machine learning", "ai", "deep learning", "nlp", "analyst", "intelligence", "python", "sql"],
+  "design": ["design", "ui", "ux", "figma", "graphic", "product designer", "visual", "creative"],
+  "marketing": ["marketing", "growth", "seo", "content", "brand", "social media", "copywriter", "campaign", "ads", "advertising"],
+  "operations": ["operations", "project manager", "product manager", "scrum", "program", "coordinator", "scrum master"],
+  "finance": ["finance", "fintech", "accounting", "banking", "crypto", "financial", "tax", "auditor"],
+  "healthcare": ["health", "medical", "pharma", "clinical", "biotech", "nurse", "doctor"],
+  "education": ["education", "tutor", "teacher", "academic", "learning", "instructor"]
+};
+
+const matchesSearchQuery = (job, searchStr) => {
+  if (!searchStr) return true;
+  const q = searchStr.trim().toLowerCase();
+  if (!q) return true;
+
+  const title = (job.job_title || job.title || "").toLowerCase();
+  const desc = (job.job_description || job.description || "").toLowerCase();
+  const reqSkills = Array.isArray(job.required_skills) ? job.required_skills.join(" ") : (job.required_skills || "");
+  const infSkills = Array.isArray(job.inferred_skills) ? job.inferred_skills.join(" ") : (job.inferred_skills || "");
+  const fullText = `${title} ${desc} ${reqSkills} ${infSkills}`.toLowerCase();
+
+  // If query matches a category name
+  const catKeywords = SEARCH_CATEGORY_MAP[q];
+  if (catKeywords) {
+    return catKeywords.some(kw => fullText.includes(kw));
+  }
+
+  // Short term search (e.g. 1-2 chars)
+  if (q.length < 3) {
+    return title.toLowerCase().startsWith(q) || fullText.includes(q);
+  }
+
+  // Direct substring check
+  return fullText.includes(q);
+};
+
   // Filter entire dataset first
   const filteredJobs = jobs.filter((j) => {
+    if (search && !matchesSearchQuery(j, search)) return false;
+    if (location) {
+      const locQ = location.trim().toLowerCase();
+      const jobLoc = (j.location || "").toLowerCase();
+      const jobDesc = (j.job_description || "").toLowerCase();
+      if (!jobLoc.includes(locQ) && !jobDesc.includes(locQ)) return false;
+    }
     if (activeTypes.length && !activeTypes.includes(j.employment_type)) return false;
     if (activeWorkplaces.length && !activeWorkplaces.includes(getWorkplaceType(j))) return false;
 
@@ -497,7 +541,8 @@ export default function UserJobs() {
 
             <FilterGroup title="Job Type">
               {jobTypes.map((t) => {
-                const count = jobs.filter((j) => j.employment_type === t).length;
+                const searchMatched = jobs.filter(j => matchesSearchQuery(j, search));
+                const count = searchMatched.filter((j) => j.employment_type === t).length;
                 return (
                   <label key={t} className="flex cursor-pointer items-center justify-between py-1.5 text-sm">
                     <span className="flex items-center gap-2">
@@ -517,7 +562,8 @@ export default function UserJobs() {
 
             <FilterGroup title="Workplace Location">
               {workplaces.map((t) => {
-                const count = jobs.filter((j) => getWorkplaceType(j) === t).length;
+                const searchMatched = jobs.filter(j => matchesSearchQuery(j, search));
+                const count = searchMatched.filter((j) => getWorkplaceType(j) === t).length;
                 return (
                   <label key={t} className="flex cursor-pointer items-center justify-between py-1.5 text-sm">
                     <span className="flex items-center gap-2">

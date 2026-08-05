@@ -52,7 +52,7 @@ def list_public_jobs(request):
         return JsonResponse(error_response("Method not allowed"), status=405)
         
     try:
-        query = request.GET.get("query", "").strip()
+        query = (request.GET.get("q") or request.GET.get("query") or request.GET.get("category") or "").strip()
         location_filter = request.GET.get("location", "").strip()
         try:
             page = int(request.GET.get("page", 1))
@@ -62,10 +62,12 @@ def list_public_jobs(request):
             per_page = 10
         
         # Only active, non-archived sessions
-        qs = Session.objects.filter(status="active").select_related("company")
+        qs = Session.objects.filter(status="active").exclude(job_title__iexact="draft").exclude(job_title="").select_related("company")
         
         if query:
-            qs = qs.filter(job_title__icontains=query) | qs.filter(job_description__icontains=query)
+            from api.views.seeker_jobs import get_category_q_filter
+            q_filter = get_category_q_filter(query)
+            qs = qs.filter(q_filter)
             
         jobs = []
         for s in qs:
