@@ -1,0 +1,611 @@
+import os
+
+html_content = '''<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CareerSphere — Multi-Agent Intelligence Core</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#040408;--surface:#0d0d14;--card:#111118;--border:rgba(255,255,255,0.08);--border-bright:rgba(255,255,255,0.18);
+  --text:#e8e8f0;--muted:#94a3b8;--blue:#3b82f6;--green:#10b981;--purple:#8b5cf6;--amber:#f59e0b;--cyan:#06b6d4;--pink:#ec4899;--sky:#38bdf8;
+  --code-bg:#080810;--code-border:rgba(255,255,255,0.1);--box-bg:rgba(255,255,255,0.03);--strong-text:#ffffff;--table-hdr:#94a3b8;--table-txt:#cbd5e1;
+}
+
+body.light-mode {
+  --bg:#f8fafc;--surface:#ffffff;--card:#ffffff;--border:rgba(0,0,0,0.08);--border-bright:rgba(0,0,0,0.18);
+  --text:#0f172a;--muted:#475569;--blue:#2563eb;--green:#059669;--purple:#7c3aed;--amber:#d97706;--cyan:#0891b2;--pink:#db2777;--sky:#0284c7;
+  --code-bg:#f1f5f9;--code-border:rgba(0,0,0,0.12);--box-bg:rgba(0,0,0,0.025);--strong-text:#0f172a;--table-hdr:#475569;--table-txt:#334155;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;line-height:1.7;overflow-x:hidden;transition:background .3s,color .3s}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--surface)}::-webkit-scrollbar-thumb{background:#64748b;border-radius:99px}
+
+.theme-toggle-btn {
+  position: fixed; top: 20px; left: 20px; z-index: 100;
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 18px; border-radius: 99px;
+  background: var(--surface); border: 1px solid var(--border-bright);
+  color: var(--text); font-size: 13px; font-weight: 700; cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15); transition: transform .2s, background .3s, border-color .3s;
+}
+.theme-toggle-btn:hover { transform: scale(1.05); }
+
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 24px 60px;position:relative;overflow:hidden}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(56,189,248,0.12) 0%,transparent 60%),radial-gradient(ellipse 60% 40% at 80% 80%,rgba(139,92,246,0.08) 0%,transparent 50%);pointer-events:none}
+body.light-mode .hero-bg{background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(56,189,248,0.2) 0%,transparent 60%),radial-gradient(ellipse 60% 40% at 80% 80%,rgba(139,92,246,0.12) 0%,transparent 50%)}
+.grid-bg{position:absolute;inset:0;background-image:linear-gradient(rgba(128,128,128,0.06) 1px,transparent 1px),linear-gradient(90deg,rgba(128,128,128,0.06) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 0%,transparent 100%)}
+.badge{display:inline-flex;align-items:center;gap:8px;padding:6px 18px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;border:1px solid rgba(56,189,248,0.4);background:rgba(56,189,248,0.1);color:var(--sky);margin-bottom:28px}
+.bdot{width:7px;height:7px;border-radius:50%;background:var(--sky);box-shadow:0 0 8px var(--sky);animation:pdot 2s ease-in-out infinite}
+@keyframes pdot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.7)}}
+h1.hero-title{font-size:clamp(2.6rem,6vw,5rem);font-weight:900;line-height:1.05;letter-spacing:-.03em;background:linear-gradient(135deg,var(--strong-text) 0%,var(--sky) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:20px}
+.hero-sub{font-size:clamp(1rem,2vw,1.25rem);color:var(--muted);max-width:680px;margin:0 auto 50px}
+.owrap{position:relative;width:340px;height:340px;margin:0 auto 70px}
+.oring{position:absolute;top:50%;left:50%;border-radius:50%;border:1px dashed;transform:translate(-50%,-50%)}
+.or1{width:120px;height:120px;border-color:rgba(56,189,248,.3)}.or2{width:220px;height:220px;border-color:rgba(139,92,246,.25)}.or3{width:320px;height:320px;border-color:rgba(16,185,129,.2)}
+.ocore{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:72px;height:72px;border-radius:50%;background:radial-gradient(circle,rgba(56,189,248,.3) 0%,rgba(56,189,248,.05) 100%);border:2px solid rgba(56,189,248,.6);display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 0 40px rgba(56,189,248,.3);animation:cpulse 3s ease-in-out infinite;z-index:10}
+@keyframes cpulse{0%,100%{box-shadow:0 0 40px rgba(56,189,248,.3)}50%{box-shadow:0 0 70px rgba(56,189,248,.5)}}
+.ocore span{font-size:9px;font-weight:800;letter-spacing:.08em;color:var(--sky)}
+.oplanet{position:absolute;top:50%;left:50%;border-radius:999px;padding:5px 12px;font-size:10px;font-weight:700;border:1px solid;background:var(--surface);white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,0.1)}
+.p1{transform:translate(-50%,-50%) translateY(-100px);color:var(--blue);border-color:var(--blue)}
+.p2{transform:translate(-50%,-50%) translateX(108px) translateY(-18px);color:var(--green);border-color:var(--green)}
+.p3{transform:translate(-50%,-50%) translateX(-52px) translateY(102px);color:var(--purple);border-color:var(--purple)}
+.p4{transform:translate(-50%,-50%) translateX(40px) translateY(108px);color:var(--amber);border-color:var(--amber)}
+.p5{transform:translate(-50%,-50%) translateX(-115px) translateY(-20px);color:var(--cyan);border-color:var(--cyan)}
+.p6{transform:translate(-50%,-50%) translateX(20px) translateY(-155px);color:var(--pink);border-color:var(--pink)}
+.container{max-width:1100px;margin:0 auto;padding:0 24px}
+.sechdr{text-align:center;margin-bottom:64px}
+.seclbl{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+.sechdr h2{font-size:clamp(1.8rem,3.5vw,2.8rem);font-weight:800;letter-spacing:-.025em;color:var(--strong-text)}
+.pipebox{background:var(--surface);border:1px solid var(--border-bright);border-radius:24px;padding:48px 40px;margin:60px 0;position:relative;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.05)}
+.pipebox::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 40% at 50% 0%,rgba(56,189,248,.06) 0%,transparent 60%);pointer-events:none}
+.ptitle{text-align:center;font-size:1.5rem;font-weight:800;color:var(--strong-text);margin-bottom:40px}
+.pflow{display:flex;align-items:center;justify-content:center;flex-wrap:wrap}
+.pnode{display:flex;flex-direction:column;align-items:center;gap:8px;padding:0 6px}
+.pcircle{width:64px;height:64px;border-radius:50%;border:2px solid;display:flex;align-items:center;justify-content:center;font-size:1.6rem;transition:transform .3s;background:var(--box-bg)}
+.pcircle:hover{transform:scale(1.12)}
+.plabel{font-size:9px;font-weight:700;text-align:center;text-transform:uppercase;letter-spacing:.06em;max-width:72px;line-height:1.3}
+.pconn{padding:0 8px;opacity:.4;font-size:1.2rem;color:var(--text)}
+.acard{background:var(--card);border:1px solid var(--border);border-radius:24px;padding:40px;margin-bottom:40px;position:relative;overflow:hidden;transition:border-color .3s, background .3s, box-shadow .3s;box-shadow:0 8px 24px rgba(0,0,0,0.04)}
+.acard:hover{border-color:var(--border-bright);box-shadow:0 12px 32px rgba(0,0,0,0.08)}
+.chdr{display:flex;align-items:center;gap:20px;margin-bottom:28px;flex-wrap:wrap}
+.cicon{width:60px;height:60px;border-radius:16px;border:2px solid;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0}
+.ctg h3{font-size:1.4rem;font-weight:800;color:var(--strong-text)}
+.ctg p{font-size:.82rem;color:var(--muted);margin-top:3px;font-family:'JetBrains Mono',monospace}
+.cbadge{margin-left:auto;padding:5px 14px;border-radius:999px;font-size:11px;font-weight:700;border:1px solid}
+.lgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:24px}
+.lbox{background:var(--box-bg);border:1px solid var(--border);border-radius:14px;padding:20px}
+.lbtitle{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
+.lbox ul{list-style:none;display:flex;flex-direction:column;gap:7px}
+.lbox ul li{font-size:.87rem;color:var(--text);display:flex;gap:8px}
+.lbox ul li::before{content:'›';font-weight:700;flex-shrink:0;color:inherit}
+.codeblk{background:var(--code-bg);border:1px solid var(--code-border);border-radius:12px;padding:20px 24px;font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.8;overflow-x:auto;margin:16px 0;position:relative}
+.clbl{position:absolute;top:10px;right:14px;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase}
+
+/* Syntax highlighting dark/light compliant */
+.cc{color:#64748b}
+body.light-mode .cc{color:#64748b}
+.ck{color:var(--purple);font-weight:600}
+.cs{color:var(--green)}
+.cn{color:var(--amber)}
+.cf{color:var(--blue);font-weight:600}
+.cv{color:var(--sky)}
+
+.fsteps{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0;align-items:center}
+.fstep{padding:6px 14px;border-radius:8px;font-size:.8rem;font-weight:600;border:1px solid}
+.farr{color:var(--muted);font-size:1.1rem}
+.fmla{background:var(--box-bg);border:1px solid var(--border-bright);border-radius:14px;padding:20px 24px;font-family:'JetBrains Mono',monospace;font-size:.9rem;color:var(--strong-text);text-align:center;margin:16px 0}
+.fmla-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:10px;font-family:'Inter',sans-serif;font-weight:700}
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.tag{padding:4px 12px;background:var(--box-bg);border:1px solid var(--border);border-radius:6px;font-size:11px;font-weight:600;color:var(--muted);font-family:'JetBrains Mono',monospace}
+.ibox{border-radius:12px;padding:16px 20px;margin-top:20px;display:flex;gap:12px;background:var(--box-bg);border:1px solid var(--border)}
+.iico{font-size:1.3rem;flex-shrink:0}
+.itxt{font-size:.9rem;line-height:1.6;color:var(--text)}
+.itxt strong{color:var(--strong-text)}
+.mlbox{background:var(--box-bg);border:1px solid var(--border-bright);border-radius:16px;padding:24px;margin:20px 0}
+.mlbox h4{font-size:1rem;font-weight:700;color:var(--purple);margin-bottom:12px}
+.snav{position:fixed;top:20px;right:20px;background:var(--surface);border:1px solid var(--border-bright);border-radius:16px;padding:16px;backdrop-filter:blur(16px);z-index:100;display:flex;flex-direction:column;gap:6px;box-shadow:0 4px 20px rgba(0,0,0,0.1)}
+.snavt{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:2px}
+.nlink{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600;color:var(--muted);text-decoration:none;padding:4px 8px;border-radius:8px;transition:background .2s,color .2s}
+.nlink:hover{background:var(--box-bg);color:var(--strong-text)}
+.ndot{width:8px;height:8px;border-radius:50%}
+footer{padding:60px 24px;text-align:center;border-top:1px solid var(--border);margin-top:80px}
+footer h2{font-size:2rem;font-weight:800;background:linear-gradient(135deg,var(--strong-text),var(--sky));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:12px}
+footer p{color:var(--muted)}
+.fi{opacity:0;transform:translateY(24px);transition:opacity .7s,transform .7s}
+.fi.vis{opacity:1;transform:translateY(0)}
+@media(max-width:768px){.snav{display:none}.lgrid{grid-template-columns:1fr}.acard{padding:28px 20px}}
+</style>
+</head>
+<body>
+
+<button class="theme-toggle-btn" onclick="toggleTheme()" id="themeBtn">
+  <span id="themeIcon">☀️</span> <span id="themeText">Light Mode</span>
+</button>
+
+<nav class="snav">
+  <div class="snavt">Agents</div>
+  <a href="#core" class="nlink"><span class="ndot" style="background:var(--sky)"></span>Core AI</a>
+  <a href="#parsing" class="nlink"><span class="ndot" style="background:var(--blue)"></span>Parsing</a>
+  <a href="#norm" class="nlink"><span class="ndot" style="background:var(--amber)"></span>Skill Extraction</a>
+  <a href="#semantic" class="nlink"><span class="ndot" style="background:var(--green)"></span>Semantic Matcher</a>
+  <a href="#scoring" class="nlink"><span class="ndot" style="background:var(--purple)"></span>ATS Scorer</a>
+  <a href="#ranking" class="nlink"><span class="ndot" style="background:var(--cyan)"></span>Realtime Ranking</a>
+  <a href="#interview" class="nlink"><span class="ndot" style="background:var(--pink)"></span>Interview AI</a>
+</nav>
+
+<section class="hero">
+  <div class="hero-bg"></div><div class="grid-bg"></div>
+  <div style="position:relative;z-index:2">
+    <div class="badge"><span class="bdot"></span> CareerSphere &mdash; Multi-Agent Intelligence Core</div>
+    <h1 class="hero-title">7 Specialized AI Agents<br/>Working as One</h1>
+    <p class="hero-sub">Har ek agent apna specific kaam karta hai. Milke ye ek resume ko fully analyzed, scored, aur ranked kar dete hain &mdash; automatically, real-time mein.</p>
+    <div class="owrap">
+      <div class="oring or1"></div><div class="oring or2"></div><div class="oring or3"></div>
+      <div class="ocore">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--sky)"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12"/></svg>
+        <span>CORE AI</span>
+      </div>
+      <div class="oplanet p1">&#x1F535; Parsing Agent</div>
+      <div class="oplanet p2">&#x1F7E2; Semantic Matcher</div>
+      <div class="oplanet p3">&#x1F7E3; ATS Scorer</div>
+      <div class="oplanet p4">&#x1F7E1; Skill Extraction</div>
+      <div class="oplanet p5">&#x1F4CA; Realtime Ranking</div>
+      <div class="oplanet p6">&#x1F3A4; Interview AI</div>
+    </div>
+  </div>
+</section>
+
+<section style="padding:40px 0 80px">
+  <div class="container">
+    <div class="pipebox fi">
+      <div class="ptitle">&#x1F504; Complete Pipeline &mdash; Resume se Ranking Tak</div>
+      <div class="pflow">
+        <div class="pnode"><div class="pcircle" style="border-color:var(--border-bright)">&#x1F4C4;</div><div class="plabel" style="color:var(--muted)">Resume Upload</div></div>
+        <div class="pconn">&rarr;</div>
+        <div class="pnode"><div class="pcircle" style="border-color:var(--blue);color:var(--blue)">&#x1F4D6;</div><div class="plabel" style="color:var(--blue)">Parsing Agent</div></div>
+        <div class="pconn">&rarr;</div>
+        <div class="pnode"><div class="pcircle" style="border-color:var(--amber);color:var(--amber)">&#x1F527;</div><div class="plabel" style="color:var(--amber)">Skill Extraction</div></div>
+        <div class="pconn">&rarr;</div>
+        <div class="pnode"><div class="pcircle" style="border-color:var(--green);color:var(--green)">&#x2728;</div><div class="plabel" style="color:var(--green)">Semantic Matcher</div></div>
+        <div class="pconn">&rarr;</div>
+        <div class="pnode"><div class="pcircle" style="border-color:var(--purple);color:var(--purple)">&#x26A1;</div><div class="plabel" style="color:var(--purple)">ATS Scorer</div></div>
+        <div class="pconn">&rarr;</div>
+        <div class="pnode"><div class="pcircle" style="border-color:var(--cyan);color:var(--cyan)">&#x1F4CA;</div><div class="plabel" style="color:var(--cyan)">Realtime Ranking</div></div>
+        <div class="pconn">&rarr;</div>
+        <div class="pnode"><div class="pcircle" style="border-color:var(--sky);color:var(--sky)">&#x1F3C6;</div><div class="plabel" style="color:var(--sky)">Live Leaderboard!</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="padding:0 0 80px">
+<div class="container">
+<div class="sechdr fi"><div class="seclbl">Deep Dive</div><h2>Har Agent Ka Real Logic</h2></div>
+
+<!-- CORE AI -->
+<div id="core" class="acard fi" style="border-color:var(--sky)">
+  <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--sky),var(--purple),transparent);border-radius:24px 24px 0 0"></div>
+  <div class="chdr">
+    <div class="cicon" style="border-color:var(--sky);background:var(--box-bg)">&#x2600;&#xFE0F;</div>
+    <div class="ctg"><h3>Core AI &mdash; Master Orchestrator</h3><p>agents/llm.py &middot; RotateLLMClient</p></div>
+    <div class="cbadge" style="border-color:var(--sky);color:var(--sky)">Central Brain</div>
+  </div>
+  <p style="color:var(--muted);font-size:.95rem;margin-bottom:20px">Sabka master controller. Yeh decide karta hai kaun sa agent kab chalega. Multiple LLM providers ko rotate karta hai &mdash; agar ek fail ho toh automatically dusra try karta hai.</p>
+  <div class="lgrid">
+    <div class="lbox"><div class="lbtitle" style="color:var(--sky)">Kya Karta Hai</div><ul>
+      <li>Sabka master controller &mdash; kaun sa agent kab chalega decide karta hai</li>
+      <li>Multiple LLM providers ko rotate karta hai (Gemini, OpenAI)</li>
+      <li>Ek API fail ho toh automatically dusra try karta hai (fallback)</li>
+      <li>Sab agents ke results combine karta hai</li>
+    </ul></div>
+    <div class="lbox"><div class="lbtitle" style="color:var(--sky)">Multi-LLM Fallback Strategy</div><ul>
+      <li><strong style="color:var(--strong-text)">Primary:</strong> Gemini 2.5 Flash (Google)</li>
+      <li><strong style="color:var(--strong-text)">Fallback 1:</strong> GPT-4o Mini (OpenAI)</li>
+      <li><strong style="color:var(--strong-text)">Fallback 2:</strong> Groq LLaMA 3.3 70B</li>
+      <li>Round-robin rotation for multiple API keys</li>
+    </ul></div>
+  </div>
+  <div class="ibox">
+    <div class="iico">&#x1F4A1;</div>
+    <div class="itxt"><strong>Why Multi-Agent Architecture?</strong> Ek bada monolithic AI model saare kaam achhe se nahi kar sakta. Isliye specialization &mdash; har agent apni field mein expert, Core AI unhe coordinate karta hai. Exactly wahi jo real human teams mein hota hai!</div>
+  </div>
+  <div class="tags"><span class="tag">Gemini 2.5 Flash</span><span class="tag">GPT-4o Mini</span><span class="tag">Groq LLaMA 3.3</span><span class="tag">RotateLLMClient</span><span class="tag">API Fallback Chain</span></div>
+</div>
+
+<!-- PARSING AGENT -->
+<div id="parsing" class="acard fi">
+  <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--blue),transparent);border-radius:24px 24px 0 0"></div>
+  <div class="chdr">
+    <div class="cicon" style="border-color:var(--blue);background:var(--box-bg)">&#x1F4D6;</div>
+    <div class="ctg"><h3>Parsing Agent</h3><p>agents/parsing_agent.py &middot; ResumeParsingAgent</p></div>
+    <div class="cbadge" style="border-color:var(--blue);color:var(--blue)">Step 1 of Pipeline</div>
+  </div>
+  <p style="color:var(--muted);font-size:.95rem;margin-bottom:20px">Resume file (PDF / DOCX / TXT) ko read karke structured JSON mein convert karta hai. Pipeline ka <strong style="color:var(--blue)">pehla aur sabse critical step</strong> &mdash; agar yeh galat ho toh sab galat hoga.</p>
+  <div class="lgrid">
+    <div class="lbox"><div class="lbtitle" style="color:var(--blue)">Step 1 &mdash; Text Extraction</div><ul>
+      <li><strong style="color:var(--strong-text)">PDF:</strong> pdfplumber se text + PyMuPDF (fitz) se embedded photo extract karta hai</li>
+      <li><strong style="color:var(--strong-text)">DOCX:</strong> python-docx se paragraphs + tables read karta hai</li>
+      <li><strong style="color:var(--strong-text)">TXT:</strong> Direct file read</li>
+      <li>Text &lt; 50 chars ho toh invalid file, empty result return karo</li>
+    </ul></div>
+    <div class="lbox"><div class="lbtitle" style="color:var(--blue)">Step 2 &mdash; LLM Parsing</div><ul>
+      <li>Extracted raw text + JSON schema LLM ko bhejte hain</li>
+      <li>LLM ko instruction: "Is text se ye specific fields nikalo"</li>
+      <li>LLM return karta hai perfectly structured JSON</li>
+      <li>JSON validate hota hai, fail hone par regex fallback</li>
+    </ul></div>
+  </div>
+  <div class="codeblk">
+    <div class="clbl">parsing_agent.py &mdash; LLM Schema</div>
+    <span class="cc"># Ye JSON schema LLM ko instruction ke roop mein diya jaata hai</span><br/>
+    SCHEMA = {<br/>
+    &nbsp;&nbsp;<span class="cs">"name"</span>: string, <span class="cs">"email"</span>: string|null, <span class="cs">"phone"</span>: string|null,<br/>
+    &nbsp;&nbsp;<span class="cs">"total_experience_years"</span>: float,<br/>
+    &nbsp;&nbsp;<span class="cs">"skills"</span>: [{ <span class="cs">"skill"</span>: str, <span class="cs">"years"</span>: float, <span class="cs">"level"</span>: <span class="cs">"beginner|intermediate|expert"</span> }],<br/>
+    &nbsp;&nbsp;<span class="cs">"experience"</span>: [{ <span class="cs">"company"</span>: str, <span class="cs">"role"</span>: str, <span class="cs">"duration_months"</span>: int }],<br/>
+    &nbsp;&nbsp;<span class="cs">"education"</span>: [{ <span class="cs">"institution"</span>: str, <span class="cs">"degree"</span>: str, <span class="cs">"cgpa"</span>: float }],<br/>
+    &nbsp;&nbsp;<span class="cs">"projects"</span>: [{ <span class="cs">"name"</span>: str, <span class="cs">"tech_used"</span>: [str] }]<br/>
+    }
+  </div>
+  <div class="fsteps">
+    <div class="fstep" style="border-color:var(--blue);color:var(--blue);background:var(--box-bg)">&#x1F4C4; Resume File In</div>
+    <div class="farr">&rarr;</div>
+    <div class="fstep" style="border-color:var(--blue);color:var(--blue);background:var(--box-bg)">&#x1F524; Raw Text Extract</div>
+    <div class="farr">&rarr;</div>
+    <div class="fstep" style="border-color:var(--blue);color:var(--blue);background:var(--box-bg)">&#x1F916; LLM Schema Parse</div>
+    <div class="farr">&rarr;</div>
+    <div class="fstep" style="border-color:var(--blue);color:var(--blue);background:var(--box-bg)">&#x2705; Clean JSON Out</div>
+  </div>
+  <div class="ibox">
+    <div class="iico">&#x1F4A1;</div>
+    <div class="itxt"><strong>Why LLM for Parsing?</strong> Traditional regex parsers alag-alag resume formats handle nahi kar paate. LLM context samajhta hai &mdash; chahe "Resume", "CV", "Biodata" likha ho &mdash; sahi fields automatically nikaal leta hai.</div>
+  </div>
+  <div class="tags"><span class="tag">pdfplumber</span><span class="tag">PyMuPDF (fitz)</span><span class="tag">python-docx</span><span class="tag">Gemini 2.5 Flash</span><span class="tag">JSON Schema Prompting</span></div>
+</div>
+
+<!-- SKILL EXTRACTION -->
+<div id="norm" class="acard fi">
+  <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--amber),transparent);border-radius:24px 24px 0 0"></div>
+  <div class="chdr">
+    <div class="cicon" style="border-color:var(--amber);background:var(--box-bg)">&#x1F527;</div>
+    <div class="ctg"><h3>Skill Extraction Agent</h3><p>agents/normalization_agent.py &middot; 320+ Skills Dataset</p></div>
+    <div class="cbadge" style="border-color:var(--amber);color:var(--amber)">Step 2 of Pipeline</div>
+  </div>
+  <p style="color:var(--muted);font-size:.95rem;margin-bottom:20px">Parsed skills ko standardize karta hai. "ReactJS", "React.js", "React JS", "react" &mdash; sab ek hi skill ke alag naam. Yeh agent unhe <strong style="color:var(--amber)">canonical (standard) form</strong> mein convert karta hai taaki baad mein accurate matching ho sake.</p>
+  <div class="lgrid">
+    <div class="lbox"><div class="lbtitle" style="color:var(--amber)">320-Skill Master Dataset</div><ul>
+      <li>320 canonical skills ka hardcoded dictionary</li>
+      <li>Har skill ke liye 15&ndash;30+ aliases defined hain</li>
+      <li>20 domains: Programming, Web, DB, DevOps, ML, Mobile, Security, BI, etc.</li>
+      <li>Case-insensitive matching (ReactJS = reactjs = REACTJS)</li>
+    </ul></div>
+    <div class="lbox"><div class="lbtitle" style="color:var(--amber)">3-Layer Matching Logic</div><ul>
+      <li><strong style="color:var(--strong-text)">Layer 1:</strong> Exact alias match (fastest path)</li>
+      <li><strong style="color:var(--strong-text)">Layer 2:</strong> Lowercase + punctuation strip karo, phir match karo</li>
+      <li><strong style="color:var(--strong-text)">Layer 3:</strong> Fuzzy string matching for typos</li>
+      <li>Koi match nahi mila? Skill as-is rakhte hain</li>
+    </ul></div>
+  </div>
+  <div class="codeblk">
+    <div class="clbl">normalization_agent.py &mdash; Alias Entry Example</div>
+    <span class="cc"># Python skill ke saath 24 aliases defined hain is dataset mein</span><br/>
+    { <span class="cs">"canonical_name"</span>: <span class="cs">"Python"</span>, <span class="cs">"domain"</span>: <span class="cs">"programming_languages"</span>,<br/>
+    &nbsp;&nbsp;<span class="cs">"aliases"</span>: [<span class="cs">"python"</span>, <span class="cs">"Python3"</span>, <span class="cs">"py"</span>, <span class="cs">"python 3"</span>, <span class="cs">"python scripting"</span>,<br/>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="cs">"cpython"</span>, <span class="cs">"python3.11"</span>, <span class="cs">"python programming"</span>, <span class="cs">"python (3.x)"</span> ...] <span class="cc">// 24 total</span><br/>
+    }
+  </div>
+  <div style="background:var(--box-bg);border:1px solid var(--border-bright);border-radius:14px;padding:20px;margin:16px 0">
+    <div style="font-size:11px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">Live Normalization Examples</div>
+    <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:10px 16px;font-size:.85rem;font-family:'JetBrains Mono',monospace;align-items:center">
+      <span style="color:var(--amber);font-weight:600">"ReactJS"</span><span style="color:var(--muted)">&rarr;</span><span style="color:var(--green);font-weight:700">"React"</span>
+      <span style="color:var(--amber);font-weight:600">"ML Engineer"</span><span style="color:var(--muted)">&rarr;</span><span style="color:var(--green);font-weight:700">"Machine Learning"</span>
+      <span style="color:var(--amber);font-weight:600">"golang"</span><span style="color:var(--muted)">&rarr;</span><span style="color:var(--green);font-weight:700">"Go"</span>
+      <span style="color:var(--amber);font-weight:600">"c/c++"</span><span style="color:var(--muted)">&rarr;</span><span style="color:var(--green);font-weight:700">"C++"</span>
+      <span style="color:var(--amber);font-weight:600">"js es6"</span><span style="color:var(--muted)">&rarr;</span><span style="color:var(--green);font-weight:700">"JavaScript"</span>
+      <span style="color:var(--amber);font-weight:600">"k8s"</span><span style="color:var(--muted)">&rarr;</span><span style="color:var(--green);font-weight:700">"Kubernetes"</span>
+    </div>
+  </div>
+  <div class="ibox">
+    <div class="iico">&#x1F4A1;</div>
+    <div class="itxt"><strong>Why Normalization?</strong> Agar "React" aur "ReactJS" alag samjhe gaye toh matching step galat results dega. Normalization ensure karta hai ki sab skills ek common language mein hain before semantic comparison hota hai.</div>
+  </div>
+  <div class="tags"><span class="tag">320 Canonical Skills</span><span class="tag">20 Domains</span><span class="tag">Alias Dictionary</span><span class="tag">Fuzzy Matching</span><span class="tag">Case-Insensitive</span></div>
+</div>
+
+<!-- SEMANTIC MATCHER -->
+<div id="semantic" class="acard fi">
+  <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--green),transparent);border-radius:24px 24px 0 0"></div>
+  <div class="chdr">
+    <div class="cicon" style="border-color:var(--green);background:var(--box-bg)">&#x2728;</div>
+    <div class="ctg"><h3>Semantic Matcher</h3><p>agents/matching_agent.py &middot; SemanticMatchingAgent</p></div>
+    <div class="cbadge" style="border-color:var(--green);color:var(--green)">Step 3 of Pipeline</div>
+  </div>
+  <p style="color:var(--muted);font-size:.95rem;margin-bottom:20px">Job description ki required skills aur candidate ki skills ko <strong style="color:var(--green)">meaning ke level par compare</strong> karta hai. Sirf keyword match nahi &mdash; vector-based semantic similarity. "Machine Learning" aur "ML" ko same samajhta hai!</p>
+  <div class="lgrid">
+    <div class="lbox"><div class="lbtitle" style="color:var(--green)">Layer 1 &mdash; Sentence Embeddings</div><ul>
+      <li>sentence-transformers model skills ko 768-dim vectors mein convert karta hai</li>
+      <li>Candidate skills aur Required skills &mdash; dono ke vectors bante hain</li>
+      <li>cosine_similarity se N&times;M similarity matrix calculate hoti hai</li>
+      <li>Har required skill ka best match dhundha jaata hai</li>
+      <li>Similarity &gt; 0.72 &rarr; MATCH &#x2705;</li>
+    </ul></div>
+    <div class="lbox"><div class="lbtitle" style="color:var(--green)">Layer 2 &mdash; TF-IDF Fallback</div><ul>
+      <li>Agar embedding model available nahi hai (offline mode)</li>
+      <li>TfidfVectorizer with character n-grams (3&ndash;5) use karta hai</li>
+      <li>Character-level matching &rarr; typos bhi handle hoti hain</li>
+      <li>Similarity &gt; 0.60 &rarr; Match!</li>
+      <li>Last resort: Simple substring match</li>
+    </ul></div>
+  </div>
+  <div class="codeblk">
+    <div class="clbl">matching_agent.py &mdash; Core Cosine Logic</div>
+    <span class="cc"># Step 1: Skills ko high-dimensional vectors mein convert karo</span><br/>
+    <span class="cv">cand_emb</span> = <span class="cf">model.encode</span>(candidate_skills)  <span class="cc"># shape: [n, 768]</span><br/>
+    <span class="cv">req_emb</span> &nbsp;= <span class="cf">model.encode</span>(required_skills)   <span class="cc"># shape: [m, 768]</span><br/><br/>
+    <span class="cc"># Step 2: N&times;M cosine similarity matrix banao</span><br/>
+    <span class="cv">sim_matrix</span> = <span class="cf">cosine_similarity</span>(cand_emb, req_emb)<br/><br/>
+    <span class="cc"># Step 3: Har required skill ke liye candidate mein best match check karo</span><br/>
+    <span class="ck">for</span> i, req <span class="ck">in</span> <span class="cf">enumerate</span>(required):<br/>
+    &nbsp;&nbsp;sims = sim_matrix[:, i]<br/>
+    &nbsp;&nbsp;<span class="ck">if</span> <span class="cf">np.max</span>(sims) &gt; <span class="cn">0.72</span>: matched.<span class="cf">append</span>(req)  <span class="cc"># &#x2705; Match!</span><br/>
+    &nbsp;&nbsp;<span class="ck">else</span>: missing.<span class="cf">append</span>(req)                         <span class="cc"># &#x274C; No match</span>
+  </div>
+  <div style="background:var(--box-bg);border:1px solid var(--border-bright);border-radius:14px;padding:20px;margin:16px 0">
+    <div style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">Semantic Matching Examples (Real Results)</div>
+    <div style="display:flex;flex-direction:column;gap:10px;font-size:.84rem">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span style="background:var(--box-bg);border:1px solid var(--border);padding:3px 10px;border-radius:6px;color:var(--blue);font-family:monospace">Required: "Machine Learning"</span>
+        <span style="color:var(--muted)">vs</span>
+        <span style="background:var(--box-bg);border:1px solid var(--border);padding:3px 10px;border-radius:6px;color:var(--amber);font-family:monospace">Candidate: "ML"</span>
+        <span style="color:var(--green);font-weight:700">&rarr; Similarity 0.89 &mdash; MATCH &#x2705;</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span style="background:var(--box-bg);border:1px solid var(--border);padding:3px 10px;border-radius:6px;color:var(--blue);font-family:monospace">Required: "React"</span>
+        <span style="color:var(--muted)">vs</span>
+        <span style="background:var(--box-bg);border:1px solid var(--border);padding:3px 10px;border-radius:6px;color:var(--amber);font-family:monospace">Candidate: "ReactJS"</span>
+        <span style="color:var(--green);font-weight:700">&rarr; Similarity 0.94 &mdash; MATCH &#x2705;</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span style="background:var(--box-bg);border:1px solid var(--border);padding:3px 10px;border-radius:6px;color:var(--blue);font-family:monospace">Required: "Python"</span>
+        <span style="color:var(--muted)">vs</span>
+        <span style="background:var(--box-bg);border:1px solid var(--border);padding:3px 10px;border-radius:6px;color:var(--amber);font-family:monospace">Candidate: "Java"</span>
+        <span style="color:#ef4444;font-weight:700">&rarr; Similarity 0.21 &mdash; NO MATCH &#x274C;</span>
+      </div>
+    </div>
+  </div>
+  <div class="ibox">
+    <div class="iico">&#x1F4A1;</div>
+    <div class="itxt"><strong>Cosine Similarity Kya Hai?</strong> Do vectors ke beech ka angle measure karta hai. 1.0 = identical meaning, 0.0 = completely different. 0.72+ hone par hum confidently keh sakte hain ki dono skills semantically same hain.</div>
+  </div>
+  <div class="tags"><span class="tag">sentence-transformers</span><span class="tag">cosine_similarity</span><span class="tag">scikit-learn</span><span class="tag">TF-IDF Fallback</span><span class="tag">numpy</span><span class="tag">768-dim Vectors</span></div>
+</div>
+
+<!-- ATS SCORER -->
+<div id="scoring" class="acard fi">
+  <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--purple),transparent);border-radius:24px 24px 0 0"></div>
+  <div class="chdr">
+    <div class="cicon" style="border-color:var(--purple);background:var(--box-bg)">&#x26A1;</div>
+    <div class="ctg"><h3>ATS Scorer</h3><p>agents/matching_agent.py &mdash; Weighted Formula + ML Layer</p></div>
+    <div class="cbadge" style="border-color:var(--purple);color:var(--purple)">Step 4 of Pipeline</div>
+  </div>
+  <p style="color:var(--muted);font-size:.95rem;margin-bottom:20px">Candidate ka final <strong style="color:var(--purple)">Match Score (%)</strong> calculate karta hai ek weighted formula se. Plus ek special <strong style="color:var(--purple)">ML Adaptive Layer</strong> jo historical hiring data se seekhta hai aur score improve karta hai!</p>
+  <div class="fmla">
+    <div class="fmla-lbl">Weighted Scoring Formula (Recruiter-Configurable)</div>
+    <span style="color:var(--purple)">Final Score</span> = (<span style="color:var(--green)">Skill Score</span> &times; <span style="color:var(--amber)">0.50</span>) + (<span style="color:var(--blue)">Experience Score</span> &times; <span style="color:var(--amber)">0.30</span>) + (<span style="color:var(--pink)">Location Score</span> &times; <span style="color:var(--amber)">0.20</span>)
+  </div>
+  <div class="lgrid">
+    <div class="lbox"><div class="lbtitle" style="color:var(--purple)">Score Calculation</div><ul>
+      <li><strong style="color:var(--green)">Skill Score:</strong> Matched Skills &divide; Required Skills &times; 100 (+ experience bonus for 3+ years)</li>
+      <li><strong style="color:var(--blue)">Experience Score:</strong> Candidate Years &divide; Min Required Years &times; 100 (max 100)</li>
+      <li><strong style="color:var(--pink)">Location Score:</strong> Location match kiya? 100 : 30 (fallback)</li>
+      <li>Recruiter khud weights customize kar sakta hai dashboard se</li>
+    </ul></div>
+    <div class="lbox"><div class="lbtitle" style="color:var(--purple)">ML Adaptive Layer</div><ul>
+      <li>10+ hired/rejected records DB mein hain?</li>
+      <li>RandomForestClassifier in-memory train hota hai</li>
+      <li>Features: [skill_score, exp_score, loc_score]</li>
+      <li>Output: Hired probability (0-100%)</li>
+      <li>Final = 80% formula score + 20% ML prediction</li>
+    </ul></div>
+  </div>
+  <div class="mlbox">
+    <h4>&#x1F9E0; ML Adaptive Learning &mdash; Ek Unique Feature!</h4>
+    <div class="codeblk" style="margin:0">
+      <span class="cc"># Historical data se RandomForest train karo (in-memory, real-time)</span><br/>
+      <span class="cv">past_apps</span> = JobApplication.objects.<span class="cf">filter</span>(status__in=[<span class="cs">"hired"</span>, <span class="cs">"rejected"</span>])<br/>
+      <span class="ck">if</span> past_apps.<span class="cf">count</span>() &gt;= <span class="cn">10</span>:  <span class="cc"># Minimum 10 records needed to train</span><br/>
+      &nbsp;&nbsp;<span class="cv">clf</span> = <span class="cf">RandomForestClassifier</span>(n_estimators=<span class="cn">50</span>, random_state=<span class="cn">42</span>)<br/>
+      &nbsp;&nbsp;clf.<span class="cf">fit</span>(X, y)  <span class="cc"># X=[skill,exp,loc scores], y=[1=hired, 0=rejected]</span><br/>
+      &nbsp;&nbsp;<span class="cv">hired_prob</span> = clf.<span class="cf">predict_proba</span>([[sk, ex, lc]])[<span class="cn">0</span>][<span class="cn">1</span>] * <span class="cn">100</span><br/><br/>
+      <span class="cc"># 80% manual weighted formula + 20% ML prediction = best of both worlds!</span><br/>
+      <span class="cv">final_score</span> = <span class="cn">0.8</span> * manual_score + <span class="cn">0.2</span> * hired_prob
+    </div>
+  </div>
+  <div style="background:var(--box-bg);border:1px solid var(--border-bright);border-radius:14px;padding:20px;margin:16px 0">
+    <div style="font-size:11px;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px">Match Recommendation System</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <div style="flex:1;min-width:120px;background:var(--box-bg);border:1px solid var(--green);border-radius:10px;padding:12px;text-align:center"><div style="font-size:1.3rem;font-weight:800;color:var(--green)">&ge;80%</div><div style="font-size:.75rem;color:var(--green);margin-top:4px;font-weight:600">Strong Match &#x1F3C6;</div></div>
+      <div style="flex:1;min-width:120px;background:var(--box-bg);border:1px solid var(--blue);border-radius:10px;padding:12px;text-align:center"><div style="font-size:1.3rem;font-weight:800;color:var(--blue)">&ge;65%</div><div style="font-size:.75rem;color:var(--blue);margin-top:4px;font-weight:600">Good Match &#x2705;</div></div>
+      <div style="flex:1;min-width:120px;background:var(--box-bg);border:1px solid var(--amber);border-radius:10px;padding:12px;text-align:center"><div style="font-size:1.3rem;font-weight:800;color:var(--amber)">&ge;50%</div><div style="font-size:.75rem;color:var(--amber);margin-top:4px;font-weight:600">Partial Match &#x26A0;&#xFE0F;</div></div>
+      <div style="flex:1;min-width:120px;background:var(--box-bg);border:1px solid #ef4444;border-radius:10px;padding:12px;text-align:center"><div style="font-size:1.3rem;font-weight:800;color:#ef4444">&lt;50%</div><div style="font-size:.75rem;color:#ef4444;margin-top:4px;font-weight:600">Poor Match &#x274C;</div></div>
+    </div>
+  </div>
+  <div class="ibox">
+    <div class="iico">&#x1F4A1;</div>
+    <div class="itxt"><strong>ML Layer Kyu?</strong> Pure rule-based scoring mein recruiter ki past decisions ka koi impact nahi hota. ML layer historical patterns seekhta hai &mdash; agar company consistently high-experience candidates hire karti hai, model woh learn kar leta hai aur future scoring automatically improve ho jaati hai.</div>
+  </div>
+  <div class="tags"><span class="tag">RandomForestClassifier</span><span class="tag">scikit-learn</span><span class="tag">pandas</span><span class="tag">Hired Probability</span><span class="tag">Weighted Formula</span><span class="tag">HuggingFace Fallback</span></div>
+</div>
+
+<!-- REALTIME RANKING -->
+<div id="ranking" class="acard fi">
+  <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--cyan),transparent);border-radius:24px 24px 0 0"></div>
+  <div class="chdr">
+    <div class="cicon" style="border-color:var(--cyan);background:var(--box-bg)">&#x1F4CA;</div>
+    <div class="ctg"><h3>Realtime Ranking Agent</h3><p>Celery Workers + Redis + React Query Polling</p></div>
+    <div class="cbadge" style="border-color:var(--cyan);color:var(--cyan)">Step 5 of Pipeline</div>
+  </div>
+  <p style="color:var(--muted);font-size:.95rem;margin-bottom:20px">Jaise hi koi nayi resume upload hoti hai, <strong style="color:var(--cyan)">turant background mein processing start</strong> ho jaati hai. Recruiter ka leaderboard automatically live rehta hai &mdash; page refresh ki zarurat nahi!</p>
+  <div class="lgrid">
+    <div class="lbox"><div class="lbtitle" style="color:var(--cyan)">Backend &mdash; Celery Workers</div><ul>
+      <li>Resume upload &rarr; Django turant Celery task queue mein task push karta hai</li>
+      <li>Celery worker (background process) task uthata hai aur process karta hai</li>
+      <li>Parse &rarr; Normalize &rarr; Score &rarr; DB save &mdash; sab background mein</li>
+      <li>Leaderboard automatically score descending order mein sorted rehta hai</li>
+    </ul></div>
+    <div class="lbox"><div class="lbtitle" style="color:var(--cyan)">Frontend &mdash; React Query Polling</div><ul>
+      <li>Frontend har 15 seconds mein backend se fresh data fetch karta hai</li>
+      <li>React Query stale-while-revalidate pattern use karta hai</li>
+      <li>Nayi candidate aate hi leaderboard automatically update ho jaata hai</li>
+      <li>User ko manual page refresh nahi karna padta</li>
+    </ul></div>
+  </div>
+  <div class="codeblk">
+    <div class="clbl">Celery Task + React Query Flow</div>
+    <span class="cc"># 1. Resume upload &rarr; Celery task queue mein push (user ko instant response milta hai)</span><br/>
+    <span class="cf">parse_and_score_resume</span>.delay(candidate_id, session_id)<br/><br/>
+    <span class="cc"># 2. Celery worker background mein process karta hai (async)</span><br/>
+    <span class="ck">@shared_task</span><br/>
+    <span class="ck">def</span> <span class="cf">parse_and_score_resume</span>(candidate_id, session_id):<br/>
+    &nbsp;&nbsp;parsed &nbsp;&nbsp;&nbsp;= <span class="ck">await</span> parsing_agent.<span class="cf">parse</span>(file_path)<br/>
+    &nbsp;&nbsp;normalized = normalization_agent.<span class="cf">normalize</span>(parsed.skills)<br/>
+    &nbsp;&nbsp;score &nbsp;&nbsp;&nbsp;&nbsp;= <span class="ck">await</span> matching_agent.<span class="cf">match</span>(normalized, criteria)<br/>
+    &nbsp;&nbsp;Candidate.objects.<span class="cf">filter</span>(id=candidate_id).<span class="cf">update</span>(match_score=score)<br/><br/>
+    <span class="cc"># 3. Frontend har 15s mein leaderboard auto-refresh karta hai</span><br/>
+    <span class="cf">useQuery</span>({ queryKey: [<span class="cs">'leaderboard'</span>, sessionId], refetchInterval: <span class="cn">15000</span> })
+  </div>
+  <div class="ibox">
+    <div class="iico">&#x1F4A1;</div>
+    <div class="itxt"><strong>Celery Kyu?</strong> Resume parsing ek heavy operation hai (2-5 seconds per file). Agar synchronously karo toh API request hang ho jayegi. Celery background mein kaam karta hai &mdash; user ko instant upload confirmation milta hai, aur processing quietly chal rahi hoti hai.</div>
+  </div>
+  <div class="tags"><span class="tag">Celery</span><span class="tag">Redis (Message Broker)</span><span class="tag">Django shared_task</span><span class="tag">React Query</span><span class="tag">15s Auto Polling</span><span class="tag">Background Workers</span></div>
+</div>
+
+<!-- INTERVIEW AI -->
+<div id="interview" class="acard fi">
+  <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--pink),transparent);border-radius:24px 24px 0 0"></div>
+  <div class="chdr">
+    <div class="cicon" style="border-color:var(--pink);background:var(--box-bg)">&#x1F3A4;</div>
+    <div class="ctg"><h3>Interview AI Agent</h3><p>agents/interview_agent.py &middot; Groq LLaMA 3.3 70B</p></div>
+    <div class="cbadge" style="border-color:var(--pink);color:var(--pink)">Job Seeker Portal</div>
+  </div>
+  <p style="color:var(--muted);font-size:.95rem;margin-bottom:20px">Job Seeker portal mein candidates ke liye <strong style="color:var(--pink)">AI-powered Mock Interviews</strong> conduct karta hai. Candidate ka resume + job description le ke role-specific questions generate karta hai, phir answers real-time evaluate karta hai.</p>
+  <div class="lgrid">
+    <div class="lbox"><div class="lbtitle" style="color:var(--pink)">3 Interview Modes</div><ul>
+      <li><strong style="color:var(--strong-text)">Technical Round:</strong> Architecture, coding, deep tech questions. Senior Tech Lead persona. Difficulty: 1 easy warmup, rest medium-hard.</li>
+      <li><strong style="color:var(--strong-text)">HR Round:</strong> Behavioral, situational, CTC expectations, notice period. HR Manager persona.</li>
+      <li><strong style="color:var(--strong-text)">Screening Round:</strong> Resume claims validation, basic eligibility check. Talent Acquisition persona.</li>
+    </ul></div>
+    <div class="lbox"><div class="lbtitle" style="color:var(--pink)">Smart Question Generation</div><ul>
+      <li>Recruiter manual questions + AI generated = Total set</li>
+      <li>AI sirf remaining quota fill karta hai (e.g. recruiter ne 2 diye, total 5 &rarr; AI 3 banayega)</li>
+      <li>AI koi bhi topic repeat nahi karta jo manual questions mein already covered hai</li>
+      <li>Questions candidate ke resume projects aur skills se directly linked hoti hain</li>
+    </ul></div>
+  </div>
+  <div class="codeblk">
+    <div class="clbl">interview_agent.py &mdash; Smart Prompt Construction</div>
+    <span class="ck">def</span> <span class="cf">generate_questions</span>(job_title, job_desc, resume, manual_q, total=<span class="cn">5</span>):<br/>
+    &nbsp;&nbsp;<span class="cc"># Sirf remaining slots fill karo (intelligent quota management)</span><br/>
+    &nbsp;&nbsp;<span class="cv">ai_needed</span> = total - len(manual_q)  <span class="cc"># e.g. 5-2 = 3 AI-generated questions chahiye</span><br/><br/>
+    &nbsp;&nbsp;prompt = <span class="cs">"You are a Senior Technical Lead. Generate "</span> + str(ai_needed) + <span class="cs">" questions for skills: "</span> + str(candidate_skills)<br/>
+    &nbsp;&nbsp;<span class="cc"># Returns structured JSON array of questions with expected keywords</span>
+  </div>
+  <div style="background:var(--box-bg);border:1px solid var(--border-bright);border-radius:14px;padding:20px;margin:16px 0">
+    <div style="font-size:11px;font-weight:700;color:var(--pink);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">Complete Interview Flow</div>
+    <div class="fsteps">
+      <div class="fstep" style="border-color:var(--pink);color:var(--pink);background:var(--box-bg)">&#x1F4CB; Resume + JD Input</div>
+      <div class="farr">&rarr;</div>
+      <div class="fstep" style="border-color:var(--pink);color:var(--pink);background:var(--box-bg)">&#x1F916; AI Questions Generate</div>
+      <div class="farr">&rarr;</div>
+      <div class="fstep" style="border-color:var(--pink);color:var(--pink);background:var(--box-bg)">&#x1F3A4; Candidate Answer</div>
+      <div class="farr">&rarr;</div>
+      <div class="fstep" style="border-color:var(--pink);color:var(--pink);background:var(--box-bg)">&#x1F4CA; Real-time Evaluation</div>
+      <div class="farr">&rarr;</div>
+      <div class="fstep" style="border-color:var(--pink);color:var(--pink);background:var(--box-bg)">&#x1F4CB; Final Report</div>
+    </div>
+  </div>
+  <div class="ibox">
+    <div class="iico">&#x1F4A1;</div>
+    <div class="itxt"><strong>Groq Kyu?</strong> Groq ek specialized AI inference chip banata hai jo LLMs ko normal GPUs se 10x faster run karta hai. Interview mein low-latency critical hai (user wait nahi kar sakta) &mdash; isliye Groq primary choice, Gemini 2.5 Flash fallback hai.</div>
+  </div>
+  <div class="tags"><span class="tag">Groq API</span><span class="tag">LLaMA 3.3 70B</span><span class="tag">Low-Latency Inference</span><span class="tag">Gemini Fallback</span><span class="tag">3 Interview Modes</span><span class="tag">Real-time Evaluation</span></div>
+</div>
+
+<!-- SUMMARY TABLE -->
+<div class="pipebox fi" style="margin-top:20px">
+  <div class="ptitle">&#x1F4CB; Quick Reference &mdash; Saare 7 Agents Ek Nazar Mein</div>
+  <div style="overflow-x:auto">
+    <table style="width:100%;border-collapse:collapse;font-size:.87rem">
+      <thead><tr style="border-bottom:1px solid var(--border)">
+        <th style="text-align:left;padding:12px 16px;color:var(--table-hdr);font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-weight:700">Agent</th>
+        <th style="text-align:left;padding:12px 16px;color:var(--table-hdr);font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-weight:700">File</th>
+        <th style="text-align:left;padding:12px 16px;color:var(--table-hdr);font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-weight:700">Core Technology</th>
+        <th style="text-align:left;padding:12px 16px;color:var(--table-hdr);font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-weight:700">One-Line Job</th>
+      </tr></thead>
+      <tbody>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:14px 16px"><span style="color:var(--sky);font-weight:700">&#x2600;&#xFE0F; Core AI</span></td><td style="padding:14px 16px;font-family:'JetBrains Mono',monospace;color:var(--muted);font-size:.8rem">llm.py</td><td style="padding:14px 16px;color:var(--table-txt)">Gemini + OpenAI + Groq</td><td style="padding:14px 16px;color:var(--table-txt)">Sabka coordinator &mdash; LLM rotation + API fallback chain</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:14px 16px"><span style="color:var(--blue);font-weight:700">&#x1F4D6; Parsing Agent</span></td><td style="padding:14px 16px;font-family:'JetBrains Mono',monospace;color:var(--muted);font-size:.8rem">parsing_agent.py</td><td style="padding:14px 16px;color:var(--table-txt)">pdfplumber + LLM Schema Prompting</td><td style="padding:14px 16px;color:var(--table-txt)">Raw resume file &rarr; Clean structured JSON data</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:14px 16px"><span style="color:var(--amber);font-weight:700">&#x1F527; Skill Extraction</span></td><td style="padding:14px 16px;font-family:'JetBrains Mono',monospace;color:var(--muted);font-size:.8rem">normalization_agent.py</td><td style="padding:14px 16px;color:var(--table-txt)">320-skill alias dictionary</td><td style="padding:14px 16px;color:var(--table-txt)">"ReactJS" &rarr; "React" &mdash; skill normalization</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:14px 16px"><span style="color:var(--green);font-weight:700">&#x2728; Semantic Matcher</span></td><td style="padding:14px 16px;font-family:'JetBrains Mono',monospace;color:var(--muted);font-size:.8rem">matching_agent.py</td><td style="padding:14px 16px;color:var(--table-txt)">sentence-transformers + cosine_similarity</td><td style="padding:14px 16px;color:var(--table-txt)">JD vs Candidate &mdash; semantic vector matching</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:14px 16px"><span style="color:var(--purple);font-weight:700">&#x26A1; ATS Scorer</span></td><td style="padding:14px 16px;font-family:'JetBrains Mono',monospace;color:var(--muted);font-size:.8rem">matching_agent.py</td><td style="padding:14px 16px;color:var(--table-txt)">Weighted formula + RandomForest</td><td style="padding:14px 16px;color:var(--table-txt)">Skill&times;0.5 + Exp&times;0.3 + Loc&times;0.2 = Match Score %</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:14px 16px"><span style="color:var(--cyan);font-weight:700">&#x1F4CA; Realtime Ranking</span></td><td style="padding:14px 16px;font-family:'JetBrains Mono',monospace;color:var(--muted);font-size:.8rem">Celery + React Query</td><td style="padding:14px 16px;color:var(--table-txt)">Redis + Background Workers + 15s Polling</td><td style="padding:14px 16px;color:var(--table-txt)">Live leaderboard &mdash; auto-update on every upload</td></tr>
+        <tr><td style="padding:14px 16px"><span style="color:var(--pink);font-weight:700">&#x1F3A4; Interview AI</span></td><td style="padding:14px 16px;font-family:'JetBrains Mono',monospace;color:var(--muted);font-size:.8rem">interview_agent.py</td><td style="padding:14px 16px;color:var(--table-txt)">Groq LLaMA 3.3 70B + Gemini fallback</td><td style="padding:14px 16px;color:var(--table-txt)">Resume-aware AI mock interviews + real-time eval</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</div>
+</section>
+
+<footer>
+  <div class="container">
+    <h2>CareerSphere</h2>
+    <p style="margin-bottom:8px">Multi-Agent AI Recruitment Platform</p>
+    <p style="color:var(--muted);font-size:.8rem;font-family:'JetBrains Mono',monospace">Django &middot; React &middot; Celery &middot; Redis &middot; Gemini &middot; Groq &middot; sentence-transformers &middot; scikit-learn &middot; RandomForest</p>
+  </div>
+</footer>
+
+<script>
+  function toggleTheme() {
+    const isLight = document.body.classList.toggle('light-mode');
+    document.getElementById('themeIcon').textContent = isLight ? '🌙' : '☀️';
+    document.getElementById('themeText').textContent = isLight ? 'Dark Mode' : 'Light Mode';
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+  }
+
+  // Preserve theme setting
+  if (localStorage.getItem('theme') === 'light') {
+    document.body.classList.add('light-mode');
+    document.getElementById('themeIcon').textContent = '🌙';
+    document.getElementById('themeText').textContent = 'Dark Mode';
+  }
+
+  const obs = new IntersectionObserver(entries => entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('vis') }), {threshold:.1});
+  document.querySelectorAll('.fi').forEach(el => obs.observe(el));
+  const secs = document.querySelectorAll('[id]');
+  const links = document.querySelectorAll('.nlink');
+  window.addEventListener('scroll', () => {
+    let cur = '';
+    secs.forEach(s => { if(window.scrollY >= s.offsetTop - 200) cur = s.id; });
+    links.forEach(l => {
+      const active = l.getAttribute('href') === '#' + cur;
+      l.style.color = active ? 'var(--strong-text)' : '';
+      l.style.background = active ? 'var(--box-bg)' : '';
+    });
+  });
+</script>
+</body>
+</html>'''
+
+out_path = os.path.join(os.path.dirname(__file__), "AI_Agents_Explained.html")
+with open(out_path, "w", encoding="utf-8") as f:
+    f.write(html_content)
+
+print("Successfully regenerated AI_Agents_Explained.html with Light Mode toggle! Size:", os.path.getsize(out_path), "bytes")

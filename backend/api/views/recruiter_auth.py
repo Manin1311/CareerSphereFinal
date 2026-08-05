@@ -665,26 +665,28 @@ def cross_portal_login(request):
                 return JsonResponse(error_response("You are banned by admin. Please contact support."), status=403)
 
             if not company:
-                # Auto register recruiter
                 try:
-                    company = Company.objects.create(
-                        name=email.split("@")[0].capitalize(),
+                    company, created = Company.objects.get_or_create(
                         email=email,
-                        password_hash=pwd_context.hash(secrets.token_urlsafe(16)),
-                        tier="free"
+                        defaults={
+                            "name": email.split("@")[0].capitalize(),
+                            "password_hash": pwd_context.hash(secrets.token_urlsafe(16)),
+                            "tier": "free"
+                        }
                     )
-                    try:
-                        APIKey.objects.create(
-                            company=company,
-                            key_name="Default Key",
-                            secret_key="cs_live_" + secrets.token_urlsafe(24),
-                            public_key="cs_pub_" + secrets.token_urlsafe(24),
-                            environment="production"
-                        )
-                    except Exception as key_err:
-                        logger.warning(f"API key creation notice in cross_portal_login: {key_err}")
+                    if created:
+                        try:
+                            APIKey.objects.create(
+                                company=company,
+                                key_name="Default Key",
+                                secret_key="cs_live_" + secrets.token_urlsafe(24),
+                                public_key="cs_pub_" + secrets.token_urlsafe(24),
+                                environment="production"
+                            )
+                        except Exception as key_err:
+                            logger.warning(f"API key creation notice in cross_portal_login: {key_err}")
                 except Exception as comp_create_err:
-                    logger.error(f"Error creating company in cross_portal_login: {comp_create_err}")
+                    logger.error(f"Error getting/creating company in cross_portal_login: {comp_create_err}")
                     company = Company.objects.filter(email__iexact=email).first() or Company.objects.filter(email=email).first()
 
             if not company:
@@ -718,48 +720,50 @@ def cross_portal_login(request):
                 return JsonResponse(error_response("You are banned by admin. Please contact support."), status=403)
 
             if not dev:
-                # Auto register developer
                 try:
-                    dev = DeveloperAccount.objects.create(
-                        company_name=email.split("@")[0].capitalize() + " Dev",
+                    dev, created = DeveloperAccount.objects.get_or_create(
                         email=email,
-                        password_hash=pwd_context.hash(secrets.token_urlsafe(16)),
-                        tier="free",
-                        is_verified=True
+                        defaults={
+                            "company_name": email.split("@")[0].capitalize() + " Dev",
+                            "password_hash": pwd_context.hash(secrets.token_urlsafe(16)),
+                            "tier": "free",
+                            "is_verified": True
+                        }
                     )
-                    try:
-                        test_secret = "cs_test_" + secrets.token_urlsafe(24)
-                        test_public = "cs_pub_test_" + secrets.token_urlsafe(24)
-                        live_secret = "cs_live_" + secrets.token_urlsafe(24)
-                        live_public = "cs_pub_" + secrets.token_urlsafe(24)
+                    if created:
+                        try:
+                            test_secret = "cs_test_" + secrets.token_urlsafe(24)
+                            test_public = "cs_pub_test_" + secrets.token_urlsafe(24)
+                            live_secret = "cs_live_" + secrets.token_urlsafe(24)
+                            live_public = "cs_pub_" + secrets.token_urlsafe(24)
 
-                        DeveloperAPIKey.objects.create(
-                            developer=dev,
-                            key_name="Test Key",
-                            secret_key=test_secret,
-                            public_key=test_public,
-                            environment="test"
-                        )
-                        DeveloperAPIKey.objects.create(
-                            developer=dev,
-                            key_name="Production Key",
-                            secret_key=live_secret,
-                            public_key=live_public,
-                            environment="production"
-                        )
-                    except Exception as key_err:
-                        logger.warning(f"API key creation notice in cross_portal_login: {key_err}")
+                            DeveloperAPIKey.objects.create(
+                                developer=dev,
+                                key_name="Test Key",
+                                secret_key=test_secret,
+                                public_key=test_public,
+                                environment="test"
+                            )
+                            DeveloperAPIKey.objects.create(
+                                developer=dev,
+                                key_name="Production Key",
+                                secret_key=live_secret,
+                                public_key=live_public,
+                                environment="production"
+                            )
+                        except Exception as key_err:
+                            logger.warning(f"API key creation notice in cross_portal_login: {key_err}")
 
-                    try:
-                        BillingSubscription.objects.create(
-                            developer=dev,
-                            plan="free",
-                            status="active"
-                        )
-                    except Exception as sub_err:
-                        logger.warning(f"Subscription creation notice in cross_portal_login: {sub_err}")
+                        try:
+                            BillingSubscription.objects.create(
+                                developer=dev,
+                                plan="free",
+                                status="active"
+                            )
+                        except Exception as sub_err:
+                            logger.warning(f"Subscription creation notice in cross_portal_login: {sub_err}")
                 except Exception as dev_create_err:
-                    logger.error(f"Error creating developer in cross_portal_login: {dev_create_err}")
+                    logger.error(f"Error getting/creating developer in cross_portal_login: {dev_create_err}")
                     dev = DeveloperAccount.objects.filter(email__iexact=email).first() or DeveloperAccount.objects.filter(email=email).first()
 
             if not dev:
@@ -790,16 +794,17 @@ def cross_portal_login(request):
                 return JsonResponse(error_response("You are banned by admin. Please contact support."), status=403)
 
             if not seeker:
-                # Auto register seeker
                 try:
-                    seeker = JobSeekerAccount.objects.create(
-                        full_name=email.split("@")[0].capitalize(),
+                    seeker, created = JobSeekerAccount.objects.get_or_create(
                         email=email,
-                        password_hash=pwd_context.hash(secrets.token_urlsafe(16)),
-                        tier="free"
+                        defaults={
+                            "full_name": email.split("@")[0].capitalize(),
+                            "password_hash": pwd_context.hash(secrets.token_urlsafe(16)),
+                            "tier": "free"
+                        }
                     )
                 except Exception as seeker_create_err:
-                    logger.error(f"Error creating seeker in cross_portal_login: {seeker_create_err}")
+                    logger.error(f"Error getting/creating seeker in cross_portal_login: {seeker_create_err}")
                     seeker = JobSeekerAccount.objects.filter(email__iexact=email).first() or JobSeekerAccount.objects.filter(email=email).first()
 
             if not seeker:
