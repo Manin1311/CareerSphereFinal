@@ -191,15 +191,21 @@ def upload_zip(request):
         return JsonResponse(error_response(f"Server error: {str(e)}"), status=500)
 
 def _get_google_flow(oauth_type, session_id):
+    os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+    from dotenv import load_dotenv
+    from pathlib import Path
+    env_path = Path(__file__).resolve().parent.parent.parent / ".env"
+    load_dotenv(env_path, override=True)
+
     scopes = []
     if oauth_type == "gmail":
         scopes = ["https://www.googleapis.com/auth/gmail.readonly"]
     elif oauth_type in ["gdrive", "form"]:
         scopes = ["https://www.googleapis.com/auth/drive.readonly"]
 
-    client_id = os.getenv("GOOGLE_OAUTH_CLIENT_ID")
-    client_secret = os.getenv("GOOGLE_OAUTH_CLIENT_SECRET")
-    redirect_uri = os.getenv("GOOGLE_REDIRECT_URI", "http://localhost:3000/api/oauth/callback")
+    client_id = os.getenv("GOOGLE_OAUTH_CLIENT_ID", "")
+    client_secret = os.getenv("GOOGLE_OAUTH_CLIENT_SECRET", "")
+    redirect_uri = os.getenv("GOOGLE_REDIRECT_URI", "http://localhost:5173/auth/google/callback")
 
     state = f"{oauth_type}:{session_id}"
 
@@ -233,13 +239,21 @@ def _get_google_flow(oauth_type, session_id):
     return flow
 
 def credentials_to_dict(credentials):
+    if not credentials:
+        return {}
+    raw_scopes = getattr(credentials, 'scopes', [])
+    if isinstance(raw_scopes, (tuple, set, frozenset)):
+        scopes = list(raw_scopes)
+    else:
+        scopes = raw_scopes
+
     return {
-        'token': credentials.token,
-        'refresh_token': credentials.refresh_token,
-        'token_uri': credentials.token_uri,
-        'client_id': credentials.client_id,
-        'client_secret': credentials.client_secret,
-        'scopes': credentials.scopes
+        'token': str(getattr(credentials, 'token', '') or ''),
+        'refresh_token': str(getattr(credentials, 'refresh_token', '') or ''),
+        'token_uri': str(getattr(credentials, 'token_uri', '') or ''),
+        'client_id': str(getattr(credentials, 'client_id', '') or ''),
+        'client_secret': str(getattr(credentials, 'client_secret', '') or ''),
+        'scopes': scopes
     }
 
 @csrf_exempt
@@ -279,7 +293,12 @@ def gmail_connect(request):
         if not session_id or not auth_code:
             return JsonResponse(error_response("session_id and auth_code are required"), status=400)
 
-        session = Session.objects.filter(id=session_id).first()
+        session = None
+        try:
+            session = Session.objects.filter(id=session_id).first()
+        except Exception as sess_err:
+            logger.warning("Session lookup failed: %s", sess_err)
+
         if not session:
             return JsonResponse(error_response("Session not found"), status=404)
 
@@ -288,16 +307,21 @@ def gmail_connect(request):
             flow.fetch_token(code=auth_code)
             credentials = flow.credentials
             
-            # Fetch connected email dynamically
-            from googleapiclient.discovery import build
-            service = build('gmail', 'v1', credentials=credentials)
-            profile = service.users().getProfile(userId='me').execute()
-            gmail_address = profile.get('emailAddress', 'recruiter@careersphere.com')
+            # Fetch connected email dynamically with fallback
+            gmail_address = "recruiter@careersphere.com"
+            try:
+                from googleapiclient.discovery import build
+                service = build('gmail', 'v1', credentials=credentials)
+                profile = service.users().getProfile(userId='me').execute()
+                gmail_address = profile.get('emailAddress', gmail_address)
+            except Exception as profile_err:
+                logger.warning("Could not fetch Gmail profile email: %s", profile_err)
             
             session.gmail_tokens = credentials_to_dict(credentials)
             session.gmail_address = gmail_address
             session.save()
         except Exception as oauth_err:
+            logger.error("Gmail OAuth token exchange error: %s", oauth_err, exc_info=True)
             return JsonResponse(error_response(f"Google OAuth token exchange failed: {str(oauth_err)}"), status=400)
 
         return JsonResponse(success_response({
@@ -305,6 +329,10 @@ def gmail_connect(request):
             "gmail_address": session.gmail_address
         }))
     except Exception as e:
+        import traceback
+        tb = traceback.format_exc()
+        logger.error("gmail_connect server error: %s\n%s", e, tb)
+        print(f"\n[GMAIL CONNECT ERROR]: {e}\n{tb}\n")
         return JsonResponse(error_response(f"Server error: {str(e)}"), status=500)
 
 @csrf_exempt
@@ -534,10 +562,19 @@ def ats_import(request):
             df = pd.read_csv(path)
             records = df.to_dict("records")
         elif fmt == "json":
-            with open(path, "r") as f:
-                records = json.load(f)
-        elif fmt == "xlsx":
-            df = pd.read_excel(path)
+            with open(path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if isinstance(data, list):
+                    records = data
+                elif isinstance(data, dict):
+                    records = data.get("candidates") or data.get("records") or data.get("data") or [data]
+                else:
+                    records = []
+        elif fmt in ["xlsx", "xls", "excel"]:
+            try:
+                df = pd.read_excel(path)
+            except Exception:
+                df = pd.read_csv(path)
             records = df.to_dict("records")
 
         from api.views.sessions import _get_effective_company_tier
@@ -548,6 +585,8 @@ def ats_import(request):
             candidate_limit = 2000
         else:
             candidate_limit = float('inf')
+
+        total_candidates = Candidate.objects.filter(session__company=session.company).count()
 
         if total_candidates + len(records) > candidate_limit:
             try: os.remove(path)

@@ -357,10 +357,13 @@ export default function SessionWorkspacePage() {
       if (e.data.type === "GMAIL_AUTH_CODE") {
         try {
           await ingestAPI.connectGmail({ session_id: id, auth_code: e.data.code });
-          queryClient.invalidateQueries({ queryKey: ["session", id] });
           toast.success("Gmail connected!");
+          const { job_id } = await ingestAPI.syncGmail({ session_id: id });
+          if (job_id) addJob(job_id, "gmail");
+          toast.success("Gmail sync started!");
+          queryClient.invalidateQueries({ queryKey: ["session", id] });
         } catch(err) {
-          toast.error("Failed to connect Gmail");
+          toast.error("Failed to connect or sync Gmail");
         }
       } else if (e.data.type === "GDRIVE_AUTH_CODE") {
         try {
@@ -681,7 +684,7 @@ export default function SessionWorkspacePage() {
                     )}
                   </div>
 
-                  {/* Gmail Sync */}
+                  {/* Gmail Sync & Drive / Form — Temporarily Commented Out
                   <div className="bg-white rounded-2xl p-6 border-2 border-transparent hover:border-accent transition-colors shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
                     <Mail size={32} className="text-accent mb-3" />
                     <h4 className="font-bold text-charcoal text-lg mb-1">Gmail Sync</h4>
@@ -717,7 +720,6 @@ export default function SessionWorkspacePage() {
                     )}
                   </div>
 
-                  {/* Drive / Form */}
                   <div className="bg-white rounded-2xl p-6 border-2 border-transparent hover:border-accent transition-colors shadow-[0_2px_8px_rgba(0,0,0,0.04)] flex flex-col">
                     <div className="flex items-center gap-4 mb-4 border-b border-gray-100 pb-3">
                       <LinkIcon size={24} className="text-accent" />
@@ -782,9 +784,10 @@ export default function SessionWorkspacePage() {
                       </button>
                     </div>
                   </div>
+                  */}
                 </div>
 
-                {/* Enterprise Import */}
+                {/* Enterprise Import — Temporarily Commented Out
                 <details className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border-2 border-transparent hover:border-gray-200 transition-colors overflow-hidden group">
                   <summary className="font-bold text-charcoal p-5 cursor-pointer bg-gray-50 flex items-center justify-between text-[15px]">
                     <span className="flex items-center gap-2">
@@ -795,40 +798,103 @@ export default function SessionWorkspacePage() {
                   </summary>
                   <div className="p-6 border-t border-border bg-card">
                     <div className="flex gap-3 mb-6">
-                      <span className="bg-primary text-primary-foreground text-xs px-4 py-1.5 rounded-full font-bold shadow-sm">CSV</span>
-                      <span className="text-muted-foreground text-xs px-4 py-1.5 font-bold hover:bg-muted rounded-full cursor-pointer transition-colors border border-border bg-background">JSON</span>
-                      <span className="text-muted-foreground text-xs px-4 py-1.5 font-bold hover:bg-muted rounded-full cursor-pointer transition-colors border border-border bg-background">Excel</span>
+                      <button 
+                        type="button" 
+                        onClick={() => setAtsFormat("csv")} 
+                        className={`text-xs px-4 py-1.5 rounded-full font-bold cursor-pointer transition-colors ${atsFormat === "csv" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground border border-border bg-background hover:bg-muted"}`}
+                      >
+                        CSV
+                      </button>
+                      <button 
+                        type="button" 
+                        onClick={() => setAtsFormat("json")} 
+                        className={`text-xs px-4 py-1.5 rounded-full font-bold cursor-pointer transition-colors ${atsFormat === "json" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground border border-border bg-background hover:bg-muted"}`}
+                      >
+                        JSON
+                      </button>
+                      <button 
+                        type="button" 
+                        onClick={() => setAtsFormat("excel")} 
+                        className={`text-xs px-4 py-1.5 rounded-full font-bold cursor-pointer transition-colors ${atsFormat === "excel" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground border border-border bg-background hover:bg-muted"}`}
+                      >
+                        Excel
+                      </button>
                     </div>
                     <div className="bg-sky-50 dark:bg-sky-950/80 border border-sky-200 dark:border-sky-800 text-sky-900 dark:text-sky-100 p-4 rounded-xl text-xs mb-5 shadow-xs">
-                      <strong className="block mb-1 text-sm text-sky-950 dark:text-sky-100">Expected columns:</strong> 
-                      <span className="font-mono text-[11px] bg-white dark:bg-sky-900 text-sky-900 dark:text-sky-100 px-2 py-0.5 rounded border border-sky-200 dark:border-sky-700 mr-2 mt-2 inline-block font-semibold">name</span>
-                      <span className="font-mono text-[11px] bg-white dark:bg-sky-900 text-sky-900 dark:text-sky-100 px-2 py-0.5 rounded border border-sky-200 dark:border-sky-700 mr-2 mt-2 inline-block font-semibold">email</span>
-                      <span className="font-mono text-[11px] bg-white dark:bg-sky-900 text-sky-900 dark:text-sky-100 px-2 py-0.5 rounded border border-sky-200 dark:border-sky-700 mr-2 mt-2 inline-block font-semibold">phone</span>
-                      <span className="font-mono text-[11px] bg-white dark:bg-sky-900 text-sky-900 dark:text-sky-100 px-2 py-0.5 rounded border border-sky-200 dark:border-sky-700 mr-2 mt-2 inline-block font-semibold">location</span>
-                      <span className="font-mono text-[11px] bg-white dark:bg-sky-900 text-sky-900 dark:text-sky-100 px-2 py-0.5 rounded border border-sky-200 dark:border-sky-700 mr-2 mt-2 inline-block font-semibold">skills (semicolon-separated)</span>
-                      <span className="font-mono text-[11px] bg-white dark:bg-sky-900 text-sky-900 dark:text-sky-100 px-2 py-0.5 rounded border border-sky-200 dark:border-sky-700 mr-2 mt-2 inline-block font-semibold">experience_years</span>
+                      <strong className="block mb-1 text-sm text-sky-950 dark:text-sky-100">
+                        {atsFormat === "json" ? "Expected JSON format:" : "Expected columns:"}
+                      </strong> 
+                      {atsFormat === "json" ? (
+                        <code className="font-mono text-[11px] block bg-white dark:bg-sky-900 p-2 rounded border border-sky-200 dark:border-sky-700 text-sky-900 dark:text-sky-100">
+                          {'[ { "name": "John Doe", "email": "john@example.com", "skills": ["React", "Python"], "experience_years": 5 } ]'}
+                        </code>
+                      ) : (
+                        <>
+                          <span className="font-mono text-[11px] bg-white dark:bg-sky-900 text-sky-900 dark:text-sky-100 px-2 py-0.5 rounded border border-sky-200 dark:border-sky-700 mr-2 mt-2 inline-block font-semibold">name</span>
+                          <span className="font-mono text-[11px] bg-white dark:bg-sky-900 text-sky-900 dark:text-sky-100 px-2 py-0.5 rounded border border-sky-200 dark:border-sky-700 mr-2 mt-2 inline-block font-semibold">email</span>
+                          <span className="font-mono text-[11px] bg-white dark:bg-sky-900 text-sky-900 dark:text-sky-100 px-2 py-0.5 rounded border border-sky-200 dark:border-sky-700 mr-2 mt-2 inline-block font-semibold">phone</span>
+                          <span className="font-mono text-[11px] bg-white dark:bg-sky-900 text-sky-900 dark:text-sky-100 px-2 py-0.5 rounded border border-sky-200 dark:border-sky-700 mr-2 mt-2 inline-block font-semibold">location</span>
+                          <span className="font-mono text-[11px] bg-white dark:bg-sky-900 text-sky-900 dark:text-sky-100 px-2 py-0.5 rounded border border-sky-200 dark:border-sky-700 mr-2 mt-2 inline-block font-semibold">skills (semicolon-separated)</span>
+                          <span className="font-mono text-[11px] bg-white dark:bg-sky-900 text-sky-900 dark:text-sky-100 px-2 py-0.5 rounded border border-sky-200 dark:border-sky-700 mr-2 mt-2 inline-block font-semibold">experience_years</span>
+                        </>
+                      )}
                     </div>
-                    <div className="flex flex-col sm:flex-row gap-4 items-stretch h-32" {...getAtsProps()}>
-                      <div className={`border-2 border-dashed rounded-xl flex-1 flex flex-col items-center justify-center cursor-pointer transition-colors ${atsFile ? 'border-accent bg-sky-50 dark:bg-sky-950/40' : 'border-border bg-muted/40 dark:bg-zinc-900/60 hover:bg-muted'}`}>
+                    <div className="flex flex-col sm:flex-row gap-4 items-stretch h-32">
+                      <div {...getAtsProps()} className={`border-2 border-dashed rounded-xl flex-1 flex flex-col items-center justify-center cursor-pointer transition-colors ${atsFile ? 'border-accent bg-sky-50 dark:bg-sky-950/40' : 'border-border bg-muted/40 dark:bg-zinc-900/60 hover:bg-muted'}`}>
                         <input {...getAtsInput()} />
                         <FileText className="text-accent mb-2" size={28} />
-                        <span className="text-sm text-foreground dark:text-gray-200 font-bold">{atsFile ? atsFile.name : 'Drop CSV / Excel file here'}</span>
+                        <span className="text-sm text-foreground dark:text-gray-200 font-bold">{atsFile ? atsFile.name : `Drop ${atsFormat.toUpperCase()} file here`}</span>
                       </div>
                       <div className="flex flex-col justify-center gap-3 min-w-[200px]">
-                        <button className="text-foreground dark:text-gray-200 font-bold text-xs border border-border bg-background hover:bg-muted px-4 py-2.5 rounded-xl flex items-center justify-center gap-2 transition-colors"><Download size={16}/> Download sample CSV</button>
                         <button 
-                          onClick={async () => {
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            let content = "";
+                            let filename = `sample_candidates.${atsFormat === "excel" ? "csv" : atsFormat}`;
+                            let mimeType = "text/csv;charset=utf-8;";
+
+                            if (atsFormat === "json") {
+                              mimeType = "application/json;charset=utf-8;";
+                              content = JSON.stringify([
+                                { name: "John Doe", email: "john@example.com", phone: "+123456789", location: "New York", skills: ["React", "Node.js", "Python"], experience_years: 5 },
+                                { name: "Jane Smith", email: "jane@example.com", phone: "+987654321", location: "San Francisco", skills: ["Java", "Spring", "SQL"], experience_years: 3 }
+                              ], null, 2);
+                            } else {
+                              content = "name,email,phone,location,skills,experience_years\nJohn Doe,john@example.com,+123456789,New York,React; Node.js; Python,5\nJane Smith,jane@example.com,+987654321,San Francisco,Java; Spring; SQL,3\nAlex Johnson,alex@example.com,+1122334455,Austin,Figma; UI/UX; HTML/CSS,4";
+                            }
+
+                            const blob = new Blob([content], { type: mimeType });
+                            const url = URL.createObjectURL(blob);
+                            const link = document.createElement("a");
+                            link.setAttribute("href", url);
+                            link.setAttribute("download", filename);
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                          }}
+                          className="text-foreground dark:text-gray-200 font-bold text-xs border border-border bg-background hover:bg-muted px-4 py-2.5 rounded-xl flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                        >
+                          <Download size={16}/> Download sample {atsFormat.toUpperCase()}
+                        </button>
+                        <button 
+                          type="button"
+                          onClick={async (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
                             if (!atsFile) return;
                             try {
                               toast.success("Import processing...");
-                              const res = await ingestAPI.importATS(id, atsFile.name.endsWith(".json") ? "json" : atsFile.name.endsWith(".xlsx") ? "xlsx" : "csv", atsFile);
-                              toast.success(`Imported ${res.imported} records. Failed: ${res.failed}`);
+                              const formatParam = atsFile.name.endsWith(".json") ? "json" : atsFile.name.endsWith(".xlsx") || atsFile.name.endsWith(".xls") ? "xlsx" : "csv";
+                              const res = await ingestAPI.importATS(id, formatParam, atsFile);
+                              toast.success(`Imported ${res.imported} records. Failed: ${res.failed || 0}`);
                               setAtsFile(null);
                               queryClient.invalidateQueries({ queryKey: ["candidates", id] });
                             } catch (e) { toast.error(e.message); }
                           }}
                           disabled={!atsFile}
-                          className={`font-bold text-sm px-4 py-2.5 rounded-xl transition-colors ${atsFile ? 'bg-primary text-primary-foreground hover:opacity-90' : 'bg-muted text-muted-foreground border border-border cursor-not-allowed'}`}
+                          className={`font-bold text-sm px-4 py-2.5 rounded-xl transition-colors ${atsFile ? 'bg-primary text-primary-foreground hover:opacity-90 cursor-pointer' : 'bg-muted text-muted-foreground border border-border cursor-not-allowed'}`}
                         >
                           Import Records
                         </button>
@@ -836,6 +902,7 @@ export default function SessionWorkspacePage() {
                     </div>
                   </div>
                 </details>
+                */}
 
                 {/* Jobs Tracking */}
                 {Object.values(jobs).length > 0 && (

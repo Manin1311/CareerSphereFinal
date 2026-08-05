@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CareerSphere - 06. Viva & Evaluator Q&A Cheat Sheet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root {
+      --bg-dark: #0a0a0f;
+      --bg-card: #12131c;
+      --bg-card-hover: #1a1b28;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-glow: rgba(99, 102, 241, 0.35);
+      --primary: #6366f1;
+      --primary-light: #818cf8;
+      --accent-cyan: #06b6d4;
+      --accent-emerald: #10b981;
+      --accent-rose: #f43f5e;
+      --accent-amber: #f59e0b;
+      --accent-violet: #8b5cf6;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background-color: var(--bg-dark); color: var(--text-main); font-family: 'Inter', sans-serif; line-height: 1.6; overflow-x: hidden; }
+    h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; }
+    code, pre { font-family: 'Fira Code', monospace; }
+
+    .nav-bar {
+      position: fixed; top: 0; left: 0; right: 0; height: 70px;
+      background: rgba(10, 10, 15, 0.85); backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-color); z-index: 1000;
+      display: flex; align-items: center; justify-content: space-between; padding: 0 2rem;
+    }
+    .brand { display: flex; align-items: center; gap: 0.75rem; font-size: 1.25rem; font-weight: 700; color: #fff; text-decoration: none; }
+    .brand-icon { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--primary), var(--accent-violet)); display: flex; align-items: center; justify-content: center; }
+    .nav-links { display: flex; gap: 1rem; }
+    .nav-link { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; font-weight: 500; padding: 0.5rem 0.75rem; border-radius: 8px; transition: all 0.2s; }
+    .nav-link:hover, .nav-link.active { color: #fff; background: rgba(255, 255, 255, 0.05); }
+    .nav-link.active { color: var(--primary-light); border-bottom: 2px solid var(--primary); }
+
+    .container { max-width: 1280px; margin: 90px auto 40px auto; padding: 0 2rem; }
+    .slide { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 24px; padding: 3rem; margin-bottom: 3rem; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+    .slide-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.35rem 0.85rem; border-radius: 9999px; background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); color: var(--primary-light); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; margin-bottom: 1rem; }
+    .slide-title { font-size: 2.25rem; font-weight: 800; color: #fff; margin-bottom: 1rem; background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .slide-description { font-size: 1.1rem; color: var(--text-muted); max-width: 900px; margin-bottom: 2rem; }
+
+    .qa-box {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 1.75rem;
+      margin-bottom: 1.25rem;
+      transition: all 0.2s;
+    }
+
+    .qa-box:hover {
+      border-color: rgba(99, 102, 241, 0.4);
+      background: var(--bg-card-hover);
+    }
+
+    .qa-q {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.75rem;
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-start;
+    }
+
+    .qa-tag {
+      background: rgba(99, 102, 241, 0.2);
+      color: var(--primary-light);
+      font-size: 0.75rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 6px;
+      shrink: 0;
+    }
+
+    .qa-a {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+      padding-left: 2rem;
+    }
+
+    @media print {
+      .nav-bar { display: none; }
+      .container { margin: 0; padding: 0; max-width: 100%; }
+      .slide { page-break-after: always; border: none; box-shadow: none; padding: 2rem; background: #0a0a0f !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav-bar">
+    <a href="#" class="brand">
+      <div class="brand-icon"><i data-lucide="layers"></i></div>
+      <span>CareerSphere Presentation</span>
+    </a>
+    <div class="nav-links">
+      <a href="01_project_overview.html" class="nav-link">01. Overview</a>
+      <a href="02_architecture.html" class="nav-link">02. Architecture</a>
+      <a href="03_frontend_backend.html" class="nav-link">03. Stack</a>
+      <a href="04_technical_implementation.html" class="nav-link">04. Algorithms</a>
+      <a href="05_database.html" class="nav-link">05. Database</a>
+      <a href="06_viva_qa.html" class="nav-link active">06. Viva Q&A</a>
+    </div>
+  </nav>
+
+  <div class="container">
+
+    <!-- SLIDE 1: Viva Questions & Technical Explanations -->
+    <div class="slide" id="slide1">
+      <div class="slide-badge"><i data-lucide="help-circle"></i> Document 06 — Viva & Q&A</div>
+      <h1 class="slide-title">Evaluator Viva Questions & Technical Answers</h1>
+      <p class="slide-description">
+        Comprehensive cheat sheet covering architecture decisions, algorithms, failure handling, and scalability defense for project presentations.
+      </p>
+
+      <!-- Q1 -->
+      <div class="qa-box">
+        <div class="qa-q">
+          <span class="qa-tag">Q1</span>
+          <span>Why did you choose a Multi-Agent AI architecture over a single monolithic LLM prompt?</span>
+        </div>
+        <div class="qa-a">
+          <strong>Answer:</strong> Monolithic prompts suffer from context fragmentation, high token latency, and unpredictable output schemas. By decoupling into specialized agents (Parsing Agent, Inference Agent, Scoring Agent, Interview Agent), each agent uses concise system prompts, operates with tight JSON schemas, runs in parallel, and saves up to 60% in total LLM token costs.
+        </div>
+      </div>
+
+      <!-- Q2 -->
+      <div class="qa-box">
+        <div class="qa-q">
+          <span class="qa-tag">Q2</span>
+          <span>How does CareerSphere handle two-column or complex graphic PDF resumes without scrambling text?</span>
+        </div>
+        <div class="qa-a">
+          <strong>Answer:</strong> We engineered a 3-tier fallback parser inside <code>AdvancedAtsParsingAgent</code>. Tier 1 performs vertical coordinate projection using PyMuPDF blocks (<code>fitz</code>), detecting column split boundaries (<code>best_x</code>) between 25% and 75% page width. If bounding boxes cut across columns, Tier 2 runs standard plain text streams, and Tier 3 uses <code>pdfplumber</code> for font-embedded vectors.
+        </div>
+      </div>
+
+      <!-- Q3 -->
+      <div class="qa-box">
+        <div class="qa-q">
+          <span class="qa-tag">Q3</span>
+          <span>How is candidate match score calculated, and how do recruiters control evaluation criteria?</span>
+        </div>
+        <div class="qa-a">
+          <strong>Answer:</strong> Match scores use a dynamic weighted vector sum: <code>Score = (Skills * W_skills) + (Exp * W_exp) + (Loc * W_loc)</code>. Recruiters can customize weights (e.g. 50% skills, 30% experience, 20% location) per session. The system evaluates both exact skill overlaps and semantic skill matches parsed by the Inference Agent.
+        </div>
+      </div>
+
+      <!-- Q4 -->
+      <div class="qa-box">
+        <div class="qa-q">
+          <span class="qa-tag">Q4</span>
+          <span>How do you handle Gemini API rate-limits and token quota exhaustion?</span>
+        </div>
+        <div class="qa-a">
+          <strong>Answer:</strong> We implemented <code>RotateLLMClient</code>, a thread-safe singleton class that maintains a round-robin pool of multiple Gemini API keys. If an <code>HTTP 429 Rate Limit</code> or error occurs, the client automatically rotates to the next active key with exponential backoff retries, ensuring 99.99% system availability.
+        </div>
+      </div>
+
+      <!-- Q5 -->
+      <div class="qa-box">
+        <div class="qa-q">
+          <span class="qa-tag">Q5</span>
+          <span>How are heavy AI tasks handled without freezing the React frontend UI?</span>
+        </div>
+        <div class="qa-a">
+          <strong>Answer:</strong> All heavy parsing, skill extraction, and scoring jobs are offloaded asynchronously to Celery background workers backed by a Redis message broker. The React frontend receives a job task ID immediately and polls status endpoints (or handles WebSockets/events), maintaining a responsive 60fps user experience.
+        </div>
+      </div>
+
+      <!-- Q6 -->
+      <div class="qa-box">
+        <div class="qa-q">
+          <span class="qa-tag">Q6</span>
+          <span>Why use JSONB fields in PostgreSQL alongside relational tables?</span>
+        </div>
+        <div class="qa-a">
+          <strong>Answer:</strong> Resumes and job rubrics have highly variable schema attributes (variable numbers of projects, certifications, languages, custom weight maps). Storing these in PostgreSQL JSONB fields grants document-database flexibility while preserving relational integrity (foreign key cascades, indexed UUIDs) for accounts and job sessions.
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>lucide.createIcons();</script>
+</body>
+</html>

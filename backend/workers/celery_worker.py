@@ -681,42 +681,23 @@ def sync_gmail_resumes(session_id: str, job_id: str):
 
         service = build('gmail', 'v1', credentials=creds)
 
-        # ── Fetch messages with smart date filtering ──
-        # Construct query: filter emails with attachments received after session creation date
-        q_filter = 'has:attachment'
-        if getattr(session_row, 'created_at', None):
-            try:
-                after_date = session_row.created_at.strftime('%Y/%m/%d')
-                q_filter = f'has:attachment after:{after_date}'
-            except Exception as dt_err:
-                logging.warning(f"Gmail sync: Could not format session created_at date: {dt_err}")
-                q_filter = 'has:attachment newer_than:30d'
-
+        # ── Fetch messages with generous search filter ──
+        q_filter = 'has:attachment OR filename:pdf OR filename:docx OR filename:doc'
         logging.info(f"Gmail sync using query filter: '{q_filter}'")
 
         results = service.users().messages().list(
-            userId='me', maxResults=100, q=q_filter
+            userId='me', maxResults=100, q=q_filter, includeSpamTrash=True
         ).execute()
         messages = results.get('messages', [])
-        logging.info(f"Gmail sync: found {len(messages)} messages with attachments matching filter.")
+        logging.info(f"Gmail sync: found {len(messages)} messages matching filter.")
 
         if not messages:
-            # Fallback 1: Try relative 30-day window
-            logging.info("Gmail sync fallback 1: trying 'has:attachment newer_than:30d'")
+            # Fallback 1: Broad search for any message in last 60 days
+            logging.info("Gmail sync fallback: trying 'newer_than:60d'")
             results = service.users().messages().list(
-                userId='me', maxResults=100, q='has:attachment newer_than:30d'
+                userId='me', maxResults=100, q='newer_than:60d', includeSpamTrash=True
             ).execute()
             messages = results.get('messages', [])
-            logging.info(f"Gmail sync fallback 1: found {len(messages)} messages.")
-
-        if not messages:
-            # Fallback 2: General has:attachment filter
-            logging.info("Gmail sync fallback 2: trying general 'has:attachment'")
-            results = service.users().messages().list(
-                userId='me', maxResults=50, q='has:attachment'
-            ).execute()
-            messages = results.get('messages', [])
-            logging.info(f"Gmail sync fallback 2: found {len(messages)} messages.")
 
         save_dir = os.path.join(os.getenv("UPLOAD_DIR", "uploads"), session_id)
         os.makedirs(save_dir, exist_ok=True)
@@ -747,6 +728,7 @@ def sync_gmail_resumes(session_id: str, job_id: str):
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
             'application/msword',
             'text/plain',
+            'application/octet-stream'
         }
 
         def get_attachments_recursive(part_list):
@@ -754,6 +736,7 @@ def sync_gmail_resumes(session_id: str, job_id: str):
             for part in part_list:
                 fname = extract_part_filename(part)
                 att_id = part.get('body', {}).get('attachmentId')
+                inline_data = part.get('body', {}).get('data')
                 mime_type = part.get('mimeType', '').lower()
 
                 is_target = False
@@ -762,9 +745,9 @@ def sync_gmail_resumes(session_id: str, job_id: str):
                 elif mime_type in RESUME_MIMETYPES:
                     is_target = True
 
-                if is_target and att_id:
-                    final_name = fname or f"attachment_{att_id[:8]}.pdf"
-                    atts.append((final_name, att_id))
+                if is_target and (att_id or inline_data):
+                    final_name = fname or f"attachment_{att_id[:8] if att_id else 'inline'}.pdf"
+                    atts.append((final_name, att_id, inline_data))
 
                 if part.get('parts'):
                     atts.extend(get_attachments_recursive(part.get('parts')))
@@ -782,16 +765,22 @@ def sync_gmail_resumes(session_id: str, job_id: str):
                     parts = [payload]
 
                 attachments = get_attachments_recursive(parts)
-                for filename, att_id in attachments:
+                for filename, att_id, inline_data in attachments:
                     dedup_key = filename.lower()
                     if dedup_key in seen_filenames:
                         continue
                     seen_filenames.add(dedup_key)
 
-                    att = service.users().messages().attachments().get(
-                        userId='me', messageId=msg_id, id=att_id
-                    ).execute()
-                    file_data = base64.urlsafe_b64decode(att['data'].encode('UTF-8'))
+                    if att_id:
+                        att = service.users().messages().attachments().get(
+                            userId='me', messageId=msg_id, id=att_id
+                        ).execute()
+                        file_data = base64.urlsafe_b64decode(att['data'].encode('UTF-8'))
+                    elif inline_data:
+                        file_data = base64.urlsafe_b64decode(inline_data.encode('UTF-8'))
+                    else:
+                        continue
+
                     file_path = os.path.join(save_dir, f"{msg_id}_{filename}")
                     with open(file_path, 'wb') as f:
                         f.write(file_data)

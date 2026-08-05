@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CareerSphere – 05. AI Implementation & Agent Orchestration</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', Arial, sans-serif;
+      background: #0a0a0f;
+      color: #e2e8f0;
+      font-size: 11pt;
+      line-height: 1.7;
+    }
+
+    .page { max-width: 900px; margin: 0 auto; padding: 40px 44px; }
+
+    /* ── Cover ── */
+    .cover {
+      text-align: center;
+      padding: 48px 0 36px;
+      border-radius: 18px;
+      border: 1px solid rgba(139,92,246,0.25);
+      background: linear-gradient(135deg, rgba(139,92,246,0.08) 0%, rgba(99,102,241,0.04) 100%);
+      margin-bottom: 44px;
+    }
+    .cover .logo-text {
+      font-size: 36pt; font-weight: 900; color: #fff; letter-spacing: -1px;
+    }
+    .cover .logo-text span {
+      background: linear-gradient(135deg, #a78bfa, #818cf8);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .cover .tagline { font-size: 12pt; color: #94a3b8; margin-top: 8px; }
+    .cover .meta { margin-top: 12px; font-size: 8.5pt; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* ── Section Title ── */
+    .section-title {
+      font-size: 15.5pt; font-weight: 800; color: #f1f5f9;
+      border-left: 4px solid #8b5cf6; padding-left: 14px; margin: 40px 0 18px;
+    }
+
+    .intro {
+      color: #94a3b8; font-size: 10.5pt;
+      background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px; padding: 18px 22px; margin-bottom: 28px; line-height: 1.8;
+    }
+
+    /* ── Grid 2-col ── */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 24px; }
+
+    /* ── Agent Cards ── */
+    .agent-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px;
+      padding: 20px 22px;
+      margin-bottom: 16px;
+      break-inside: avoid;
+      transition: all 0.2s;
+    }
+
+    .agent-card:hover {
+      border-color: rgba(139,92,246,0.4);
+      background: rgba(139,92,246,0.04);
+    }
+
+    .agent-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .agent-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: rgba(139,92,246,0.15);
+      border: 1px solid rgba(139,92,246,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .agent-title {
+      font-size: 11pt;
+      font-weight: 700;
+      color: #f1f5f9;
+    }
+
+    .agent-file {
+      font-family: 'Fira Code', monospace;
+      font-size: 8pt;
+      color: #a78bfa;
+    }
+
+    .agent-badge {
+      font-size: 7.5pt;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 5px;
+      margin-left: auto;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      flex-shrink: 0;
+    }
+
+    .badge-llm      { background: rgba(139,92,246,0.2); color: #a78bfa; }
+    .badge-math     { background: rgba(6,182,212,0.2);  color: #22d3ee; }
+    .badge-pdf      { background: rgba(245,158,11,0.2); color: #fbbf24; }
+    .badge-infra    { background: rgba(244,63,94,0.2);  color: #fb7185; }
+
+    .agent-card p {
+      font-size: 9pt;
+      color: #94a3b8;
+      line-height: 1.6;
+      margin-bottom: 10px;
+    }
+
+    .agent-features {
+      list-style: none;
+      padding: 0;
+    }
+
+    .agent-features li {
+      font-size: 8.5pt;
+      color: #cbd5e1;
+      padding: 3px 0;
+      display: flex;
+      gap: 6px;
+      align-items: flex-start;
+    }
+
+    .agent-features li::before {
+      content: "•";
+      color: #a78bfa;
+      font-weight: bold;
+    }
+
+    /* ── Rotation Diagram ── */
+    .rotation-box {
+      background: #06060a;
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 28px;
+      break-inside: avoid;
+    }
+
+    .rotation-box h3 {
+      font-size: 11pt;
+      font-weight: 700;
+      color: #a78bfa;
+      margin-bottom: 14px;
+    }
+
+    /* ── Code Block ── */
+    .code-block {
+      background: #06060a;
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px;
+      padding: 20px 24px;
+      font-family: 'Fira Code', monospace;
+      font-size: 9pt;
+      color: #e2e8f0;
+      line-height: 1.7;
+      margin-bottom: 24px;
+      overflow-x: auto;
+      position: relative;
+    }
+
+    .code-lang {
+      position: absolute; top: 8px; right: 12px;
+      font-size: 7.5pt; color: #475569; text-transform: uppercase;
+    }
+
+    .kw  { color: #f43f5e; }
+    .fn  { color: #60a5fa; }
+    .str { color: #34d399; }
+    .cmt { color: #475569; font-style: italic; }
+    .num { color: #fbbf24; }
+    .dec { color: #a78bfa; }
+
+    /* ── Pipeline Steps ── */
+    .pipe-step {
+      display: flex; align-items: flex-start; gap: 14px;
+      padding: 14px 18px; background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06); border-radius: 12px;
+      margin-bottom: 10px; break-inside: avoid;
+    }
+
+    .step-num {
+      width: 28px; height: 28px; border-radius: 8px;
+      background: rgba(139,92,246,0.15); border: 1px solid rgba(139,92,246,0.3);
+      color: #a78bfa; font-weight: 800; font-size: 9pt;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+
+    .step-text strong { color: #f1f5f9; font-size: 10.5pt; display: block; margin-bottom: 3px; }
+    .step-text span   { color: #94a3b8; font-size: 9pt; }
+
+    /* ── Comparison Table ── */
+    .agent-table {
+      width: 100%; border-collapse: separate; border-spacing: 0;
+      border: 1px solid rgba(255,255,255,0.07); border-radius: 14px;
+      overflow: hidden; margin-bottom: 24px;
+    }
+
+    .agent-table th {
+      background: rgba(255,255,255,0.04); color: #f1f5f9; font-weight: 700;
+      text-align: left; padding: 12px 14px; font-size: 9pt;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .agent-table td {
+      padding: 10px 14px; color: #94a3b8; font-size: 8.5pt;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      background: rgba(18,19,28,0.5);
+    }
+
+    .agent-table tr:last-child td { border-bottom: none; }
+    .agent-table tr:hover td { background: rgba(139,92,246,0.04); }
+
+    .callout {
+      background: rgba(139,92,246,0.07);
+      border-left: 4px solid #8b5cf6;
+      padding: 16px 20px;
+      border-radius: 0 12px 12px 0;
+      margin: 20px 0; break-inside: avoid;
+    }
+
+    .callout strong { color: #a78bfa; display: block; margin-bottom: 4px; font-size: 10.5pt; }
+    .callout p { color: #94a3b8; font-size: 9.5pt; }
+
+    @media print {
+      body { background: #0a0a0f; color: #e2e8f0; }
+      .page { padding: 20px 28px; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ── COVER ── -->
+  <div class="cover">
+    <div class="logo-text">Career<span>Sphere</span></div>
+    <div class="tagline">05. AI Implementation & Agent Orchestration</div>
+    <div class="meta">Multi-Agent System · Key Rotation · Semantic Embeddings · Machine Learning</div>
+  </div>
+
+  <!-- ── OVERVIEW ── -->
+  <div class="section-title">Multi-Agent System Architecture</div>
+  <div class="intro">
+    CareerSphere features an ecosystem of <strong style="color:#a78bfa;">21 specialized AI agents</strong> located in
+    <code style="color:#a78bfa;">backend/agents/</code>. Instead of relying on a single monolithic prompt, each agent is a modular Python module designed for a single domain task — from parsing geometry-aware PDF resumes to computing semantic vector embeddings, generating adaptive interview questions, scoring candidate answers, and predicting hire probability via machine learning.
+  </div>
+
+  <!-- ── ALL 21 AGENTS SUMMARY TABLE ── -->
+  <div class="section-title">Complete 21-Agent Registry</div>
+  <table class="agent-table">
+    <thead>
+      <tr>
+        <th>Agent Module</th>
+        <th>Primary Tech / Model</th>
+        <th>Role & Primary Purpose</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="font-family:'Fira Code',monospace;color:#a78bfa;font-weight:600;">advanced_ats_parsing_agent.py</td>
+        <td>PyMuPDF + Gemini 2.5 Flash</td>
+        <td>Bounding-box geometry PDF layout parsing & structured JSON extraction</td>
+      </tr>
+      <tr>
+        <td style="font-family:'Fira Code',monospace;color:#a78bfa;font-weight:600;">matching_agent.py</td>
+        <td>sentence-transformers + TF-IDF + RF</td>
+        <td>Semantic cosine similarity scoring, experience weighting, ML probability</td>
+      </tr>
+      <tr>
+        <td style="font-family:'Fira Code',monospace;color:#a78bfa;font-weight:600;">llm.py (RotateLLMClient)</td>
+        <td>Gemini + Groq Pool Manager</td>
+        <td>API Key Rotation, daily quota reset (Pacific Time), 429 backoff retry</td>
+      </tr>
+      <tr>
+        <td style="font-family:'Fira Code',monospace;color:#a78bfa;font-weight:600;">inference_agent.py</td>
+        <td>Gemini 2.5 Flash</td>
+        <td>Extracts required/nice-to-have skills, exp range, and salary from JDs</td>
+      </tr>
+      <tr>
+        <td style="font-family:'Fira Code',monospace;color:#a78bfa;font-weight:600;">interview_agent.py</td>
+        <td>Groq Llama 3.3 70B</td>
+        <td>Generates dynamic candidate-specific interview questions & scores answers</td>
+      </tr>
+      <tr>
+        <td style="font-family:'Fira Code',monospace;color:#a78bfa;font-weight:600;">ats_compatibility_agent.py</td>
+        <td>Gemini / Heuristic Engine</td>
+        <td>Scores resume against 40+ ATS checks (formatting, sections, keywords)</td>
+      </tr>
+      <tr>
+        <td style="font-family:'Fira Code',monospace;color:#a78bfa;font-weight:600;">normalization_agent.py</td>
+        <td>Skill Taxonomy Mapper</td>
+        <td>Maps raw resume skills (e.g. "ReactJS") to canonical names ("React")</td>
+      </tr>
+      <tr>
+        <td style="font-family:'Fira Code',monospace;color:#a78bfa;font-weight:600;">resume_enhancer_agent.py</td>
+        <td>Groq Llama 3.3 70B</td>
+        <td>Rewrites resume bullet points using action verbs & quantifiable metrics</td>
+      </tr>
+      <tr>
+        <td style="font-family:'Fira Code',monospace;color:#a78bfa;font-weight:600;">resume_pdf_renderer.py</td>
+        <td>ReportLab / WeasyPrint</td>
+        <td>Renders structured JSON resumes into pixel-perfect downloadable PDFs</td>
+      </tr>
+      <tr>
+        <td style="font-family:'Fira Code',monospace;color:#a78bfa;font-weight:600;">ats_parsing_agent.py</td>
+        <td>pdfplumber Fallback</td>
+        <td>Fallback PDF text extractor for non-standard font embeddings</td>
+      </tr>
+      <tr>
+        <td style="font-family:'Fira Code',monospace;color:#a78bfa;font-weight:600;">chatbot_agent.py</td>
+        <td>Groq / Gemini</td>
+        <td>Context-aware AI career copilot answering candidate & recruiter queries</td>
+      </tr>
+      <tr>
+        <td style="font-family:'Fira Code',monospace;color:#a78bfa;font-weight:600;">cover_letter_agent.py</td>
+        <td>Groq Llama 3.3 70B</td>
+        <td>Generates highly customized, job-aligned cover letters</td>
+      </tr>
+      <tr>
+        <td style="font-family:'Fira Code',monospace;color:#a78bfa;font-weight:600;">jd_generator_agent.py</td>
+        <td>Groq Llama 3.3 70B</td>
+        <td>Generates comprehensive Job Descriptions from raw title & bullet notes</td>
+      </tr>
+      <tr>
+        <td style="font-family:'Fira Code',monospace;color:#a78bfa;font-weight:600;">job_recommendation_agent.py</td>
+        <td>Vector Similarity</td>
+        <td>Recommends open jobs to seekers based on profile embedding distance</td>
+      </tr>
+      <tr>
+        <td style="font-family:'Fira Code',monospace;color:#a78bfa;font-weight:600;">embeddings.py</td>
+        <td>all-MiniLM-L6-v2</td>
+        <td>Singleton wrapper for PyTorch sentence-transformer vector encodings</td>
+      </tr>
+      <tr>
+        <td style="font-family:'Fira Code',monospace;color:#a78bfa;font-weight:600;">mcq_paper_parser_agent.py</td>
+        <td>Gemini 2.5 Flash</td>
+        <td>Parses raw recruiter text into structured MCQ question banks</td>
+      </tr>
+      <tr>
+        <td style="font-family:'Fira Code',monospace;color:#a78bfa;font-weight:600;">parsing_agent.py</td>
+        <td>Regex + Rule Engine</td>
+        <td>Extracts phone numbers, emails, URLs, and dates from raw text</td>
+      </tr>
+      <tr>
+        <td style="font-family:'Fira Code',monospace;color:#a78bfa;font-weight:600;">resume_quality_agent.py</td>
+        <td>Heuristic Scorer</td>
+        <td>Checks resume grammar, impact words, length, and section completeness</td>
+      </tr>
+      <tr>
+        <td style="font-family:'Fira Code',monospace;color:#a78bfa;font-weight:600;">round_recommendation_agent.py</td>
+        <td>Groq Llama 3.3 70B</td>
+        <td>Recommends optimal interview round structure for a given job session</td>
+      </tr>
+      <tr>
+        <td style="font-family:'Fira Code',monospace;color:#a78bfa;font-weight:600;">salary_prediction_agent.py</td>
+        <td>Regression / Market Data</td>
+        <td>Predicts market salary benchmarks based on role, skills & experience</td>
+      </tr>
+      <tr>
+        <td style="font-family:'Fira Code',monospace;color:#a78bfa;font-weight:600;">__init__.py</td>
+        <td>Python Package Initializer</td>
+        <td>Module initialization and package namespace export</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ── KEY AGENTS DEEP DIVE ── -->
+  <div class="section-title">Deep Dive: Core Agent Implementations</div>
+
+  <!-- RotateLLMClient -->
+  <div class="agent-card">
+    <div class="agent-header">
+      <div class="agent-icon">🔑</div>
+      <div>
+        <div class="agent-title">RotateLLMClient (LLM Key Rotation & Fallback)</div>
+        <div class="agent-file">backend/agents/llm.py (665 lines)</div>
+      </div>
+      <span class="agent-badge badge-infra">Infrastructure</span>
+    </div>
+    <p>
+      The backbone of CareerSphere's reliability. LLM providers enforce tight rate limits (e.g. Gemini Free Tier = 20 Requests/Day per project). <code>RotateLLMClient</code> manages pools of Gemini and Groq API keys with intelligent failover.
+    </p>
+    <ul class="agent-features">
+      <li><strong>Lazy Reset (Pacific Time):</strong> Aligns with Google Cloud's midnight PT quota reset cycle. Resets <code>daily_usage</code> automatically when a new day starts in PT.</li>
+      <li><strong>429 Handling & Retry-After Parser:</strong> Parses error messages like <i>"Please try again in 43m41s"</i> to mark keys as temporarily exhausted.</li>
+      <li><strong>Per-Agent Provider Configuration:</strong> <code>AgentModelConfig</code> in DB maps each agent to its primary (e.g., Gemini) and fallback (e.g., Groq) provider.</li>
+    </ul>
+  </div>
+
+  <!-- Advanced ATS Parser -->
+  <div class="agent-card">
+    <div class="agent-header">
+      <div class="agent-icon">📄</div>
+      <div>
+        <div class="agent-title">Advanced ATS Parsing Agent</div>
+        <div class="agent-file">backend/agents/advanced_ats_parsing_agent.py (37KB)</div>
+      </div>
+      <span class="agent-badge badge-pdf">Layout & Vision</span>
+    </div>
+    <p>
+      Traditional text extractors read PDF text sequentially left-to-right, completely scrambling two-column resume layouts. AdvancedATSParsingAgent solves this through geometry-aware bounding-box detection.
+    </p>
+    <ul class="agent-features">
+      <li><strong>Column Splitter:</strong> Uses PyMuPDF (fitz) to extract text blocks with bounding-box coordinates <code>(x0, y0, x1, y1)</code>. Sorts text left-to-right column-wise before top-to-bottom.</li>
+      <li><strong>3-Tier Fallback Chain:</strong> PyMuPDF Column-Aware → pdfplumber → Raw PyMuPDF Text.</li>
+      <li><strong>LLM JSON Structuring:</strong> Sends cleaned text to Gemini with strict JSON schema instructions for structured output.</li>
+    </ul>
+  </div>
+
+  <!-- Semantic Matching Agent -->
+  <div class="agent-card">
+    <div class="agent-header">
+      <div class="agent-icon">🎯</div>
+      <div>
+        <div class="agent-title">Semantic Matching Agent</div>
+        <div class="agent-file">backend/agents/matching_agent.py (211 lines)</div>
+      </div>
+      <span class="agent-badge badge-math">Scikit-Learn & ML</span>
+    </div>
+    <p>
+      Evaluates candidates against job criteria using a multi-tiered mathematical scoring model:
+    </p>
+    <ul class="agent-features">
+      <li><strong>Skill Score (Cosine Similarity):</strong> Embeds skills using <code>sentence-transformers</code> (all-MiniLM-L6-v2). Computes cosine similarity matrix. Matches skills above 0.72 threshold.</li>
+      <li><strong>TF-IDF Char-N-Gram Fallback:</strong> If embeddings fail, uses TF-IDF character n-grams (3-5) with 0.60 similarity threshold to catch spelling variations.</li>
+      <li><strong>Weighted Formula:</strong> <code>Final = (Skill × 0.5) + (Experience × 0.3) + (Location × 0.2)</code>.</li>
+      <li><strong>Historical ML Adjustment:</strong> If ≥10 historical applications exist, trains a <code>RandomForestClassifier</code> on past hiring data and blends 20% ML probability into the final score.</li>
+    </ul>
+  </div>
+
+  <!-- ── CODE SNIPPETS ── -->
+  <div class="section-title">Code Implementation Highlights</div>
+
+  <div class="code-block">
+    <span class="code-lang">Python — matching_agent.py (Semantic Cosine Matching)</span>
+<span class="cmt"># 1. Semantic Skill Match via sklearn.metrics.pairwise.cosine_similarity</span>
+<span class="kw">if</span> model <span class="kw">and</span> candidate_skills <span class="kw">and</span> req_embeddings <span class="kw">is not None</span>:
+    cand_embeddings = model.<span class="fn">encode</span>(candidate_skills)
+    <span class="kw">from</span> sklearn.metrics.pairwise <span class="kw">import</span> cosine_similarity
+    
+    sim_matrix = <span class="fn">cosine_similarity</span>(cand_embeddings, req_embeddings)
+    matched, missing = [], []
+    <span class="kw">for</span> i, req <span class="kw">in</span> <span class="fn">enumerate</span>(required):
+        sims = sim_matrix[:, i]
+        <span class="kw">if</span> <span class="fn">float</span>(np.<span class="fn">max</span>(sims)) > <span class="num">0.72</span>:
+            matched.<span class="fn">append</span>(req)
+        <span class="kw">else</span>:
+            missing.<span class="fn">append</span>(req)
+            
+    base = <span class="fn">len</span>(matched) / <span class="fn">len</span>(required) * <span class="num">100</span>
+    skill_score = <span class="fn">min</span>(<span class="num">100.0</span>, base + experience_bonus)
+  </div>
+
+  <div class="code-block">
+    <span class="code-lang">Python — llm.py (Pacific Time Midnight Reset)</span>
+<span class="kw">def</span> <span class="fn">get_available_gemini_key</span>():
+    today_pt = <span class="fn">_get_pacific_date</span>()
+    projects = GeminiProject.objects.<span class="fn">filter</span>(is_active=<span class="kw">True</span>).<span class="fn">order_by</span>(<span class="str">'daily_usage'</span>)
+
+    <span class="kw">for</span> project <span class="kw">in</span> projects:
+        <span class="cmt"># Lazy reset: if last_reset is before today in PT, reset usage counter</span>
+        <span class="kw">if</span> project.last_reset < today_pt:
+            project.daily_usage = <span class="num">0</span>
+            project.last_reset = today_pt
+            project.<span class="fn">save</span>(update_fields=[<span class="str">'daily_usage'</span>, <span class="str">'last_reset'</span>])
+            
+        <span class="kw">if</span> project.daily_usage < project.daily_limit:
+            key_obj = GeminiApiKey.objects.<span class="fn">filter</span>(project=project, is_active=<span class="kw">True</span>).<span class="fn">first</span>()
+            <span class="kw">if</span> key_obj:
+                <span class="kw">return</span> (key_obj.key, project)
+                
+    <span class="kw">return</span> (<span class="kw">None</span>, <span class="kw">None</span>)
+  </div>
+
+  <!-- ── PIPELINE FLOW ── -->
+  <div class="section-title">End-to-End AI Processing Flow</div>
+
+  <div class="pipe-step">
+    <div class="step-num">1</div>
+    <div class="step-text">
+      <strong>PDF Extraction (AdvancedATSParsingAgent)</strong>
+      <span>PyMuPDF analyzes physical text coordinates to cleanly parse 2-column resume structures into linear text without sentence fragmentation.</span>
+    </div>
+  </div>
+  <div class="pipe-step">
+    <div class="step-num">2</div>
+    <div class="step-text">
+      <strong>LLM Extraction (RotateLLMClient)</strong>
+      <span>Cleaned text sent to Gemini 2.5 Flash. Key manager selects active key with available quota. Returns structured JSON containing contact info, work history, and raw skills list.</span>
+    </div>
+  </div>
+  <div class="pipe-step">
+    <div class="step-num">3</div>
+    <div class="step-text">
+      <strong>Skill Normalization (NormalizationAgent)</strong>
+      <span>Raw skill strings mapped to canonical taxonomy. E.g., "React.js", "ReactJS", "React Native" are normalized with experience years computed per skill.</span>
+    </div>
+  </div>
+  <div class="pipe-step">
+    <div class="step-num">4</div>
+    <div class="step-text">
+      <strong>Semantic Vector Matching (SemanticMatchingAgent)</strong>
+      <span>Sentence-transformers generates 384-dimensional embeddings for candidate skills and job requirements. Cosine similarity score generated.</span>
+    </div>
+  </div>
+  <div class="pipe-step">
+    <div class="step-num">5</div>
+    <div class="step-text">
+      <strong>ML Predictive Scoring (RandomForest)</strong>
+      <span>RandomForest model evaluates overall profile against historical hired/rejected decisions to calculate a hiring probability percentage.</span>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>💡 Key System Guarantee</strong>
+    <p>
+      Thanks to the fallback architecture (Gemini → Groq → TF-IDF → Substring), CareerSphere's AI agents never fail completely. If an API key hits rate limits or internet connectivity degrades, the system automatically falls back to local mathematical algorithms (TF-IDF & character n-grams), ensuring 100% platform uptime.
+    </p>
+  </div>
+
+</div>
+</body>
+</html>

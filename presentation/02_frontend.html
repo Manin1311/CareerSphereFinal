@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CareerSphere – 02. Frontend Architecture</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', Arial, sans-serif;
+      background: #0a0a0f;
+      color: #e2e8f0;
+      font-size: 11pt;
+      line-height: 1.7;
+    }
+
+    .page { max-width: 900px; margin: 0 auto; padding: 40px 44px; }
+
+    .cover {
+      text-align: center;
+      padding: 48px 0 36px;
+      border-radius: 18px;
+      border: 1px solid rgba(6,182,212,0.2);
+      background: linear-gradient(135deg, rgba(6,182,212,0.07) 0%, rgba(99,102,241,0.04) 100%);
+      margin-bottom: 44px;
+    }
+
+    .cover .logo-text {
+      font-size: 36pt;
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: -1px;
+    }
+
+    .cover .logo-text span {
+      background: linear-gradient(135deg, #06b6d4, #6366f1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .cover .tagline {
+      font-size: 12pt;
+      color: #94a3b8;
+      margin-top: 8px;
+    }
+
+    .cover .meta {
+      margin-top: 12px;
+      font-size: 8.5pt;
+      color: #475569;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .section-title {
+      font-size: 15.5pt;
+      font-weight: 800;
+      color: #f1f5f9;
+      border-left: 4px solid #06b6d4;
+      padding-left: 14px;
+      margin: 40px 0 18px;
+    }
+
+    .intro {
+      color: #94a3b8;
+      font-size: 10.5pt;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      padding: 18px 22px;
+      margin-bottom: 24px;
+      line-height: 1.8;
+    }
+
+    /* ── Directory Tree ── */
+    .tree-block {
+      background: #06060a;
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px;
+      padding: 20px 24px;
+      font-family: 'Fira Code', monospace;
+      font-size: 9.5pt;
+      color: #a5b4fc;
+      line-height: 1.75;
+      margin-bottom: 28px;
+      overflow-x: auto;
+      break-inside: avoid;
+    }
+
+    .tree-block .dir   { color: #60a5fa; font-weight: 600; }
+    .tree-block .file  { color: #94a3b8; }
+    .tree-block .note  { color: #475569; }
+    .tree-block .key   { color: #34d399; font-weight: 600; }
+
+    /* ── Code Block ── */
+    .code-block {
+      background: #06060a;
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px;
+      padding: 20px 24px;
+      font-family: 'Fira Code', monospace;
+      font-size: 9pt;
+      color: #e2e8f0;
+      line-height: 1.7;
+      margin-bottom: 24px;
+      overflow-x: auto;
+      break-inside: avoid;
+      position: relative;
+    }
+
+    .code-block .code-lang {
+      position: absolute;
+      top: 8px;
+      right: 12px;
+      font-size: 7.5pt;
+      color: #475569;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .kw   { color: #f43f5e; }
+    .fn   { color: #60a5fa; }
+    .str  { color: #34d399; }
+    .cmt  { color: #475569; font-style: italic; }
+    .num  { color: #fbbf24; }
+    .tag  { color: #a78bfa; }
+    .attr { color: #22d3ee; }
+
+    /* ── Page Cards ── */
+    .pages-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    .page-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px;
+      padding: 16px 18px;
+      break-inside: avoid;
+    }
+
+    .page-card .pc-route {
+      font-family: 'Fira Code', monospace;
+      font-size: 8.5pt;
+      color: #06b6d4;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    .page-card .pc-name {
+      font-size: 10.5pt;
+      font-weight: 700;
+      color: #f1f5f9;
+      margin-bottom: 6px;
+    }
+
+    .page-card .pc-desc {
+      font-size: 8.5pt;
+      color: #64748b;
+      line-height: 1.55;
+    }
+
+    /* ── Component Cards 2-col ── */
+    .comp-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .comp-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px;
+      padding: 16px 18px;
+      break-inside: avoid;
+    }
+
+    .comp-card h4 {
+      font-size: 10pt;
+      font-weight: 700;
+      color: #f1f5f9;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .comp-card p {
+      font-size: 9pt;
+      color: #94a3b8;
+      line-height: 1.6;
+    }
+
+    /* ── State Management Box ── */
+    .state-box {
+      background: rgba(99,102,241,0.05);
+      border: 1px solid rgba(99,102,241,0.2);
+      border-radius: 14px;
+      padding: 22px 24px;
+      margin-bottom: 24px;
+      break-inside: avoid;
+    }
+
+    .state-box h3 {
+      font-size: 11pt;
+      font-weight: 700;
+      color: #a5b4fc;
+      margin-bottom: 14px;
+    }
+
+    /* ── Flow Steps ── */
+    .flow-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .flow-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 14px 18px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      break-inside: avoid;
+    }
+
+    .step-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: rgba(6,182,212,0.15);
+      border: 1px solid rgba(6,182,212,0.3);
+      color: #22d3ee;
+      font-weight: 800;
+      font-size: 9pt;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .step-text strong {
+      color: #f1f5f9;
+      font-size: 10.5pt;
+      display: block;
+      margin-bottom: 3px;
+    }
+
+    .step-text span {
+      color: #94a3b8;
+      font-size: 9pt;
+    }
+
+    /* ── Tech Pill Row ── */
+    .tech-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 12px 0 24px;
+    }
+
+    .tech-pill {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.09);
+      color: #cbd5e1;
+      padding: 4px 12px;
+      border-radius: 7px;
+      font-size: 8.5pt;
+      font-weight: 500;
+      font-family: 'Fira Code', monospace;
+    }
+
+    .callout {
+      background: rgba(6,182,212,0.07);
+      border-left: 4px solid #06b6d4;
+      padding: 16px 20px;
+      border-radius: 0 12px 12px 0;
+      margin: 20px 0;
+      break-inside: avoid;
+    }
+
+    .callout strong {
+      color: #22d3ee;
+      display: block;
+      margin-bottom: 4px;
+      font-size: 10.5pt;
+    }
+
+    .callout p { color: #94a3b8; font-size: 9.5pt; }
+
+    @media print {
+      body { background: #0a0a0f; color: #e2e8f0; }
+      .page { padding: 20px 28px; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ── COVER ── -->
+  <div class="cover">
+    <div class="logo-text">Career<span>Sphere</span></div>
+    <div class="tagline">02. Frontend Architecture — React 18 + Vite + Zustand</div>
+    <div class="meta">Component Structure · State Management · Routing · UI Flow</div>
+  </div>
+
+  <!-- ── TECH STACK ── -->
+  <div class="section-title">Frontend Technology Stack</div>
+  <div class="intro">
+    The CareerSphere frontend is a React 18 Single Page Application (SPA) bundled using Vite for
+    near-instant HMR and sub-second production builds. State management uses Zustand — a lightweight
+    flux-style store — for persisting JWT tokens, user profiles, and theme preferences without Redux
+    boilerplate. The UI uses a hybrid CSS approach: Tailwind utility classes for layout and vanilla
+    CSS variables for consistent design tokens across the application.
+  </div>
+  <div class="tech-row">
+    <span class="tech-pill">React 18</span>
+    <span class="tech-pill">Vite 5</span>
+    <span class="tech-pill">Zustand</span>
+    <span class="tech-pill">React Router v6</span>
+    <span class="tech-pill">Axios</span>
+    <span class="tech-pill">Tailwind CSS</span>
+    <span class="tech-pill">Framer Motion</span>
+    <span class="tech-pill">Recharts</span>
+    <span class="tech-pill">Lucide React</span>
+    <span class="tech-pill">React Hook Form</span>
+    <span class="tech-pill">GSAP</span>
+  </div>
+
+  <!-- ── FOLDER STRUCTURE ── -->
+  <div class="section-title">Project Folder Structure</div>
+  <div class="tree-block">
+<span class="dir">frontend/src/</span>
+├── <span class="dir">components/</span>                     <span class="note">← Reusable shared components</span>
+│   ├── <span class="key">AlertBanner.jsx</span>              <span class="note">← Global flash notification bar</span>
+│   ├── <span class="key">Header.jsx</span>                   <span class="note">← Navigation with auth-aware links</span>
+│   ├── <span class="key">VerificationModal.jsx</span>        <span class="note">← OTP email/phone verification UI</span>
+│   ├── <span class="key">Testimonials.jsx</span>             <span class="note">← Animated review carousel</span>
+│   └── <span class="dir">user/templates/</span>             <span class="note">← Resume template components</span>
+│       ├── <span class="file">AtsOptimizedTemplate.jsx</span>
+│       ├── <span class="file">ClassicTemplate.jsx</span>
+│       └── <span class="file">shared.jsx</span>              <span class="note">← Shared resume section renderers</span>
+│
+├── <span class="dir">pages/</span>
+│   ├── <span class="dir">user/</span>                        <span class="note">← Job Seeker Portal Pages</span>
+│   │   ├── <span class="key">UserHome.jsx</span>             <span class="note">← Landing dashboard with job feed</span>
+│   │   ├── <span class="key">UserJobs.jsx</span>             <span class="note">← Job listing + salary/skill filters</span>
+│   │   ├── <span class="key">UserJobDetail.jsx</span>        <span class="note">← Job detail page with AI match score</span>
+│   │   ├── <span class="key">UserApply.jsx</span>            <span class="note">← Apply to job (cover note + confirm)</span>
+│   │   ├── <span class="key">UserApplications.jsx</span>     <span class="note">← My applications + status tracking</span>
+│   │   ├── <span class="key">UserDashboard.jsx</span>        <span class="note">← Seeker profile dashboard</span>
+│   │   ├── <span class="key">UserProfile.jsx</span>          <span class="note">← Edit profile, skills, links</span>
+│   │   ├── <span class="key">ResumeEditor.jsx</span>         <span class="note">← Live resume editor (102KB)</span>
+│   │   ├── <span class="key">MockInterviewPage.jsx</span>    <span class="note">← AI mock interview sandbox</span>
+│   │   └── <span class="key">UserCompanyDetail.jsx</span>    <span class="note">← Company profile + reviews</span>
+│   │
+│   ├── <span class="dir">developer/</span>               <span class="note">← Recruiter/Company Portal</span>
+│   │   ├── <span class="file">SessionWorkspacePage.jsx</span> <span class="note">← Job session management hub</span>
+│   │   ├── <span class="file">NewSessionPage.jsx</span>
+│   │   ├── <span class="file">DeveloperDashboard.jsx</span>
+│   │   └── <span class="file">DeveloperKeys.jsx</span>       <span class="note">← API key management</span>
+│   │
+│   └── <span class="dir">auth/</span>
+│       ├── <span class="file">AuthPage.jsx</span>             <span class="note">← Unified login/register page</span>
+│       └── <span class="file">JobSeekerLoginPage.jsx</span>
+│
+└── <span class="dir">store/</span>
+    ├── <span class="key">authStore.js</span>                 <span class="note">← Zustand: JWT, user object, role</span>
+    └── <span class="key">portalApi.js</span>                 <span class="note">← Axios instance + JWT interceptors</span>
+  </div>
+
+  <!-- ── ROUTING ── -->
+  <div class="section-title">Route Architecture (React Router v6)</div>
+  <div class="pages-grid">
+    <div class="page-card">
+      <div class="pc-route">/</div>
+      <div class="pc-name">UserHome.jsx</div>
+      <div class="pc-desc">Public landing page with featured jobs, animated hero, skill filters, and testimonials carousel.</div>
+    </div>
+    <div class="page-card">
+      <div class="pc-route">/jobs</div>
+      <div class="pc-name">UserJobs.jsx</div>
+      <div class="pc-desc">Full job listing with real-time salary parsing filters (₹ LPA ranges), skill badge filters, and sort order.</div>
+    </div>
+    <div class="page-card">
+      <div class="pc-route">/jobs/:id</div>
+      <div class="pc-name">UserJobDetail.jsx</div>
+      <div class="pc-desc">Full job description with AI match score ring (SVG circumference calculation) and apply button.</div>
+    </div>
+    <div class="page-card">
+      <div class="pc-route">/dashboard</div>
+      <div class="pc-name">UserDashboard.jsx</div>
+      <div class="pc-desc">Seeker home: ATS score, recent applications, recommended jobs, profile completion indicator.</div>
+    </div>
+    <div class="page-card">
+      <div class="pc-route">/resume-editor</div>
+      <div class="pc-name">ResumeEditor.jsx</div>
+      <div class="pc-desc">Live drag-drop resume editor with 8 templates. Sections: Summary, Skills, Experience, Projects, Education.</div>
+    </div>
+    <div class="page-card">
+      <div class="pc-route">/mock-interview</div>
+      <div class="pc-name">MockInterviewPage.jsx</div>
+      <div class="pc-desc">AI interview sandbox. Selects domain (DSA, System Design, etc.), generates questions, accepts voice/text answers.</div>
+    </div>
+    <div class="page-card">
+      <div class="pc-route">/applications</div>
+      <div class="pc-name">UserApplications.jsx</div>
+      <div class="pc-desc">Full application history with status badges (applied / shortlisted / rejected / hired), match scores, round status.</div>
+    </div>
+    <div class="page-card">
+      <div class="pc-route">/companies/:slug</div>
+      <div class="pc-name">UserCompanyDetail.jsx</div>
+      <div class="pc-desc">Company profile page with logo, about, open jobs, reviews, ratings, and follow/unfollow toggle.</div>
+    </div>
+    <div class="page-card">
+      <div class="pc-route">/developer/*</div>
+      <div class="pc-name">Developer Portal</div>
+      <div class="pc-desc">Recruiter-side workspace: session management, candidate ranking, round progression, API key management.</div>
+    </div>
+  </div>
+
+  <!-- ── STATE MANAGEMENT (ZUSTAND) ── -->
+  <div class="section-title">State Management with Zustand</div>
+  <div class="state-box">
+    <h3>authStore.js — Global Application State</h3>
+    <div class="code-block">
+      <span class="code-lang">JavaScript</span>
+<span class="kw">import</span> { create } <span class="kw">from</span> <span class="str">'zustand'</span>;
+<span class="kw">import</span> { persist } <span class="kw">from</span> <span class="str">'zustand/middleware'</span>;
+
+<span class="kw">const</span> useAuthStore = <span class="fn">create</span>(
+  <span class="fn">persist</span>(
+    (set, get) => ({
+      <span class="cmt">// ── Auth State ──</span>
+      token:        <span class="kw">null</span>,   <span class="cmt">// JWT access token</span>
+      refreshToken: <span class="kw">null</span>,
+      user:         <span class="kw">null</span>,   <span class="cmt">// { id, email, full_name, tier, avatar_path }</span>
+      role:         <span class="kw">null</span>,   <span class="cmt">// 'seeker' | 'recruiter' | 'admin'</span>
+
+      <span class="cmt">// ── Actions ──</span>
+      <span class="fn">setAuth</span>: (token, refreshToken, user, role) =>
+        set({ token, refreshToken, user, role }),
+
+      <span class="fn">logout</span>: () =>
+        set({ token: <span class="kw">null</span>, refreshToken: <span class="kw">null</span>, user: <span class="kw">null</span>, role: <span class="kw">null</span> }),
+
+      <span class="fn">updateUser</span>: (partial) =>
+        set({ user: { ...get().user, ...partial } }),
+    }),
+    {
+      name: <span class="str">'careersphere-auth'</span>,   <span class="cmt">// localStorage key</span>
+      partialize: (state) => ({
+        token:        state.token,
+        refreshToken: state.refreshToken,
+        user:         state.user,
+        role:         state.role,
+      }),
+    }
+  )
+);
+
+<span class="kw">export default</span> useAuthStore;
+    </div>
+  </div>
+
+  <!-- ── AXIOS INTERCEPTORS ── -->
+  <div class="section-title">Axios API Client with JWT Interceptors</div>
+  <div class="code-block">
+    <span class="code-lang">JavaScript — portalApi.js</span>
+<span class="kw">import</span> axios <span class="kw">from</span> <span class="str">'axios'</span>;
+<span class="kw">import</span> useAuthStore <span class="kw">from</span> <span class="str">'./authStore'</span>;
+
+<span class="kw">const</span> portalApi = axios.<span class="fn">create</span>({
+  baseURL: <span class="str">`${import.meta.env.VITE_API_URL}/api`</span>,
+  headers: { <span class="str">'Content-Type'</span>: <span class="str">'application/json'</span> },
+  timeout: <span class="num">30000</span>,
+});
+
+<span class="cmt">// ── Request Interceptor: Attach JWT bearer token ──</span>
+portalApi.interceptors.request.<span class="fn">use</span>((config) => {
+  <span class="kw">const</span> token = useAuthStore.<span class="fn">getState</span>().token;
+  <span class="kw">if</span> (token) {
+    config.headers.Authorization = <span class="str">`Bearer ${token}`</span>;
+  }
+  <span class="kw">return</span> config;
+});
+
+<span class="cmt">// ── Response Interceptor: Handle 401, trigger refresh ──</span>
+portalApi.interceptors.response.<span class="fn">use</span>(
+  (response) => response,
+  <span class="kw">async</span> (error) => {
+    <span class="kw">if</span> (error.response?.status === <span class="num">401</span>) {
+      <span class="cmt">// Token expired — attempt silent refresh</span>
+      useAuthStore.<span class="fn">getState</span>().<span class="fn">logout</span>();
+      window.location.<span class="fn">replace</span>(<span class="str">'/login'</span>);
+    }
+    <span class="kw">return</span> Promise.<span class="fn">reject</span>(error);
+  }
+);
+
+<span class="kw">export default</span> portalApi;
+  </div>
+
+  <!-- ── KEY COMPONENT FLOWS ── -->
+  <div class="section-title">Key Component Deep Dives</div>
+
+  <div class="comp-grid">
+    <div class="comp-card">
+      <h4>📊 SVG Match Score Ring (UserJobDetail)</h4>
+      <p>
+        The circular progress indicator on job detail pages is a pure SVG implementation.
+        Radius = 27px. Circumference = 2π × r = ~169.6px. strokeDashoffset = circumference
+        − (circumference × score / 100). Animates via CSS transition on the SVG stroke property.
+        No external chart libraries required.
+      </p>
+    </div>
+
+    <div class="comp-card">
+      <h4>💰 Salary Parser in UserJobs (parseSalary)</h4>
+      <p>
+        The salary filter function parses any salary string (₹18–32 LPA, $80k–120k, ₹18,000/month)
+        into numeric min/max values. Expands "k" notation (18k → 18000), "lakh/lpa" notation
+        (18 LPA → 1,800,000). Monthly salaries detected via "/month" suffix and multiplied by 12.
+        Cross-currency normalization to USD for comparison.
+      </p>
+    </div>
+
+    <div class="comp-card">
+      <h4>✏️ Resume Editor (ResumeEditor.jsx — 102KB)</h4>
+      <p>
+        The largest component in the codebase. Manages a comprehensive resume JSON object in local
+        state, provides inline editing for all sections (experience bullet points, skill chips, project
+        tech stack), live preview via template components, and triggers debounced autosave to the backend.
+        Templates render identical HTML for both preview and PDF export.
+      </p>
+    </div>
+
+    <div class="comp-card">
+      <h4>🎤 MockInterviewPage (AI Sandbox)</h4>
+      <p>
+        Users select job domain (Frontend, Backend, DSA, System Design, ML). API call generates
+        5–10 questions via the Interview Agent. User answers via text or speech (Web Speech API).
+        Answers posted to backend for AI scoring. Results page shows per-question score, ideal answer,
+        and improvement recommendations. Supports practice mode without submitting.
+      </p>
+    </div>
+
+    <div class="comp-card">
+      <h4>📁 VerificationModal (OTP Flow)</h4>
+      <p>
+        Handles both email OTP (6-digit code sent via Django email backend) and phone OTP (if configured).
+        Implements a 60-second resend countdown timer using useRef + setInterval. Auto-focuses the next
+        OTP digit input on entry. Validates the 6-digit code against the backend verification endpoint
+        and updates email_verified / phone_verified flags on success.
+      </p>
+    </div>
+
+    <div class="comp-card">
+      <h4>🏢 UserCompanyDetail (Company Page)</h4>
+      <p>
+        Fetches company profile including logo_path (CDN URL or uploaded image), rating aggregate,
+        about text, open jobs (active sessions), and review list. Follow/unfollow stores company ID
+        in the seeker's resume_data.followed_companies JSON array. Review creation submits to the
+        reviews endpoint with rating (1–5) and text content.
+      </p>
+    </div>
+  </div>
+
+  <!-- ── RENDER FLOW ── -->
+  <div class="section-title">Job Application User Flow (Frontend)</div>
+  <div class="flow-steps">
+    <div class="flow-step">
+      <div class="step-num">1</div>
+      <div class="step-text">
+        <strong>Browse Jobs (UserJobs.jsx)</strong>
+        <span>User filters jobs by salary range, skills required, location. parseSalary() converts all salary formats to numeric LPA for comparison. Filters applied client-side on the jobs array fetched from <code>/api/seeker/jobs/</code>.</span>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">2</div>
+      <div class="step-text">
+        <strong>View Job Detail (UserJobDetail.jsx)</strong>
+        <span>Full job description rendered. If the seeker has a resume uploaded, an AI match score is displayed via the SVG ring. Score fetched from <code>/api/seeker/jobs/:id/match-score/</code> using the seeker's parsed resume data.</span>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">3</div>
+      <div class="step-text">
+        <strong>Apply (UserApply.jsx)</strong>
+        <span>Seeker writes an optional cover note, accepts terms, and submits. POST to <code>/api/seeker/apply/</code>. Backend creates Candidate + JobApplication records, triggers email confirmations via Celery task, checks match threshold for high-match alert.</span>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">4</div>
+      <div class="step-text">
+        <strong>Track Status (UserApplications.jsx)</strong>
+        <span>Seeker sees all applications with status badges: applied / shortlisted / rejected / hired. Shows current interview round, next scheduled round, and match score breakdown. Clicking "View Feedback" shows matched_skills and missing_skills from the match_details JSON.</span>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">5</div>
+      <div class="step-text">
+        <strong>Complete Interview Rounds</strong>
+        <span>When recruiter advances the candidate, a notification is sent and the seeker can access the interview round UI (MCQRound or CodingRound components). Submitting answers triggers async backend scoring. Results are persisted in ApplicantRoundAttempt records.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>⚡ Performance Note</strong>
+    <p>
+      The React frontend bundles to under 25KB gzipped for critical path JavaScript using Vite's
+      automatic code splitting. Heavy pages like ResumeEditor and MockInterviewPage are lazy-loaded
+      via React.lazy() + Suspense, ensuring the initial page load is fast regardless of the total
+      bundle size (which exceeds 10MB including all vendor libraries).
+    </p>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CareerSphere - 03. Frontend & Backend Architecture</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root {
+      --bg-dark: #0a0a0f;
+      --bg-card: #12131c;
+      --bg-card-hover: #1a1b28;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-glow: rgba(99, 102, 241, 0.35);
+      --primary: #6366f1;
+      --primary-light: #818cf8;
+      --accent-cyan: #06b6d4;
+      --accent-emerald: #10b981;
+      --accent-rose: #f43f5e;
+      --accent-amber: #f59e0b;
+      --accent-violet: #8b5cf6;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background-color: var(--bg-dark); color: var(--text-main); font-family: 'Inter', sans-serif; line-height: 1.6; overflow-x: hidden; }
+    h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; }
+    code, pre { font-family: 'Fira Code', monospace; }
+
+    .nav-bar {
+      position: fixed; top: 0; left: 0; right: 0; height: 70px;
+      background: rgba(10, 10, 15, 0.85); backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-color); z-index: 1000;
+      display: flex; align-items: center; justify-content: space-between; padding: 0 2rem;
+    }
+    .brand { display: flex; align-items: center; gap: 0.75rem; font-size: 1.25rem; font-weight: 700; color: #fff; text-decoration: none; }
+    .brand-icon { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--primary), var(--accent-violet)); display: flex; align-items: center; justify-content: center; }
+    .nav-links { display: flex; gap: 1rem; }
+    .nav-link { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; font-weight: 500; padding: 0.5rem 0.75rem; border-radius: 8px; transition: all 0.2s; }
+    .nav-link:hover, .nav-link.active { color: #fff; background: rgba(255, 255, 255, 0.05); }
+    .nav-link.active { color: var(--primary-light); border-bottom: 2px solid var(--primary); }
+
+    .container { max-width: 1280px; margin: 90px auto 40px auto; padding: 0 2rem; }
+    .slide { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 24px; padding: 3rem; margin-bottom: 3rem; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+    .slide-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.35rem 0.85rem; border-radius: 9999px; background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); color: var(--primary-light); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; margin-bottom: 1rem; }
+    .slide-title { font-size: 2.25rem; font-weight: 800; color: #fff; margin-bottom: 1rem; background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .slide-description { font-size: 1.1rem; color: var(--text-muted); max-width: 900px; margin-bottom: 2rem; }
+
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+
+    .tech-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.3rem 0.75rem;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border-color);
+      font-size: 0.85rem;
+      color: #fff;
+      margin-right: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      padding: 1.75rem;
+    }
+
+    .card-title { font-size: 1.2rem; font-weight: 700; color: #fff; margin-bottom: 0.75rem; }
+    .card-text { font-size: 0.95rem; color: var(--text-muted); }
+
+    .tree-box {
+      background: #06060a;
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 1.25rem;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.85rem;
+      color: #a5b4fc;
+      line-height: 1.7;
+    }
+
+    @media print {
+      .nav-bar { display: none; }
+      .container { margin: 0; padding: 0; max-width: 100%; }
+      .slide { page-break-after: always; border: none; box-shadow: none; padding: 2rem; background: #0a0a0f !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav-bar">
+    <a href="#" class="brand">
+      <div class="brand-icon"><i data-lucide="layers"></i></div>
+      <span>CareerSphere Presentation</span>
+    </a>
+    <div class="nav-links">
+      <a href="01_project_overview.html" class="nav-link">01. Overview</a>
+      <a href="02_architecture.html" class="nav-link">02. Architecture</a>
+      <a href="03_frontend_backend.html" class="nav-link active">03. Stack</a>
+      <a href="04_technical_implementation.html" class="nav-link">04. Algorithms</a>
+      <a href="05_database.html" class="nav-link">05. Database</a>
+      <a href="06_viva_qa.html" class="nav-link">06. Viva Q&A</a>
+    </div>
+  </nav>
+
+  <div class="container">
+
+    <!-- SLIDE 1: Technology Stack Matrix -->
+    <div class="slide" id="slide1">
+      <div class="slide-badge"><i data-lucide="layers"></i> Document 03 — Tech Stack</div>
+      <h1 class="slide-title">Full-Stack Technology Ecosystem</h1>
+      <p class="slide-description">
+        CareerSphere leverages modern software engineering standards with React 18 SPA for client experience and Django REST Framework with Celery for backend AI orchestration.
+      </p>
+
+      <div class="grid-2">
+        <div class="card" style="border-left: 4px solid var(--accent-cyan);">
+          <h3 class="card-title" style="color: var(--accent-cyan); display: flex; align-items: center; gap: 0.5rem;">
+            <i data-lucide="monitor"></i> Frontend Technologies
+          </h3>
+          <div style="margin-top: 1rem;">
+            <span class="tech-pill">React 18</span>
+            <span class="tech-pill">Vite</span>
+            <span class="tech-pill">Tailwind CSS</span>
+            <span class="tech-pill">Zustand</span>
+            <span class="tech-pill">Lucide Icons</span>
+            <span class="tech-pill">Framer Motion</span>
+            <span class="tech-pill">Recharts</span>
+            <span class="tech-pill">Axios</span>
+          </div>
+          <ul style="color: var(--text-muted); font-size: 0.9rem; margin-top: 1rem; padding-left: 1.2rem;">
+            <li>Single Page Application (SPA) compiled via Vite.</li>
+            <li>Atomic CSS design system via Vanilla CSS variables + Tailwind.</li>
+            <li>Persistent local & JWT session state managed by Zustand.</li>
+            <li>Interactive SVG graph rendering for match score breakdown.</li>
+          </ul>
+        </div>
+
+        <div class="card" style="border-left: 4px solid var(--primary-light);">
+          <h3 class="card-title" style="color: var(--primary-light); display: flex; align-items: center; gap: 0.5rem;">
+            <i data-lucide="server"></i> Backend & AI Infrastructure
+          </h3>
+          <div style="margin-top: 1rem;">
+            <span class="tech-pill">Django 4.x</span>
+            <span class="tech-pill">Django REST Framework</span>
+            <span class="tech-pill">Gemini 2.5 Flash</span>
+            <span class="tech-pill">PyMuPDF (fitz)</span>
+            <span class="tech-pill">pdfplumber</span>
+            <span class="tech-pill">Celery</span>
+            <span class="tech-pill">Redis</span>
+            <span class="tech-pill">PostgreSQL</span>
+          </div>
+          <ul style="color: var(--text-muted); font-size: 0.9rem; margin-top: 1rem; padding-left: 1.2rem;">
+            <li>Modular REST API views for job listings, seeker profiles, and recruiter dashboards.</li>
+            <li>Custom <code>RotateLLMClient</code> to switch Gemini API keys seamlessly.</li>
+            <li>Geometry-aware two-column PDF text extraction pipeline.</li>
+            <li>Asynchronous Celery tasks for heavy LLM inference & email alerts.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 2: Directory Architecture -->
+    <div class="slide" id="slide2">
+      <div class="slide-badge"><i data-lucide="folder-tree"></i> Codebase Structure</div>
+      <h2 class="slide-title">Project Directory Organization</h2>
+      <p class="slide-description">
+        Clean separation of concerns adhering to modular Django application structures and React component-driven architecture.
+      </p>
+
+      <div class="grid-2">
+        <div>
+          <h4 style="color: var(--accent-cyan); margin-bottom: 0.5rem;">Frontend Structure (<code>/frontend/src</code>)</h4>
+          <div class="tree-box">
+src/
+├── components/          # Reusable UI Components
+│   ├── Header.jsx       # Global Navigation & Auth controls
+│   ├── ResumePreview.jsx# Template Canvas & SVG Score Ring
+│   └── VerificationModal.jsx
+├── pages/               # Route Pages
+│   ├── user/            # Seeker Views (UserHome, UserJobs)
+│   ├── developer/       # Recruiter Views (Dashboard, Keys)
+│   └── ResumeBuilderLanding.jsx
+└── store/               # State Management
+    └── authStore.js     # Zustand Auth & Profile Store
+          </div>
+        </div>
+
+        <div>
+          <h4 style="color: var(--primary-light); margin-bottom: 0.5rem;">Backend Structure (<code>/backend</code>)</h4>
+          <div class="tree-box">
+backend/
+├── agents/              # Autonomous AI Agent Modules
+│   ├── llm.py           # RotateLLMClient (Gemini API Pool)
+│   ├── advanced_ats_parsing_agent.py # Column PDF Parser
+│   └── inference_agent.py # Skill & Criteria Inference
+├── api/                 # Django App
+│   ├── models.py        # PostgreSQL Models & JSONB Schemas
+│   ├── views/           # REST Endpoint Logic (seeker, company)
+│   └── management/      # Seed Scripts (seed_imported_data.py)
+└── workers/             # Celery Workers & Task Queues
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 3: Integration Flow & State Management -->
+    <div class="slide" id="slide3">
+      <div class="slide-badge"><i data-lucide="refresh-cw"></i> Data Synchronization</div>
+      <h2 class="slide-title">State Management & API Integration Flow</h2>
+      
+      <div class="grid-3" style="margin-top: 1.5rem;">
+        <div class="card">
+          <h3 class="card-title" style="color: var(--accent-emerald);">1. Auth & JWT Store</h3>
+          <p class="card-text">
+            Dual JWT token auth (Seeker vs Recruiter). Access tokens attached automatically via Axios request interceptors. Expired tokens trigger refresh cycles.
+          </p>
+        </div>
+
+        <div class="card">
+          <h3 class="card-title" style="color: var(--accent-cyan);">2. Non-Blocking Async Polling</h3>
+          <p class="card-text">
+            When parsing a resume, frontend dispatches job request, receives task ID, and polls <code>/api/seeker/ats-status/</code> while displaying animated loaders.
+          </p>
+        </div>
+
+        <div class="card">
+          <h3 class="card-title" style="color: var(--accent-violet);">3. Optimistic UI Updates</h3>
+          <p class="card-text">
+            Resume edit changes render instantly in <code>ResumePreview.jsx</code> via local Zustand state before debouncing updates to the Django backend.
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>lucide.createIcons();</script>
+</body>
+</html>

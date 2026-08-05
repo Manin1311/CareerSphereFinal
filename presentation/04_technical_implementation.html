@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CareerSphere - 04. Technical Algorithms & Code Implementation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root {
+      --bg-dark: #0a0a0f;
+      --bg-card: #12131c;
+      --bg-card-hover: #1a1b28;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-glow: rgba(99, 102, 241, 0.35);
+      --primary: #6366f1;
+      --primary-light: #818cf8;
+      --accent-cyan: #06b6d4;
+      --accent-emerald: #10b981;
+      --accent-rose: #f43f5e;
+      --accent-amber: #f59e0b;
+      --accent-violet: #8b5cf6;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background-color: var(--bg-dark); color: var(--text-main); font-family: 'Inter', sans-serif; line-height: 1.6; overflow-x: hidden; }
+    h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; }
+    code, pre { font-family: 'Fira Code', monospace; }
+
+    .nav-bar {
+      position: fixed; top: 0; left: 0; right: 0; height: 70px;
+      background: rgba(10, 10, 15, 0.85); backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-color); z-index: 1000;
+      display: flex; align-items: center; justify-content: space-between; padding: 0 2rem;
+    }
+    .brand { display: flex; align-items: center; gap: 0.75rem; font-size: 1.25rem; font-weight: 700; color: #fff; text-decoration: none; }
+    .brand-icon { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--primary), var(--accent-violet)); display: flex; align-items: center; justify-content: center; }
+    .nav-links { display: flex; gap: 1rem; }
+    .nav-link { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; font-weight: 500; padding: 0.5rem 0.75rem; border-radius: 8px; transition: all 0.2s; }
+    .nav-link:hover, .nav-link.active { color: #fff; background: rgba(255, 255, 255, 0.05); }
+    .nav-link.active { color: var(--primary-light); border-bottom: 2px solid var(--primary); }
+
+    .container { max-width: 1280px; margin: 90px auto 40px auto; padding: 0 2rem; }
+    .slide { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 24px; padding: 3rem; margin-bottom: 3rem; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+    .slide-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.35rem 0.85rem; border-radius: 9999px; background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); color: var(--primary-light); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; margin-bottom: 1rem; }
+    .slide-title { font-size: 2.25rem; font-weight: 800; color: #fff; margin-bottom: 1rem; background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .slide-description { font-size: 1.1rem; color: var(--text-muted); max-width: 900px; margin-bottom: 2rem; }
+
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+
+    .code-block {
+      background: #06060a;
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 1.25rem;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.85rem;
+      color: #e2e8f0;
+      overflow-x: auto;
+      line-height: 1.6;
+      margin-top: 1rem;
+      position: relative;
+    }
+
+    .code-lang {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.75rem;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .kw { color: #f43f5e; font-weight: 600; }
+    .fn { color: #60a5fa; font-weight: 600; }
+    .str { color: #34d399; }
+    .num { color: #fbbf24; }
+    .cm { color: #6b7280; font-style: italic; }
+
+    .formula-card {
+      background: rgba(99, 102, 241, 0.05);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-top: 1rem;
+    }
+
+    .math-text {
+      font-family: 'Fira Code', monospace;
+      font-size: 1.1rem;
+      color: #a5b4fc;
+      background: rgba(0,0,0,0.4);
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      margin: 0.75rem 0;
+      display: inline-block;
+    }
+
+    @media print {
+      .nav-bar { display: none; }
+      .container { margin: 0; padding: 0; max-width: 100%; }
+      .slide { page-break-after: always; border: none; box-shadow: none; padding: 2rem; background: #0a0a0f !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav-bar">
+    <a href="#" class="brand">
+      <div class="brand-icon"><i data-lucide="layers"></i></div>
+      <span>CareerSphere Presentation</span>
+    </a>
+    <div class="nav-links">
+      <a href="01_project_overview.html" class="nav-link">01. Overview</a>
+      <a href="02_architecture.html" class="nav-link">02. Architecture</a>
+      <a href="03_frontend_backend.html" class="nav-link">03. Stack</a>
+      <a href="04_technical_implementation.html" class="nav-link active">04. Algorithms</a>
+      <a href="05_database.html" class="nav-link">05. Database</a>
+      <a href="06_viva_qa.html" class="nav-link">06. Viva Q&A</a>
+    </div>
+  </nav>
+
+  <div class="container">
+
+    <!-- SLIDE 1: ATS & Candidate Match Score Algorithm -->
+    <div class="slide" id="slide1">
+      <div class="slide-badge"><i data-lucide="calculator"></i> Mathematical Core</div>
+      <h1 class="slide-title">1. Candidate Match Score & Rubric Algorithm</h1>
+      <p class="slide-description">
+        How candidate resumes are evaluated against job sessions. CareerSphere uses a dynamic multi-dimensional weight vector formula:
+      </p>
+
+      <div class="formula-card">
+        <h4 style="color: #fff; margin-bottom: 0.5rem;">Weighted Match Formula:</h4>
+        <div class="math-text">
+          Score = (S_match * W_skills) + (E_match * W_exp) + (L_match * W_loc) + (Edu_match * W_edu)
+        </div>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">
+          Where weights (W_skills, W_exp, W_loc) sum to 1.0 (configured by recruiter per session).
+        </p>
+      </div>
+
+      <div class="code-block">
+        <span class="code-lang">Python — Candidate Match Logic</span>
+        <pre><code><span class="cm"># From backend candidate scoring agent</span>
+<span class="kw">def</span> <span class="fn">calculate_match_score</span>(candidate_profile, job_criteria):
+    weights = job_criteria.get(<span class="str">"weights"</span>, {<span class="str">"skills"</span>: <span class="num">0.5</span>, <span class="str">"experience"</span>: <span class="num">0.3</span>, <span class="str">"location"</span>: <span class="num">0.2</span>})
+    
+    <span class="cm"># 1. Skill Intersection Score (Semantic + Substring)</span>
+    req_skills = <span class="fn">set</span>(s.lower() <span class="kw">for</span> s <span class="kw">in</span> job_criteria.get(<span class="str">"required_skills"</span>, []))
+    cand_skills = <span class="fn">set</span>(s.lower() <span class="kw">for</span> s <span class="kw">in</span> candidate_profile.get(<span class="str">"skills"</span>, []))
+    matched_skills = req_skills.intersection(cand_skills)
+    skill_score = (<span class="fn">len</span>(matched_skills) / <span class="fn">len</span>(req_skills)) * <span class="num">100</span> <span class="kw">if</span> req_skills <span class="kw">else</span> <span class="num">100</span>
+    
+    <span class="cm"># 2. Experience Ratio Score</span>
+    req_exp = job_criteria.get(<span class="str">"min_experience"</span>, <span class="num">0</span>)
+    cand_exp = candidate_profile.get(<span class="str">"years_experience"</span>, <span class="num">0</span>)
+    exp_score = <span class="num">100</span> <span class="kw">if</span> cand_exp >= req_exp <span class="kw">else</span> (cand_exp / req_exp) * <span class="num">100</span> <span class="kw">if</span> req_exp > <span class="num">0</span> <span class="kw">else</span> <span class="num">100</span>
+    
+    <span class="cm"># 3. Location Match</span>
+    loc_score = <span class="num">100</span> <span class="kw">if</span> candidate_profile.get(<span class="str">"is_remote"</span>) <span class="kw">or</span> location_match <span class="kw">else</span> <span class="num">50</span>
+
+    <span class="cm"># Final Weighted Score Vector</span>
+    final_score = (skill_score * weights[<span class="str">"skills"</span>]) + (exp_score * weights[<span class="str">"experience"</span>]) + (loc_score * weights[<span class="str">"location"</span>])
+    <span class="kw">return</span> <span class="fn">round</span>(final_score, <span class="num">1</span>)</code></pre>
+      </div>
+    </div>
+
+    <!-- SLIDE 2: Column-Aware PDF Layout Parsing Algorithm -->
+    <div class="slide" id="slide2">
+      <div class="slide-badge"><i data-lucide="file-code"></i> PDF Geometry Extraction</div>
+      <h2 class="slide-title">2. Geometry-Aware Two-Column PDF Splitter</h2>
+      <p class="slide-description">
+        Standard PDF extractors read text horizontally across the entire page width, corrupting two-column resume sections. CareerSphere uses vertical bounding-box projection analysis in PyMuPDF:
+      </p>
+
+      <div class="code-block">
+        <span class="code-lang">Python — Column Splitter Algorithm</span>
+        <pre><code><span class="cm"># From advanced_ats_parsing_agent.py</span>
+<span class="kw">for</span> x <span class="kw">in</span> <span class="fn">range</span>(start_x, end_x, <span class="num">5</span>):
+    crossings = <span class="num">0</span>
+    <span class="kw">for</span> b <span class="kw">in</span> blocks:
+        x0, y0, x1, y1 = b[<span class="num">0</span>], b[<span class="num">1</span>], b[<span class="num">2</span>], b[<span class="num">3</span>]
+        <span class="kw">if</span> y0 >= <span class="num">120</span> <span class="kw">and</span> y1 &lt;= page_height - <span class="num">80</span>:
+            <span class="kw">if</span> x0 &lt; x &lt; x1:
+                crossings += <span class="num">1</span>  <span class="cm"># Bounding box intersects vertical split line x</span>
+
+    <span class="kw">if</span> crossings &lt; min_crossings:
+        min_crossings = crossings
+        best_x = x  <span class="cm"># Optimal divider x coordinate with minimal text box cuts</span>
+
+<span class="cm"># Separate left column vs right column blocks cleanly</span>
+left_blocks = [b <span class="kw">for</span> b <span class="kw">in</span> blocks <span class="kw">if</span> (b[<span class="num">0</span>] + b[<span class="num">2</span>]) / <span class="num">2.0</span> &lt; best_x]
+right_blocks = [b <span class="kw">for</span> b <span class="kw">in</span> blocks <span class="kw">if</span> (b[<span class="num">0</span>] + b[<span class="num">2</span>]) / <span class="num">2.0</span> >= best_x]</code></pre>
+      </div>
+    </div>
+
+    <!-- SLIDE 3: Interactive SVG Circle & Graph Rendering -->
+    <div class="slide" id="slide3">
+      <div class="slide-badge"><i data-lucide="pie-chart"></i> Frontend Visualization</div>
+      <h2 class="slide-title">3. Dynamic SVG Score Ring Graph Rendering</h2>
+      <p class="slide-description">
+        How score percentage circles and progress bars are computed smoothly in React without external heavy graphics libraries.
+      </p>
+
+      <div class="formula-card">
+        <h4 style="color: #fff; margin-bottom: 0.5rem;">SVG Circumference Formula:</h4>
+        <div class="math-text">
+          C = 2 * &pi; * r &nbsp;&nbsp;&rArr;&nbsp;&nbsp; strokeDashoffset = C - (C * score / 100)
+        </div>
+      </div>
+
+      <div class="code-block">
+        <span class="code-lang">JSX — React SVG Animated Ring</span>
+        <pre><code><span class="cm">// From frontend ResumePreview.jsx & Landing pages</span>
+<span class="kw">const</span> radius = <span class="num">27</span>;
+<span class="kw">const</span> circumference = <span class="num">2</span> * Math.PI * radius; <span class="cm">// ~169.6px</span>
+<span class="kw">const</span> offset = circumference - (circumference * overallScore) / <span class="num">100</span>;
+
+<span class="kw">return</span> (
+  &lt;<span class="fn">svg</span> className="w-16 h-16 transform -rotate-90"&gt;
+    &lt;<span class="fn">circle</span> cx="32" cy="32" r={radius} stroke="rgba(37, 99, 235, 0.1)" strokeWidth="4" fill="transparent" /&gt;
+    &lt;<span class="fn">circle</span>
+      cx="32" cy="32" r={radius}
+      stroke="rgb(37, 99, 235)" strokeWidth="4" fill="transparent"
+      strokeDasharray={circumference}
+      strokeDashoffset={offset}
+      className="transition-all duration-500 ease-out"
+    /&gt;
+  &lt;/<span class="fn">svg</span>&gt;
+);</code></pre>
+      </div>
+    </div>
+
+  </div>
+
+  <script>lucide.createIcons();</script>
+</body>
+</html>

@@ -277,7 +277,7 @@ export default function DashboardLayout() {
     { to: "/", label: "Home Page", icon: Home, exact: true },
     { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true, tourAttr: 'dashboard-home' },
     { to: "/dashboard/ai-recruiter", label: "AI Recruiter", icon: Bot, tourAttr: 'nav-ai-recruiter' },
-    { to: "/dashboard/smart-analyzer", label: "Smart Analyzer", icon: Sparkles, tourAttr: 'nav-smart-analyzer' },
+    // { to: "/dashboard/smart-analyzer", label: "Smart Analyzer", icon: Sparkles, tourAttr: 'nav-smart-analyzer' },
     { to: "/dashboard/sessions", label: "Sessions", icon: Layers, tourAttr: 'nav-sessions' },
     { to: "/dashboard/settings", label: "Settings", icon: SettingsIcon, tourAttr: 'nav-settings' },
   ];
