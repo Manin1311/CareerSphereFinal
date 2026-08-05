@@ -89,12 +89,13 @@ def recommend_rounds(request, session_id):
 
     if session_id == "new":
         try:
-            data = json.loads(request.body)
-            job_title = data.get("job_title", "")
-            job_description = data.get("job_description", "")
-        except Exception as e:
-            return JsonResponse(error_response("Invalid JSON"), status=400)
+            raw_body = request.body.decode('utf-8') if request.body else "{}"
+            data = json.loads(raw_body) if raw_body.strip() else {}
+        except Exception:
+            data = {}
         
+        job_title = data.get("job_title", "")
+        job_description = data.get("job_description", "")
         agent = RoundRecommendationAgent()
         recommendation = agent.recommend(job_title, job_description)
         return JsonResponse(success_response(recommendation))
@@ -256,7 +257,7 @@ def _fallback_coding_problems(job_title):
                 "tags": item["tags"]
             }
         )
-        saved.append(problem)
+        saved.append({"slug": problem.slug, "difficulty": problem.difficulty})
     return saved
 
 
@@ -423,10 +424,15 @@ def create_session_rounds(request, session_id):
             if not coding_problems:
                 coding_problems = _fallback_coding_problems(session.job_title)
 
-        if coding_problems is None:
-            coding_problems = []
-
-        round_num = int(r.get("order")) if r.get("order") is not None else (idx + 1)
+        clean_coding = []
+        if isinstance(coding_problems, list):
+            for item in coding_problems:
+                if isinstance(item, dict):
+                    clean_coding.append(item)
+                elif hasattr(item, 'slug'):
+                    clean_coding.append({"slug": getattr(item, 'slug'), "difficulty": getattr(item, 'difficulty', 'medium')})
+                elif isinstance(item, str):
+                    clean_coding.append({"slug": item, "difficulty": "medium"})
 
         sr = SessionRound.objects.create(
             session=session,
@@ -435,7 +441,7 @@ def create_session_rounds(request, session_id):
             name=name,
             time_limit_minutes=time_limit,
             mcq_question_count=int(r.get("mcq_question_count", 30)) if round_type == 'mcq' else 0,
-            coding_problems=coding_problems,
+            coding_problems=clean_coding,
             interview_questions=r.get("interview_questions", []) if round_type == 'interview' else [],
             passing_score=int(r.get("passing_score", 50))
         )
