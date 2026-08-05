@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CareerSphere - 05. Database Schema & Data Models</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root {
+      --bg-dark: #0a0a0f;
+      --bg-card: #12131c;
+      --bg-card-hover: #1a1b28;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-glow: rgba(99, 102, 241, 0.35);
+      --primary: #6366f1;
+      --primary-light: #818cf8;
+      --accent-cyan: #06b6d4;
+      --accent-emerald: #10b981;
+      --accent-rose: #f43f5e;
+      --accent-amber: #f59e0b;
+      --accent-violet: #8b5cf6;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background-color: var(--bg-dark); color: var(--text-main); font-family: 'Inter', sans-serif; line-height: 1.6; overflow-x: hidden; }
+    h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; }
+    code, pre { font-family: 'Fira Code', monospace; }
+
+    .nav-bar {
+      position: fixed; top: 0; left: 0; right: 0; height: 70px;
+      background: rgba(10, 10, 15, 0.85); backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-color); z-index: 1000;
+      display: flex; align-items: center; justify-content: space-between; padding: 0 2rem;
+    }
+    .brand { display: flex; align-items: center; gap: 0.75rem; font-size: 1.25rem; font-weight: 700; color: #fff; text-decoration: none; }
+    .brand-icon { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--primary), var(--accent-violet)); display: flex; align-items: center; justify-content: center; }
+    .nav-links { display: flex; gap: 1rem; }
+    .nav-link { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; font-weight: 500; padding: 0.5rem 0.75rem; border-radius: 8px; transition: all 0.2s; }
+    .nav-link:hover, .nav-link.active { color: #fff; background: rgba(255, 255, 255, 0.05); }
+    .nav-link.active { color: var(--primary-light); border-bottom: 2px solid var(--primary); }
+
+    .container { max-width: 1280px; margin: 90px auto 40px auto; padding: 0 2rem; }
+    .slide { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 24px; padding: 3rem; margin-bottom: 3rem; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+    .slide-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.35rem 0.85rem; border-radius: 9999px; background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); color: var(--primary-light); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; margin-bottom: 1rem; }
+    .slide-title { font-size: 2.25rem; font-weight: 800; color: #fff; margin-bottom: 1rem; background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .slide-description { font-size: 1.1rem; color: var(--text-muted); max-width: 900px; margin-bottom: 2rem; }
+
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+
+    .table-card {
+      background: #06060a;
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 1.5rem;
+      position: relative;
+    }
+
+    .table-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .table-name { font-family: 'Fira Code', monospace; font-size: 1.1rem; font-weight: 700; color: var(--accent-cyan); }
+    .table-tag { font-size: 0.75rem; padding: 0.2rem 0.5rem; border-radius: 6px; background: rgba(99, 102, 241, 0.15); color: var(--primary-light); }
+
+    .field-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      padding: 0.4rem 0;
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
+    }
+
+    .field-name { font-family: 'Fira Code', monospace; color: #fff; }
+    .field-type { color: var(--accent-amber); font-size: 0.75rem; }
+    .field-pk { color: var(--accent-rose); font-size: 0.75rem; font-weight: 700; }
+    .field-fk { color: var(--accent-emerald); font-size: 0.75rem; font-weight: 700; }
+
+    @media print {
+      .nav-bar { display: none; }
+      .container { margin: 0; padding: 0; max-width: 100%; }
+      .slide { page-break-after: always; border: none; box-shadow: none; padding: 2rem; background: #0a0a0f !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav-bar">
+    <a href="#" class="brand">
+      <div class="brand-icon"><i data-lucide="layers"></i></div>
+      <span>CareerSphere Presentation</span>
+    </a>
+    <div class="nav-links">
+      <a href="01_project_overview.html" class="nav-link">01. Overview</a>
+      <a href="02_architecture.html" class="nav-link">02. Architecture</a>
+      <a href="03_frontend_backend.html" class="nav-link">03. Stack</a>
+      <a href="04_technical_implementation.html" class="nav-link">04. Algorithms</a>
+      <a href="05_database.html" class="nav-link active">05. Database</a>
+      <a href="06_viva_qa.html" class="nav-link">06. Viva Q&A</a>
+    </div>
+  </nav>
+
+  <div class="container">
+
+    <!-- SLIDE 1: Entity Relationship & Schema -->
+    <div class="slide" id="slide1">
+      <div class="slide-badge"><i data-lucide="database"></i> Document 05 — Database</div>
+      <h1 class="slide-title">PostgreSQL Schema & Entity Relationships</h1>
+      <p class="slide-description">
+        Hybrid relational-document database design utilizing UUID primary keys, foreign key cascades, and flexible JSONB fields for dynamic resume schemas & recruiter rubrics.
+      </p>
+
+      <div class="grid-3">
+        <!-- Table 1: JobSeekerAccount -->
+        <div class="table-card">
+          <div class="table-header">
+            <span class="table-name">JobSeekerAccount</span>
+            <span class="table-tag">User Auth</span>
+          </div>
+          <div class="field-row">
+            <span class="field-name">id</span>
+            <span class="field-pk">PK (UUID)</span>
+          </div>
+          <div class="field-row">
+            <span class="field-name">full_name</span>
+            <span class="field-type">VARCHAR(255)</span>
+          </div>
+          <div class="field-row">
+            <span class="field-name">email</span>
+            <span class="field-type">VARCHAR (UNIQUE)</span>
+          </div>
+          <div class="field-row">
+            <span class="field-name">password_hash</span>
+            <span class="field-type">VARCHAR(255)</span>
+          </div>
+          <div class="field-row">
+            <span class="field-name">resume_data</span>
+            <span class="field-type">JSONB</span>
+          </div>
+          <div class="field-row">
+            <span class="field-name">resume_file_path</span>
+            <span class="field-type">VARCHAR(512)</span>
+          </div>
+        </div>
+
+        <!-- Table 2: Company -->
+        <div class="table-card">
+          <div class="table-header">
+            <span class="table-name">Company</span>
+            <span class="table-tag">Recruiter Auth</span>
+          </div>
+          <div class="field-row">
+            <span class="field-name">id</span>
+            <span class="field-pk">PK (UUID)</span>
+          </div>
+          <div class="field-row">
+            <span class="field-name">name</span>
+            <span class="field-type">VARCHAR(255)</span>
+          </div>
+          <div class="field-row">
+            <span class="field-name">email</span>
+            <span class="field-type">VARCHAR (UNIQUE)</span>
+          </div>
+          <div class="field-row">
+            <span class="field-name">tier</span>
+            <span class="field-type">VARCHAR(50)</span>
+          </div>
+          <div class="field-row">
+            <span class="field-name">api_keys</span>
+            <span class="field-type">JSONB Array</span>
+          </div>
+          <div class="field-row">
+            <span class="field-name">logo_path</span>
+            <span class="field-type">VARCHAR(512)</span>
+          </div>
+        </div>
+
+        <!-- Table 3: Session (Job) -->
+        <div class="table-card">
+          <div class="table-header">
+            <span class="table-name">Session (Job)</span>
+            <span class="table-tag">Hiring Campaign</span>
+          </div>
+          <div class="field-row">
+            <span class="field-name">id</span>
+            <span class="field-pk">PK (UUID)</span>
+          </div>
+          <div class="field-row">
+            <span class="field-name">company_id</span>
+            <span class="field-fk">FK -> Company</span>
+          </div>
+          <div class="field-row">
+            <span class="field-name">job_title</span>
+            <span class="field-type">VARCHAR(255)</span>
+          </div>
+          <div class="field-row">
+            <span class="field-name">job_description</span>
+            <span class="field-type">TEXT</span>
+          </div>
+          <div class="field-row">
+            <span class="field-name">criteria</span>
+            <span class="field-type">JSONB (Rubric)</span>
+          </div>
+          <div class="field-row">
+            <span class="field-name">status</span>
+            <span class="field-type">VARCHAR ('active')</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 2: Application & Round Attempts -->
+    <div class="slide" id="slide2">
+      <div class="slide-badge"><i data-lucide="git-pull-request"></i> Candidate Progression</div>
+      <h2 class="slide-title">Job Application & Interview Attempts Schema</h2>
+      
+      <div class="grid-2" style="margin-top: 1.5rem;">
+        <!-- Table 4: Candidate -->
+        <div class="table-card">
+          <div class="table-header">
+            <span class="table-name">Candidate</span>
+            <span class="table-tag">Session Evaluation</span>
+          </div>
+          <div class="field-row"><span class="field-name">id</span><span class="field-pk">PK (UUID)</span></div>
+          <div class="field-row"><span class="field-name">session_id</span><span class="field-fk">FK -> Session</span></div>
+          <div class="field-row"><span class="field-name">name, email</span><span class="field-type">VARCHAR</span></div>
+          <div class="field-row"><span class="field-name">match_score</span><span class="field-type">FLOAT (0 - 100)</span></div>
+          <div class="field-row"><span class="field-name">match_reason</span><span class="field-type">JSONB (Breakdown)</span></div>
+          <div class="field-row"><span class="field-name">current_round_index</span><span class="field-type">INT</span></div>
+        </div>
+
+        <!-- Table 5: ApplicantRoundAttempt -->
+        <div class="table-card">
+          <div class="table-header">
+            <span class="table-name">ApplicantRoundAttempt</span>
+            <span class="table-tag">Live Interview</span>
+          </div>
+          <div class="field-row"><span class="field-name">id</span><span class="field-pk">PK (UUID)</span></div>
+          <div class="field-row"><span class="field-name">candidate_id</span><span class="field-fk">FK -> Candidate</span></div>
+          <div class="field-row"><span class="field-name">round_index</span><span class="field-type">INT</span></div>
+          <div class="field-row"><span class="field-name">round_data</span><span class="field-type">JSONB (Questions)</span></div>
+          <div class="field-row"><span class="field-name">score</span><span class="field-type">FLOAT</span></div>
+          <div class="field-row"><span class="field-name">status</span><span class="field-type">VARCHAR ('passed','failed')</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>lucide.createIcons();</script>
+</body>
+</html>

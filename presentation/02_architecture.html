@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CareerSphere - 02. System Architecture & Multi-Agent Flow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root {
+      --bg-dark: #0a0a0f;
+      --bg-card: #12131c;
+      --bg-card-hover: #1a1b28;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-glow: rgba(99, 102, 241, 0.35);
+      --primary: #6366f1;
+      --primary-light: #818cf8;
+      --accent-cyan: #06b6d4;
+      --accent-emerald: #10b981;
+      --accent-rose: #f43f5e;
+      --accent-amber: #f59e0b;
+      --accent-violet: #8b5cf6;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background-color: var(--bg-dark); color: var(--text-main); font-family: 'Inter', sans-serif; line-height: 1.6; overflow-x: hidden; }
+    h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; }
+    code, pre { font-family: 'Fira Code', monospace; }
+
+    .nav-bar {
+      position: fixed; top: 0; left: 0; right: 0; height: 70px;
+      background: rgba(10, 10, 15, 0.85); backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-color); z-index: 1000;
+      display: flex; align-items: center; justify-content: space-between; padding: 0 2rem;
+    }
+    .brand { display: flex; align-items: center; gap: 0.75rem; font-size: 1.25rem; font-weight: 700; color: #fff; text-decoration: none; }
+    .brand-icon { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--primary), var(--accent-violet)); display: flex; align-items: center; justify-content: center; }
+    .nav-links { display: flex; gap: 1rem; }
+    .nav-link { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; font-weight: 500; padding: 0.5rem 0.75rem; border-radius: 8px; transition: all 0.2s; }
+    .nav-link:hover, .nav-link.active { color: #fff; background: rgba(255, 255, 255, 0.05); }
+    .nav-link.active { color: var(--primary-light); border-bottom: 2px solid var(--primary); }
+
+    .container { max-width: 1280px; margin: 90px auto 40px auto; padding: 0 2rem; }
+    .slide { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 24px; padding: 3rem; margin-bottom: 3rem; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+    .slide-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.35rem 0.85rem; border-radius: 9999px; background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); color: var(--primary-light); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; margin-bottom: 1rem; }
+    .slide-title { font-size: 2.25rem; font-weight: 800; color: #fff; margin-bottom: 1rem; background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .slide-description { font-size: 1.1rem; color: var(--text-muted); max-width: 900px; margin-bottom: 2rem; }
+
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+
+    /* Visual Architecture Nodes Diagram */
+    .arch-diagram {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 2.5rem;
+      position: relative;
+      margin: 2rem 0;
+    }
+
+    .arch-row {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      margin-bottom: 2rem;
+      position: relative;
+    }
+
+    .arch-node {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 1.25rem 1.75rem;
+      text-align: center;
+      min-width: 180px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      position: relative;
+      z-index: 2;
+      transition: all 0.3s;
+    }
+
+    .arch-node:hover {
+      border-color: var(--primary);
+      transform: scale(1.05);
+      box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);
+    }
+
+    .arch-node-title { font-weight: 700; color: #fff; font-size: 1rem; margin-bottom: 0.25rem; }
+    .arch-node-sub { font-size: 0.75rem; color: var(--text-muted); }
+
+    .node-frontend { border-top: 3px solid var(--accent-cyan); }
+    .node-gateway { border-top: 3px solid var(--primary); }
+    .node-agents { border-top: 3px solid var(--accent-violet); }
+    .node-db { border-top: 3px solid var(--accent-emerald); }
+    .node-worker { border-top: 3px solid var(--accent-amber); }
+
+    /* Timeline Lifecycle */
+    .timeline {
+      position: relative;
+      padding-left: 2rem;
+      border-left: 2px dashed rgba(99, 102, 241, 0.3);
+      margin-top: 2rem;
+    }
+
+    .timeline-item {
+      position: relative;
+      margin-bottom: 2rem;
+    }
+
+    .timeline-dot {
+      position: absolute;
+      left: -2.45rem;
+      top: 0.25rem;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--primary);
+      box-shadow: 0 0 10px var(--primary);
+    }
+
+    .timeline-title { font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 0.25rem; }
+    .timeline-desc { font-size: 0.95rem; color: var(--text-muted); }
+
+    .code-box {
+      background: #06060a;
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 1.25rem;
+      font-size: 0.85rem;
+      color: #a5b4fc;
+      overflow-x: auto;
+      margin-top: 1rem;
+    }
+
+    @media print {
+      .nav-bar { display: none; }
+      .container { margin: 0; padding: 0; max-width: 100%; }
+      .slide { page-break-after: always; border: none; box-shadow: none; padding: 2rem; background: #0a0a0f !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav-bar">
+    <a href="#" class="brand">
+      <div class="brand-icon"><i data-lucide="layers"></i></div>
+      <span>CareerSphere Presentation</span>
+    </a>
+    <div class="nav-links">
+      <a href="01_project_overview.html" class="nav-link">01. Overview</a>
+      <a href="02_architecture.html" class="nav-link active">02. Architecture</a>
+      <a href="03_frontend_backend.html" class="nav-link">03. Stack</a>
+      <a href="04_technical_implementation.html" class="nav-link">04. Algorithms</a>
+      <a href="05_database.html" class="nav-link">05. Database</a>
+      <a href="06_viva_qa.html" class="nav-link">06. Viva Q&A</a>
+    </div>
+  </nav>
+
+  <div class="container">
+
+    <!-- SLIDE 1: High Level System Architecture -->
+    <div class="slide" id="slide1">
+      <div class="slide-badge"><i data-lucide="network"></i> Document 02 — Architecture</div>
+      <h1 class="slide-title">System Architecture Overview</h1>
+      <p class="slide-description">
+        CareerSphere is structured as a decoupled multi-tier system: React SPA frontend, Django REST Framework application server, Gemini 2.5 LLM Multi-Agent network, and asynchronous Celery/Redis queue.
+      </p>
+
+      <!-- Architecture Diagram Visual -->
+      <div class="arch-diagram">
+        <div class="arch-row">
+          <div class="arch-node node-frontend">
+            <i data-lucide="layout" style="color: var(--accent-cyan); margin-bottom: 0.5rem;"></i>
+            <div class="arch-node-title">React 18 SPA</div>
+            <div class="arch-node-sub">Vite, Tailwind, Zustand</div>
+          </div>
+          <div style="color: var(--text-muted); font-size: 1.5rem;">➔</div>
+          <div class="arch-node node-gateway">
+            <i data-lucide="server" style="color: var(--primary-light); margin-bottom: 0.5rem;"></i>
+            <div class="arch-node-title">Django REST API</div>
+            <div class="arch-node-sub">JWT Middleware & Router</div>
+          </div>
+          <div style="color: var(--text-muted); font-size: 1.5rem;">➔</div>
+          <div class="arch-node node-worker">
+            <i data-lucide="cpu" style="color: var(--accent-amber); margin-bottom: 0.5rem;"></i>
+            <div class="arch-node-title">Celery + Redis</div>
+            <div class="arch-node-sub">Async Task Queue</div>
+          </div>
+        </div>
+
+        <div class="arch-row" style="margin-bottom: 0;">
+          <div class="arch-node node-db">
+            <i data-lucide="database" style="color: var(--accent-emerald); margin-bottom: 0.5rem;"></i>
+            <div class="arch-node-title">PostgreSQL DB</div>
+            <div class="arch-node-sub">JSONB + Relational Models</div>
+          </div>
+          <div style="color: var(--text-muted); font-size: 1.5rem;">⇄</div>
+          <div class="arch-node node-agents" style="min-width: 320px;">
+            <i data-lucide="bot" style="color: var(--accent-violet); margin-bottom: 0.5rem;"></i>
+            <div class="arch-node-title">Multi-Agent AI Pool</div>
+            <div class="arch-node-sub">RotateLLMClient (Gemini 2.5 Flash / Pro)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 2: Multi-Agent Mesh & Rotation -->
+    <div class="slide" id="slide2">
+      <div class="slide-badge"><i data-lucide="bot"></i> AI Engine Architecture</div>
+      <h2 class="slide-title">Multi-Agent AI Network & RotateLLMClient</h2>
+      <p class="slide-description">
+        Rather than a monolithic prompt, CareerSphere delegates tasks to autonomous specialized agents. The <code>RotateLLMClient</code> manages key rotation to eliminate API rate-limits and optimize token costs.
+      </p>
+
+      <div class="grid-3">
+        <div class="arch-node" style="text-align: left; background: rgba(255,255,255,0.02);">
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+            <span style="background: rgba(99,102,241,0.2); padding: 0.3rem 0.6rem; border-radius: 6px; color: var(--primary-light); font-weight: 700; font-size: 0.8rem;">AGENT 01</span>
+            <h4 style="color: #fff;">ATS Parser Agent</h4>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">
+            PyMuPDF coordinate block vertical splitting + Gemini 2.5 Flash. Extracts structured JSON resume profiles.
+          </p>
+        </div>
+
+        <div class="arch-node" style="text-align: left; background: rgba(255,255,255,0.02);">
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+            <span style="background: rgba(6,182,212,0.2); padding: 0.3rem 0.6rem; border-radius: 6px; color: var(--accent-cyan); font-weight: 700; font-size: 0.8rem;">AGENT 02</span>
+            <h4 style="color: #fff;">Inference Agent</h4>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">
+            Analyzes raw Job Descriptions to infer missing skills, experience bounds, salary ranges, and seniority levels.
+          </p>
+        </div>
+
+        <div class="arch-node" style="text-align: left; background: rgba(255,255,255,0.02);">
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+            <span style="background: rgba(16,185,129,0.2); padding: 0.3rem 0.6rem; border-radius: 6px; color: var(--accent-emerald); font-weight: 700; font-size: 0.8rem;">AGENT 03</span>
+            <h4 style="color: #fff;">Criteria & Scoring Agent</h4>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">
+            Computes multi-dimensional vector match scores between applicant profiles and company job rubrics.
+          </p>
+        </div>
+
+        <div class="arch-node" style="text-align: left; background: rgba(255,255,255,0.02);">
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+            <span style="background: rgba(245,158,11,0.2); padding: 0.3rem 0.6rem; border-radius: 6px; color: var(--accent-amber); font-weight: 700; font-size: 0.8rem;">AGENT 04</span>
+            <h4 style="color: #fff;">Interview Bot Agent</h4>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">
+            Generates custom MCQ and Coding questions per candidate skill gap, evaluating responses in real-time.
+          </p>
+        </div>
+
+        <div class="arch-node" style="text-align: left; background: rgba(255,255,255,0.02);">
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+            <span style="background: rgba(244,63,94,0.2); padding: 0.3rem 0.6rem; border-radius: 6px; color: var(--accent-rose); font-weight: 700; font-size: 0.8rem;">AGENT 05</span>
+            <h4 style="color: #fff;">Notification Agent</h4>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">
+            Monitors score updates, triggers email alerts for top match candidates (&gt;85%), and posts webhooks.
+          </p>
+        </div>
+
+        <div class="arch-node" style="text-align: left; background: rgba(255,255,255,0.02);">
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+            <span style="background: rgba(139,92,246,0.2); padding: 0.3rem 0.6rem; border-radius: 6px; color: var(--accent-violet); font-weight: 700; font-size: 0.8rem;">MANAGER</span>
+            <h4 style="color: #fff;">RotateLLMClient</h4>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">
+            Thread-safe round-robin API key manager with automatic failover and exponential retry backoff.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 3: End-to-End Request Lifecycle -->
+    <div class="slide" id="slide3">
+      <div class="slide-badge"><i data-lucide="git-commit"></i> Data Lifecycle</div>
+      <h2 class="slide-title">End-to-End Candidate Application Lifecycle</h2>
+      
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-title">1. PDF Resume Upload</div>
+          <div class="timeline-desc">User uploads resume. Standard HTTP multipart POST sent to <code>/api/seeker/upload-resume/</code> with JWT bearer token.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot" style="background: var(--accent-cyan); box-shadow: 0 0 10px var(--accent-cyan);"></div>
+          <div class="timeline-title">2. Geometry-Aware Text Extraction</div>
+          <div class="timeline-desc"><code>AdvancedAtsParsingAgent.extract_text_column_aware()</code> analyzes PDF layout, detects two-column splits, and preserves section order.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot" style="background: var(--accent-violet); box-shadow: 0 0 10px var(--accent-violet);"></div>
+          <div class="timeline-title">3. Structured LLM Parsing</div>
+          <div class="timeline-desc">Resume text sent to Gemini 2.5 Flash via <code>RotateLLMClient</code>. Transformed into canonical JSON schema (skills, exp, education).</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot" style="background: var(--accent-emerald); box-shadow: 0 0 10px var(--accent-emerald);"></div>
+          <div class="timeline-title">4. Job Matching & Rubric Evaluation</div>
+          <div class="timeline-desc">Job criteria weights evaluated against parsed resume data. Vector scores computed for Skills, Experience, Location & Salary.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot" style="background: var(--accent-amber); box-shadow: 0 0 10px var(--accent-amber);"></div>
+          <div class="timeline-title">5. Persistence & Recruiter Alert</div>
+          <div class="timeline-desc">Candidate record saved in PostgreSQL. If score &ge; 80%, high-match email notification queued via Celery to company recruiters.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>lucide.createIcons();</script>
+</body>
+</html>

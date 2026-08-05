@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CareerSphere – 04. Database Architecture (SQLite)</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', Arial, sans-serif;
+      background: #0a0a0f;
+      color: #e2e8f0;
+      font-size: 11pt;
+      line-height: 1.7;
+    }
+
+    .page { max-width: 900px; margin: 0 auto; padding: 40px 44px; }
+
+    /* ── Cover ── */
+    .cover {
+      text-align: center;
+      padding: 48px 0 36px;
+      border-radius: 18px;
+      border: 1px solid rgba(245,158,11,0.25);
+      background: linear-gradient(135deg, rgba(245,158,11,0.07) 0%, rgba(239,68,68,0.04) 100%);
+      margin-bottom: 44px;
+    }
+    .cover .logo-text {
+      font-size: 36pt; font-weight: 900; color: #fff; letter-spacing: -1px;
+    }
+    .cover .logo-text span {
+      background: linear-gradient(135deg, #f59e0b, #ef4444);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .cover .tagline { font-size: 12pt; color: #94a3b8; margin-top: 8px; }
+    .cover .meta { margin-top: 12px; font-size: 8.5pt; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* ── Section Title ── */
+    .section-title {
+      font-size: 15.5pt; font-weight: 800; color: #f1f5f9;
+      border-left: 4px solid #f59e0b; padding-left: 14px; margin: 40px 0 18px;
+    }
+
+    .intro {
+      color: #94a3b8; font-size: 10.5pt;
+      background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px; padding: 18px 22px; margin-bottom: 28px; line-height: 1.8;
+    }
+
+    /* ── Model Table ── */
+    .model-block {
+      background: rgba(255,255,255,0.015);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 24px;
+      break-inside: avoid;
+    }
+
+    .model-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 20px;
+      background: rgba(245,158,11,0.08);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .model-header .model-icon {
+      font-size: 18px;
+    }
+
+    .model-header .model-name {
+      font-family: 'Fira Code', monospace;
+      font-size: 11.5pt;
+      font-weight: 700;
+      color: #fbbf24;
+    }
+
+    .model-header .table-name {
+      font-family: 'Fira Code', monospace;
+      font-size: 8.5pt;
+      color: #64748b;
+      margin-left: auto;
+    }
+
+    .model-header .model-badge {
+      font-size: 7.5pt;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      flex-shrink: 0;
+    }
+
+    .badge-recruiter { background: rgba(99,102,241,0.2); color: #818cf8; }
+    .badge-seeker    { background: rgba(16,185,129,0.2); color: #34d399; }
+    .badge-ai        { background: rgba(139,92,246,0.2); color: #a78bfa; }
+    .badge-billing   { background: rgba(245,158,11,0.2); color: #fbbf24; }
+    .badge-system    { background: rgba(6,182,212,0.2);  color: #22d3ee; }
+    .badge-config    { background: rgba(244,63,94,0.2);  color: #fb7185; }
+
+    .field-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .field-table th {
+      background: rgba(255,255,255,0.03);
+      color: #64748b;
+      font-weight: 600;
+      text-align: left;
+      padding: 9px 16px;
+      font-size: 8pt;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .field-table td {
+      padding: 9px 16px;
+      font-size: 9pt;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .field-table tr:last-child td { border-bottom: none; }
+    .field-table tr:hover td { background: rgba(245,158,11,0.03); }
+
+    .td-field {
+      font-family: 'Fira Code', monospace;
+      color: #60a5fa;
+      font-size: 8.5pt;
+    }
+
+    .td-type {
+      font-family: 'Fira Code', monospace;
+      color: #34d399;
+      font-size: 8.5pt;
+    }
+
+    .td-note { color: #94a3b8; }
+
+    .td-pk  { color: #fbbf24; font-weight: 700; }
+    .td-fk  { color: #a78bfa; }
+    .td-idx { color: #22d3ee; }
+
+    /* ── ER Relationship Diagram ── */
+    .er-diagram {
+      background: #06060a;
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 16px;
+      padding: 28px 24px;
+      margin-bottom: 28px;
+      break-inside: avoid;
+    }
+
+    .er-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    .er-row:last-child { margin-bottom: 0; }
+
+    .er-box {
+      background: rgba(245,158,11,0.1);
+      border: 1.5px solid rgba(245,158,11,0.3);
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-family: 'Fira Code', monospace;
+      font-size: 9pt;
+      font-weight: 700;
+      color: #fbbf24;
+      text-align: center;
+      min-width: 110px;
+    }
+
+    .er-box.blue {
+      background: rgba(99,102,241,0.1);
+      border-color: rgba(99,102,241,0.3);
+      color: #818cf8;
+    }
+
+    .er-box.green {
+      background: rgba(16,185,129,0.1);
+      border-color: rgba(16,185,129,0.3);
+      color: #34d399;
+    }
+
+    .er-box.violet {
+      background: rgba(139,92,246,0.1);
+      border-color: rgba(139,92,246,0.3);
+      color: #a78bfa;
+    }
+
+    .er-box.cyan {
+      background: rgba(6,182,212,0.1);
+      border-color: rgba(6,182,212,0.3);
+      color: #22d3ee;
+    }
+
+    .er-box.rose {
+      background: rgba(244,63,94,0.1);
+      border-color: rgba(244,63,94,0.3);
+      color: #fb7185;
+    }
+
+    .er-box small {
+      display: block;
+      font-size: 7pt;
+      font-weight: 400;
+      opacity: 0.6;
+      margin-top: 2px;
+    }
+
+    .er-arrow {
+      color: #475569;
+      font-size: 16px;
+      font-weight: 300;
+    }
+
+    .er-label {
+      font-size: 7.5pt;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 3px 8px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 5px;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    /* ── Stats Row ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 32px;
+    }
+
+    .stat-box {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px;
+      padding: 18px 14px;
+      text-align: center;
+    }
+
+    .stat-num {
+      font-size: 24pt; font-weight: 900; color: #fff; line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 8pt; color: #64748b; text-transform: uppercase;
+      letter-spacing: 0.5px; font-weight: 600; margin-top: 6px;
+    }
+
+    .c-amber  { color: #fbbf24; }
+    .c-indigo { color: #818cf8; }
+    .c-emerald{ color: #34d399; }
+    .c-violet { color: #a78bfa; }
+    .c-cyan   { color: #22d3ee; }
+
+    /* ── Why SQLite ── */
+    .why-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    .why-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px;
+      padding: 18px 20px;
+      break-inside: avoid;
+    }
+
+    .why-card h4 {
+      font-size: 10pt;
+      font-weight: 700;
+      color: #f1f5f9;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .why-card p {
+      font-size: 9pt;
+      color: #94a3b8;
+      line-height: 1.6;
+    }
+
+    /* ── Code Block ── */
+    .code-block {
+      background: #06060a;
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px;
+      padding: 20px 24px;
+      font-family: 'Fira Code', monospace;
+      font-size: 9pt;
+      color: #e2e8f0;
+      line-height: 1.7;
+      margin-bottom: 24px;
+      overflow-x: auto;
+      position: relative;
+    }
+
+    .code-lang {
+      position: absolute; top: 8px; right: 12px;
+      font-size: 7.5pt; color: #475569; text-transform: uppercase;
+    }
+
+    .kw  { color: #f43f5e; }
+    .fn  { color: #60a5fa; }
+    .str { color: #34d399; }
+    .cmt { color: #475569; font-style: italic; }
+    .num { color: #fbbf24; }
+
+    .callout {
+      background: rgba(245,158,11,0.07);
+      border-left: 4px solid #f59e0b;
+      padding: 16px 20px;
+      border-radius: 0 12px 12px 0;
+      margin: 20px 0; break-inside: avoid;
+    }
+
+    .callout strong { color: #fbbf24; display: block; margin-bottom: 4px; font-size: 10.5pt; }
+    .callout p { color: #94a3b8; font-size: 9.5pt; }
+
+    @media print {
+      body { background: #0a0a0f; color: #e2e8f0; }
+      .page { padding: 20px 28px; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ── COVER ── -->
+  <div class="cover">
+    <div class="logo-text">Career<span>Sphere</span></div>
+    <div class="tagline">04. Database Architecture — SQLite via Django ORM</div>
+    <div class="meta">Schema Design · Models · Relationships · Indexing · JSONField Usage</div>
+  </div>
+
+  <!-- ── WHY SQLITE ── -->
+  <div class="section-title">Why SQLite?</div>
+  <div class="intro">
+    CareerSphere uses <strong style="color:#fbbf24;">SQLite</strong> as its primary database, accessed
+    entirely through Django's ORM layer. SQLite is an embedded, serverless, zero-configuration relational
+    database engine that is bundled with Python's standard library. All database access goes through
+    Django's ORM — meaning the system can be migrated to PostgreSQL or MySQL simply by changing the
+    <code style="color:#fbbf24;">DATABASES</code> setting in settings.py, with zero code changes required.
+    For a full-stack portfolio and demo deployment, SQLite provides the perfect balance of simplicity,
+    reliability, and feature completeness.
+  </div>
+
+  <div class="why-grid">
+    <div class="why-card">
+      <h4>⚡ Zero Configuration</h4>
+      <p>No separate database server process required. The entire database is a single <code>db.sqlite3</code> file in the project root. No connection string, no credentials, no port configuration needed.</p>
+    </div>
+    <div class="why-card">
+      <h4>🐍 Built into Python</h4>
+      <p>Python's standard library includes <code>sqlite3</code> module. No additional installation step is required. Works identically across Windows, Linux, and macOS — critical for the cross-platform install.bat script.</p>
+    </div>
+    <div class="why-card">
+      <h4>🔄 ORM Portability</h4>
+      <p>All queries use Django ORM (not raw SQL). Switching to PostgreSQL for production requires changing one dictionary in settings.py. Django generates the appropriate SQL dialect automatically.</p>
+    </div>
+    <div class="why-card">
+      <h4>📄 JSONField Support</h4>
+      <p>Django 3.1+ added native JSONField support for SQLite. CareerSphere extensively uses JSONField for storing parsed resume data, skill arrays, match details, and round configurations — all without needing a separate NoSQL store.</p>
+    </div>
+    <div class="why-card">
+      <h4>🔒 ACID Compliant</h4>
+      <p>SQLite is fully ACID compliant (Atomic, Consistent, Isolated, Durable). All writes are transactional. Django's database transactions (<code>transaction.atomic()</code>) work identically with SQLite as with PostgreSQL.</p>
+    </div>
+    <div class="why-card">
+      <h4>📦 Single-File Backups</h4>
+      <p>Backup the entire database by copying one file. For demo deployments and submission, this is far simpler than managing PostgreSQL dump files, pg_restore, and connection pools.</p>
+    </div>
+  </div>
+
+  <!-- ── DATABASE STATS ── -->
+  <div class="section-title">Database at a Glance</div>
+  <div class="stats-row">
+    <div class="stat-box">
+      <div class="stat-num c-amber">35+</div>
+      <div class="stat-label">DB Tables</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num c-indigo">UUID</div>
+      <div class="stat-label">All Primary Keys</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num c-emerald">12+</div>
+      <div class="stat-label">JSONField Columns</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num c-violet">3</div>
+      <div class="stat-label">User Portals</div>
+    </div>
+  </div>
+
+  <!-- ── ER DIAGRAM ── -->
+  <div class="section-title">Entity Relationship Overview</div>
+  <div class="er-diagram">
+    <!-- Row 1: Core company/session/candidate -->
+    <div class="er-row">
+      <div class="er-box blue">Company<small>companies</small></div>
+      <span class="er-arrow">→</span>
+      <span class="er-label">1 : N</span>
+      <span class="er-arrow">→</span>
+      <div class="er-box blue">Session<small>sessions</small></div>
+      <span class="er-arrow">→</span>
+      <span class="er-label">1 : N</span>
+      <span class="er-arrow">→</span>
+      <div class="er-box">Candidate<small>candidates</small></div>
+    </div>
+
+    <!-- Row 2: Seeker side -->
+    <div class="er-row">
+      <div class="er-box green">JobSeekerAccount<small>job_seeker_accounts</small></div>
+      <span class="er-arrow">→</span>
+      <span class="er-label">1 : N</span>
+      <span class="er-arrow">→</span>
+      <div class="er-box green">JobApplication<small>job_applications</small></div>
+      <span class="er-arrow">→</span>
+      <span class="er-label">links</span>
+      <span class="er-arrow">→</span>
+      <div class="er-box">Candidate<small>candidates</small></div>
+    </div>
+
+    <!-- Row 3: Resume builder -->
+    <div class="er-row">
+      <div class="er-box green">JobSeekerAccount<small>job_seeker_accounts</small></div>
+      <span class="er-arrow">→</span>
+      <span class="er-label">1 : N</span>
+      <span class="er-arrow">→</span>
+      <div class="er-box violet">ResumeDraft<small>resume_drafts</small></div>
+      <span class="er-arrow">→</span>
+      <span class="er-label">1 : N</span>
+      <span class="er-arrow">→</span>
+      <div class="er-box violet">ResumeVersion<small>resume_versions</small></div>
+    </div>
+
+    <!-- Row 4: Interview rounds -->
+    <div class="er-row">
+      <div class="er-box blue">Session<small>sessions</small></div>
+      <span class="er-arrow">→</span>
+      <span class="er-label">1 : N</span>
+      <span class="er-arrow">→</span>
+      <div class="er-box cyan">SessionRound<small>session_rounds</small></div>
+      <span class="er-arrow">→</span>
+      <span class="er-label">1 : N</span>
+      <span class="er-arrow">→</span>
+      <div class="er-box rose">ApplicantRoundAttempt<small>applicant_round_attempts</small></div>
+    </div>
+
+    <!-- Row 5: LLM key management -->
+    <div class="er-row">
+      <div class="er-box violet">GeminiProject<small>gemini_projects</small></div>
+      <span class="er-arrow">→</span>
+      <span class="er-label">1 : N</span>
+      <span class="er-arrow">→</span>
+      <div class="er-box violet">GeminiApiKey<small>gemini_api_keys</small></div>
+      <span class="er-arrow">&nbsp;&nbsp;&nbsp;&nbsp;</span>
+      <div class="er-box rose">AgentModelConfig<small>agent_model_config</small></div>
+      <span class="er-arrow">&nbsp;&nbsp;&nbsp;&nbsp;</span>
+      <div class="er-box rose">GroqApiKey<small>groq_api_keys</small></div>
+    </div>
+  </div>
+
+  <!-- ── CORE MODELS ── -->
+  <div class="section-title">Core Recruiter-Side Models</div>
+
+  <!-- Company -->
+  <div class="model-block">
+    <div class="model-header">
+      <span class="model-icon">🏢</span>
+      <span class="model-name">Company</span>
+      <span class="model-badge badge-recruiter">Recruiter</span>
+      <span class="table-name">db_table: "companies"</span>
+    </div>
+    <table class="field-table">
+      <thead>
+        <tr>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="td-field td-pk">id</td>
+          <td class="td-type">UUIDField</td>
+          <td class="td-note">Primary Key, auto-generated via uuid4</td>
+        </tr>
+        <tr>
+          <td class="td-field">name</td>
+          <td class="td-type">CharField(255)</td>
+          <td class="td-note td-idx">db_index=True — fast company lookup</td>
+        </tr>
+        <tr>
+          <td class="td-field">email</td>
+          <td class="td-type">CharField(255)</td>
+          <td class="td-note">unique=True — login credential</td>
+        </tr>
+        <tr>
+          <td class="td-field">password_hash</td>
+          <td class="td-type">CharField(500)</td>
+          <td class="td-note">Django PBKDF2-SHA256 hash stored</td>
+        </tr>
+        <tr>
+          <td class="td-field">tier</td>
+          <td class="td-type">CharField(50)</td>
+          <td class="td-note">free | business | enterprise</td>
+        </tr>
+        <tr>
+          <td class="td-field">notification_settings</td>
+          <td class="td-type">JSONField</td>
+          <td class="td-note">{"new_candidate_applied": true, "weekly_digest": false}</td>
+        </tr>
+        <tr>
+          <td class="td-field">rating</td>
+          <td class="td-type">FloatField</td>
+          <td class="td-note">Aggregate review rating (0.0–5.0)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Session -->
+  <div class="model-block">
+    <div class="model-header">
+      <span class="model-icon">📋</span>
+      <span class="model-name">Session</span>
+      <span class="model-badge badge-recruiter">Recruiter</span>
+      <span class="table-name">db_table: "sessions"</span>
+    </div>
+    <table class="field-table">
+      <thead>
+        <tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="td-field td-pk">id</td>
+          <td class="td-type">UUIDField</td>
+          <td class="td-note">Primary Key</td>
+        </tr>
+        <tr>
+          <td class="td-field td-fk">company</td>
+          <td class="td-type">ForeignKey → Company</td>
+          <td class="td-note">CASCADE delete; the owning company</td>
+        </tr>
+        <tr>
+          <td class="td-field">job_title</td>
+          <td class="td-type">CharField(255)</td>
+          <td class="td-note">Role being hired for</td>
+        </tr>
+        <tr>
+          <td class="td-field">job_description</td>
+          <td class="td-type">TextField</td>
+          <td class="td-note">Full JD fed into InferenceAgent</td>
+        </tr>
+        <tr>
+          <td class="td-field">criteria</td>
+          <td class="td-type">JSONField</td>
+          <td class="td-note">{"required_skills":[], "weights":{}, "min_experience": 2} — set by InferenceAgent</td>
+        </tr>
+        <tr>
+          <td class="td-field">inferred_skills</td>
+          <td class="td-type">JSONField</td>
+          <td class="td-note">Skills extracted from JD by AI agent</td>
+        </tr>
+        <tr>
+          <td class="td-field">rounds</td>
+          <td class="td-type">JSONField</td>
+          <td class="td-note">List of round config objects (legacy; SessionRound model used now)</td>
+        </tr>
+        <tr>
+          <td class="td-field">status</td>
+          <td class="td-type">CharField(50)</td>
+          <td class="td-note td-idx">db_index=True — active | paused | closed</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Candidate -->
+  <div class="model-block">
+    <div class="model-header">
+      <span class="model-icon">👤</span>
+      <span class="model-name">Candidate</span>
+      <span class="model-badge badge-ai">AI-Scored</span>
+      <span class="table-name">db_table: "candidates"</span>
+    </div>
+    <table class="field-table">
+      <thead>
+        <tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="td-field td-pk">id</td>
+          <td class="td-type">UUIDField</td>
+          <td class="td-note">Primary Key</td>
+        </tr>
+        <tr>
+          <td class="td-field td-fk">session</td>
+          <td class="td-type">ForeignKey → Session</td>
+          <td class="td-note">Which job this candidate is in</td>
+        </tr>
+        <tr>
+          <td class="td-field">raw_resume_data</td>
+          <td class="td-type">JSONField</td>
+          <td class="td-note">Full parsed resume: summary, skills, experience[], education[], projects[]</td>
+        </tr>
+        <tr>
+          <td class="td-field">normalized_skills</td>
+          <td class="td-type">JSONField</td>
+          <td class="td-note">[{"canonical_skill":"React","years":3}, ...] — output of NormalizationAgent</td>
+        </tr>
+        <tr>
+          <td class="td-field">match_score</td>
+          <td class="td-type">FloatField</td>
+          <td class="td-note td-idx">db_index=True — enables ORDER BY match_score queries</td>
+        </tr>
+        <tr>
+          <td class="td-field">match_details</td>
+          <td class="td-type">JSONField</td>
+          <td class="td-note">{"skill_score":85, "exp_score":90, "location_score":100, "missing_skills":[]}</td>
+        </tr>
+        <tr>
+          <td class="td-field">total_experience_years</td>
+          <td class="td-type">FloatField</td>
+          <td class="td-note">Computed from experience[] blocks by parsing agent</td>
+        </tr>
+        <tr>
+          <td class="td-field">status</td>
+          <td class="td-type">CharField(50)</td>
+          <td class="td-note td-idx">db_index=True — new | shortlisted | rejected | hired</td>
+        </tr>
+        <tr>
+          <td class="td-field">deleted_at</td>
+          <td class="td-type">DateTimeField (nullable)</td>
+          <td class="td-note">Soft delete support — NULL means active</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── SEEKER MODELS ── -->
+  <div class="section-title">Core Job Seeker Portal Models</div>
+
+  <!-- JobSeekerAccount -->
+  <div class="model-block">
+    <div class="model-header">
+      <span class="model-icon">🎓</span>
+      <span class="model-name">JobSeekerAccount</span>
+      <span class="model-badge badge-seeker">Seeker</span>
+      <span class="table-name">db_table: "job_seeker_accounts"</span>
+    </div>
+    <table class="field-table">
+      <thead>
+        <tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="td-field td-pk">id</td>
+          <td class="td-type">UUIDField</td>
+          <td class="td-note">Primary Key</td>
+        </tr>
+        <tr>
+          <td class="td-field">resume_data</td>
+          <td class="td-type">JSONField</td>
+          <td class="td-note">Full parsed resume JSON (populated on resume upload + AI parse)</td>
+        </tr>
+        <tr>
+          <td class="td-field">enhanced_resume</td>
+          <td class="td-type">JSONField</td>
+          <td class="td-note">AI-improved version from ResumeEnhancerAgent</td>
+        </tr>
+        <tr>
+          <td class="td-field">skills</td>
+          <td class="td-type">JSONField</td>
+          <td class="td-note">Normalized skills list used for AI job matching</td>
+        </tr>
+        <tr>
+          <td class="td-field">open_to</td>
+          <td class="td-type">JSONField</td>
+          <td class="td-note">{"workTypes":["remote","hybrid"], "roles":["backend"], "locations":["Bangalore"]}</td>
+        </tr>
+        <tr>
+          <td class="td-field">active_resume_draft</td>
+          <td class="td-type">ForeignKey → ResumeDraft (nullable)</td>
+          <td class="td-note">Points to the currently active resume builder draft</td>
+        </tr>
+        <tr>
+          <td class="td-field">last_ats_score</td>
+          <td class="td-type">FloatField (nullable)</td>
+          <td class="td-note">Cached ATS compatibility score from last evaluation</td>
+        </tr>
+        <tr>
+          <td class="td-field">tier</td>
+          <td class="td-type">CharField(50)</td>
+          <td class="td-note">free | premium — controls feature access</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- JobApplication -->
+  <div class="model-block">
+    <div class="model-header">
+      <span class="model-icon">📨</span>
+      <span class="model-name">JobApplication</span>
+      <span class="model-badge badge-seeker">Seeker</span>
+      <span class="table-name">db_table: "job_applications"</span>
+    </div>
+    <table class="field-table">
+      <thead>
+        <tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="td-field td-fk">seeker</td>
+          <td class="td-type">ForeignKey → JobSeekerAccount</td>
+          <td class="td-note">CASCADE — the applying seeker</td>
+        </tr>
+        <tr>
+          <td class="td-field td-fk">session</td>
+          <td class="td-type">ForeignKey → Session</td>
+          <td class="td-note">The job session being applied to</td>
+        </tr>
+        <tr>
+          <td class="td-field td-fk">candidate</td>
+          <td class="td-type">ForeignKey → Candidate (nullable)</td>
+          <td class="td-note">The created Candidate record for this application (SET_NULL if deleted)</td>
+        </tr>
+        <tr>
+          <td class="td-field">status</td>
+          <td class="td-type">CharField(50)</td>
+          <td class="td-note td-idx">db_index=True — applied | shortlisted | rejected | hired</td>
+        </tr>
+        <tr>
+          <td class="td-field">cover_note</td>
+          <td class="td-type">TextField (nullable)</td>
+          <td class="td-note">Optional cover letter text from the seeker</td>
+        </tr>
+        <tr>
+          <td class="td-field colspan">unique_together</td>
+          <td class="td-type">Constraint</td>
+          <td class="td-note">(seeker, session) — prevents duplicate applications to same job</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── INTERVIEW ROUND MODELS ── -->
+  <div class="section-title">Interview Round Models</div>
+
+  <div class="model-block">
+    <div class="model-header">
+      <span class="model-icon">🏆</span>
+      <span class="model-name">ApplicantRoundAttempt</span>
+      <span class="model-badge badge-ai">AI-Scored</span>
+      <span class="table-name">db_table: "applicant_round_attempts"</span>
+    </div>
+    <table class="field-table">
+      <thead>
+        <tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="td-field td-fk">candidate</td>
+          <td class="td-type">ForeignKey → Candidate</td>
+          <td class="td-note">The candidate taking this round</td>
+        </tr>
+        <tr>
+          <td class="td-field td-fk">round</td>
+          <td class="td-type">ForeignKey → SessionRound</td>
+          <td class="td-note">Which round is being attempted</td>
+        </tr>
+        <tr>
+          <td class="td-field">access_token</td>
+          <td class="td-type">CharField(128)</td>
+          <td class="td-note">Unique secure link token emailed to candidate</td>
+        </tr>
+        <tr>
+          <td class="td-field">mcq_answers</td>
+          <td class="td-type">JSONField</td>
+          <td class="td-note">{"q_id_1": "B", "q_id_2": "A", ...} — submitted answers</td>
+        </tr>
+        <tr>
+          <td class="td-field">mcq_score</td>
+          <td class="td-type">FloatField (nullable)</td>
+          <td class="td-note">Calculated score after MCQ submission</td>
+        </tr>
+        <tr>
+          <td class="td-field">interview_transcript</td>
+          <td class="td-type">JSONField</td>
+          <td class="td-note">[{"q": "...", "a": "...", "score": 8, "feedback": "..."}] — per-question breakdown</td>
+        </tr>
+        <tr>
+          <td class="td-field">interview_hiring_likelihood</td>
+          <td class="td-type">CharField(10)</td>
+          <td class="td-note">High | Medium | Low — LLM recommendation</td>
+        </tr>
+        <tr>
+          <td class="td-field">proctoring_flags</td>
+          <td class="td-type">JSONField</td>
+          <td class="td-note">["tab_switched", "face_not_detected"] — anti-cheat flags</td>
+        </tr>
+        <tr>
+          <td class="td-field">overall_score</td>
+          <td class="td-type">FloatField (nullable)</td>
+          <td class="td-note">Composite score across MCQ + coding + interview sub-scores</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── LLM CONFIGURATION MODELS ── -->
+  <div class="section-title">LLM Configuration & Key Management Models</div>
+
+  <div class="model-block">
+    <div class="model-header">
+      <span class="model-icon">🔑</span>
+      <span class="model-name">GeminiProject + GeminiApiKey</span>
+      <span class="model-badge badge-config">Config</span>
+      <span class="table-name">gemini_projects / gemini_api_keys</span>
+    </div>
+    <table class="field-table">
+      <thead>
+        <tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="td-field">daily_limit</td>
+          <td class="td-type">IntegerField</td>
+          <td class="td-note">Max requests per day (free tier = 20 RPD)</td>
+        </tr>
+        <tr>
+          <td class="td-field">daily_usage</td>
+          <td class="td-type">IntegerField</td>
+          <td class="td-note">Current day usage — reset daily at Pacific Time midnight</td>
+        </tr>
+        <tr>
+          <td class="td-field">last_reset</td>
+          <td class="td-type">DateField</td>
+          <td class="td-note">Lazy reset: compared to today in PT to trigger counter reset</td>
+        </tr>
+        <tr>
+          <td class="td-field">rpm_limit</td>
+          <td class="td-type">IntegerField</td>
+          <td class="td-note">Requests per minute ceiling (default 5 for Gemini free tier)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="model-block">
+    <div class="model-header">
+      <span class="model-icon">⚙️</span>
+      <span class="model-name">AgentModelConfig</span>
+      <span class="model-badge badge-config">Config</span>
+      <span class="table-name">agent_model_config</span>
+    </div>
+    <table class="field-table">
+      <thead>
+        <tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="td-field">agent_name</td>
+          <td class="td-type">CharField(100)</td>
+          <td class="td-note">unique=True — e.g. "resume_parser", "interview_agent", "chatbot"</td>
+        </tr>
+        <tr>
+          <td class="td-field">primary_provider</td>
+          <td class="td-type">CharField(20)</td>
+          <td class="td-note">"gemini" or "groq" — the first-choice LLM backend for this agent</td>
+        </tr>
+        <tr>
+          <td class="td-field">fallback_provider</td>
+          <td class="td-type">CharField(20)</td>
+          <td class="td-note">Fallback LLM used when primary is exhausted or returns 429</td>
+        </tr>
+        <tr>
+          <td class="td-field">is_active</td>
+          <td class="td-type">BooleanField</td>
+          <td class="td-note">Admin can toggle individual agents on/off from the Admin Panel</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── DJANGO MIGRATIONS ── -->
+  <div class="section-title">Django Migration System</div>
+  <div class="code-block">
+    <span class="code-lang">Shell — Migration Commands</span>
+<span class="cmt"># Create migration files from model changes</span>
+python manage.py <span class="fn">makemigrations</span>
+
+<span class="cmt"># Apply all pending migrations to db.sqlite3</span>
+python manage.py <span class="fn">migrate</span>
+
+<span class="cmt"># View SQL for a specific migration (inspects what Django generates)</span>
+python manage.py <span class="fn">sqlmigrate</span> api 0001_initial
+
+<span class="cmt"># Check for any model/migration inconsistencies</span>
+python manage.py <span class="fn">check</span>
+
+<span class="cmt"># Seed demo data (companies, jobs, skill taxonomy)</span>
+python manage.py <span class="fn">seed_imported_data</span>
+  </div>
+
+  <div class="callout">
+    <strong>💡 JSONField — The Power Move</strong>
+    <p>
+      CareerSphere stores complex AI output (parsed resumes, match breakdowns, interview transcripts)
+      directly in SQLite JSONFields rather than creating dozens of normalised tables. This simplifies
+      schema evolution significantly: when the AI parser adds a new "certifications" section, no
+      migration is needed — the JSON simply stores the new key. The trade-off is that JSONField
+      columns cannot be indexed like scalar columns, but for read-heavy display use-cases in a
+      portfolio project, this is a very acceptable design decision.
+    </p>
+  </div>
+
+</div>
+</body>
+</html>

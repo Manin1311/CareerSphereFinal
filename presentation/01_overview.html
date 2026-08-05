@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CareerSphere – 01. Project Overview</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap');
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', Arial, sans-serif;
+      background: #0a0a0f;
+      color: #e2e8f0;
+      font-size: 11pt;
+      line-height: 1.7;
+    }
+
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 44px;
+    }
+
+    /* ── Cover ── */
+    .cover {
+      text-align: center;
+      padding: 56px 0 44px;
+      border-bottom: 3px solid #6366f1;
+      margin-bottom: 44px;
+      background: linear-gradient(135deg, rgba(99,102,241,0.08) 0%, rgba(139,92,246,0.05) 100%);
+      border-radius: 18px;
+      border: 1px solid rgba(99,102,241,0.2);
+    }
+
+    .cover .logo-text {
+      font-size: 40pt;
+      font-weight: 900;
+      letter-spacing: -1.5px;
+      color: #fff;
+    }
+
+    .cover .logo-text span {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .cover .tagline {
+      font-size: 13pt;
+      color: #94a3b8;
+      margin-top: 8px;
+      font-weight: 400;
+    }
+
+    .cover .meta {
+      margin-top: 14px;
+      font-size: 9pt;
+      color: #64748b;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .cover .badges {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .cover .badges span {
+      background: rgba(99,102,241,0.12);
+      border: 1px solid rgba(99,102,241,0.3);
+      color: #a5b4fc;
+      padding: 5px 16px;
+      border-radius: 99px;
+      font-size: 9pt;
+      font-weight: 600;
+    }
+
+    /* ── Section Title ── */
+    .section-title {
+      font-size: 16pt;
+      font-weight: 800;
+      color: #f1f5f9;
+      border-left: 4px solid #6366f1;
+      padding-left: 14px;
+      margin: 40px 0 18px;
+    }
+
+    .section-subtitle {
+      font-size: 10pt;
+      color: #64748b;
+      margin-top: -12px;
+      margin-bottom: 20px;
+      padding-left: 18px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+    }
+
+    /* ── Intro / Highlight box ── */
+    .intro {
+      font-size: 11pt;
+      color: #94a3b8;
+      line-height: 1.8;
+      margin-bottom: 28px;
+      padding: 20px 24px;
+      background: rgba(255,255,255,0.02);
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.07);
+    }
+
+    /* ── Stats Row ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 36px;
+    }
+
+    .stat-box {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px;
+      padding: 20px 16px;
+      text-align: center;
+      break-inside: avoid;
+    }
+
+    .stat-box .stat-num {
+      font-size: 26pt;
+      font-weight: 900;
+      color: #fff;
+      line-height: 1;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .stat-box .stat-label {
+      font-size: 8.5pt;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+      margin-top: 6px;
+    }
+
+    .stat-box .stat-sub {
+      font-size: 8pt;
+      margin-top: 4px;
+      font-weight: 500;
+    }
+
+    .c-indigo { color: #818cf8; }
+    .c-cyan    { color: #22d3ee; }
+    .c-emerald { color: #34d399; }
+    .c-rose    { color: #fb7185; }
+    .c-amber   { color: #fbbf24; }
+    .c-violet  { color: #a78bfa; }
+
+    /* ── Feature Cards ── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .feature-card {
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px;
+      padding: 20px 22px;
+      background: rgba(255,255,255,0.02);
+      break-inside: avoid;
+      transition: all 0.2s;
+    }
+
+    .feature-card:hover {
+      border-color: rgba(99,102,241,0.4);
+      background: rgba(99,102,241,0.05);
+    }
+
+    .f-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .f-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .f-title {
+      font-size: 11pt;
+      font-weight: 700;
+      color: #f1f5f9;
+    }
+
+    .f-badge {
+      font-size: 7.5pt;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 5px;
+      margin-left: auto;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      flex-shrink: 0;
+    }
+
+    .badge-ai     { background: rgba(139,92,246,0.2);  color: #a78bfa; }
+    .badge-core   { background: rgba(99,102,241,0.2);  color: #818cf8; }
+    .badge-smart  { background: rgba(6,182,212,0.2);   color: #22d3ee; }
+    .badge-portal { background: rgba(16,185,129,0.2);  color: #34d399; }
+    .badge-ml     { background: rgba(244,63,94,0.2);   color: #fb7185; }
+
+    .feature-card p {
+      font-size: 9.5pt;
+      color: #94a3b8;
+      line-height: 1.65;
+    }
+
+    /* ── Problem / Solution columns ── */
+    .ps-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .ps-box {
+      border-radius: 14px;
+      padding: 22px 24px;
+      break-inside: avoid;
+    }
+
+    .ps-box.problem {
+      background: rgba(244,63,94,0.05);
+      border: 1px solid rgba(244,63,94,0.2);
+    }
+
+    .ps-box.solution {
+      background: rgba(16,185,129,0.05);
+      border: 1px solid rgba(16,185,129,0.2);
+    }
+
+    .ps-box h3 {
+      font-size: 11.5pt;
+      font-weight: 800;
+      margin-bottom: 14px;
+    }
+
+    .ps-box.problem h3 { color: #fb7185; }
+    .ps-box.solution h3 { color: #34d399; }
+
+    .ps-box ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .ps-box ul li {
+      font-size: 9.5pt;
+      color: #94a3b8;
+      padding: 6px 0;
+      border-bottom: 1px dashed rgba(255,255,255,0.05);
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    .ps-box ul li:last-child {
+      border-bottom: none;
+    }
+
+    .li-icon {
+      flex-shrink: 0;
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    /* ── Comparison Table ── */
+    .comp-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px;
+      overflow: hidden;
+      margin-bottom: 28px;
+      break-inside: avoid;
+    }
+
+    .comp-table th {
+      background: rgba(255,255,255,0.04);
+      color: #f1f5f9;
+      font-weight: 700;
+      text-align: left;
+      padding: 12px 16px;
+      font-size: 9.5pt;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .comp-table td {
+      padding: 11px 16px;
+      color: #94a3b8;
+      font-size: 9pt;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      background: rgba(18,19,28,0.5);
+    }
+
+    .comp-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .comp-table tr:hover td {
+      background: rgba(99,102,241,0.05);
+    }
+
+    .td-good { color: #34d399; font-weight: 600; }
+    .td-bad  { color: #fb7185; font-weight: 500; }
+
+    /* ── Callout ── */
+    .callout {
+      background: rgba(99,102,241,0.07);
+      border-left: 4px solid #6366f1;
+      padding: 16px 20px;
+      border-radius: 0 12px 12px 0;
+      margin: 24px 0;
+      break-inside: avoid;
+    }
+
+    .callout strong {
+      color: #a5b4fc;
+      display: block;
+      margin-bottom: 4px;
+      font-size: 10.5pt;
+    }
+
+    .callout p {
+      color: #94a3b8;
+      font-size: 9.5pt;
+    }
+
+    /* ── Objectives List ── */
+    .obj-list {
+      list-style: none;
+      padding: 0;
+      margin-bottom: 28px;
+    }
+
+    .obj-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px dashed rgba(255,255,255,0.06);
+    }
+
+    .obj-list li:last-child {
+      border-bottom: none;
+    }
+
+    .obj-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: rgba(99,102,241,0.15);
+      border: 1px solid rgba(99,102,241,0.3);
+      color: #818cf8;
+      font-weight: 800;
+      font-size: 9pt;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .obj-text strong {
+      color: #f1f5f9;
+      font-size: 10.5pt;
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .obj-text span {
+      color: #94a3b8;
+      font-size: 9pt;
+    }
+
+    /* ── Tech Stack Pills ── */
+    .tech-stack {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 16px 0 28px;
+    }
+
+    .tech-pill {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.10);
+      color: #cbd5e1;
+      padding: 5px 14px;
+      border-radius: 8px;
+      font-size: 9pt;
+      font-weight: 500;
+      font-family: 'Fira Code', monospace;
+    }
+
+    @media print {
+      body {
+        background: #0a0a0f;
+        color: #e2e8f0;
+      }
+
+      .page {
+        padding: 20px 28px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <!-- ── COVER ── -->
+    <div class="cover">
+      <div class="logo-text">Career<span>Sphere</span></div>
+      <div class="tagline">Multi-Agent AI Recruitment & Career Intelligence Platform</div>
+      <div class="meta">Project Overview · Full-Stack Documentation · 2025–2026</div>
+      <div class="badges">
+        <span>Django REST Framework</span>
+        <span>React 18</span>
+        <span>Gemini 2.5 Flash</span>
+        <span>SQLite</span>
+        <span>Celery + Redis</span>
+        <span>Multi-Agent AI</span>
+      </div>
+    </div>
+
+    <!-- ── WHAT IS CAREERSPHERE ── -->
+    <div class="section-title">What is CareerSphere?</div>
+    <div class="intro">
+      CareerSphere is a full-stack, enterprise-grade recruitment intelligence platform that connects
+      <strong style="color:#a5b4fc;">job seekers</strong> and <strong style="color:#34d399;">companies</strong>
+      through an autonomous multi-agent AI pipeline. Unlike traditional HR software that relies on
+      rigid keyword filters, CareerSphere deploys a network of specialized LLM agents — each responsible
+      for a distinct task: parsing resumes, inferring job requirements, scoring candidate matches,
+      generating dynamic interview questions, and predicting hire probability using historical ML models.
+      The system eliminates manual screening bottlenecks, providing instant, transparent, explainable
+      candidate rankings directly in an interactive recruiter dashboard.
+    </div>
+
+    <!-- ── HIGH-LEVEL METRICS ── -->
+    <div class="section-title">Platform Metrics at a Glance</div>
+    <div class="stats-row">
+      <div class="stat-box">
+        <div class="stat-num c-indigo">21+</div>
+        <div class="stat-label">AI Agents</div>
+        <div class="stat-sub c-indigo">Parsing, Matching, Interview, QA</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num c-emerald">3-Tier</div>
+        <div class="stat-label">PDF Fallback Chain</div>
+        <div class="stat-sub c-emerald">PyMuPDF → pdfplumber</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num c-cyan">25+</div>
+        <div class="stat-label">REST API Endpoints</div>
+        <div class="stat-sub c-cyan">Recruiter + Seeker + Admin</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num c-amber">100%</div>
+        <div class="stat-label">JSON Schema Output</div>
+        <div class="stat-sub c-amber">Structured LLM responses</div>
+      </div>
+    </div>
+
+    <!-- ── PROBLEM & SOLUTION ── -->
+    <div class="section-title">Problem Statement & Solution</div>
+    <div class="ps-grid">
+      <div class="ps-box problem">
+        <h3>❌ Problems in Traditional Hiring</h3>
+        <ul>
+          <li>
+            <span class="li-icon">⚠️</span>
+            <span>Standard ATS parses PDF text linearly — shattering two-column resume layouts and losing critical skill data.</span>
+          </li>
+          <li>
+            <span class="li-icon">⚠️</span>
+            <span>Keyword-only matching rejects qualified candidates who use synonyms like "Node" instead of "Node.js".</span>
+          </li>
+          <li>
+            <span class="li-icon">⚠️</span>
+            <span>Recruiters spend 20–30 hours per role manually reviewing resumes — highly inefficient at scale.</span>
+          </li>
+          <li>
+            <span class="li-icon">⚠️</span>
+            <span>No explainability: candidates don't know WHY they were rejected or what skills are missing.</span>
+          </li>
+          <li>
+            <span class="li-icon">⚠️</span>
+            <span>Job seekers have no way to practice dynamic, personalized interview preparation before applying.</span>
+          </li>
+          <li>
+            <span class="li-icon">⚠️</span>
+            <span>Single API key approaches fail under LLM rate-limits, causing full-system downtime.</span>
+          </li>
+        </ul>
+      </div>
+      <div class="ps-box solution">
+        <h3>✅ CareerSphere Solutions</h3>
+        <ul>
+          <li>
+            <span class="li-icon">✨</span>
+            <span>Geometry-aware bounding-box column detection preserves two-column resume structure perfectly.</span>
+          </li>
+          <li>
+            <span class="li-icon">✨</span>
+            <span>Sentence transformer embeddings + TF-IDF cosine similarity catches synonyms and conceptual matches.</span>
+          </li>
+          <li>
+            <span class="li-icon">✨</span>
+            <span>Fully automated pipeline: upload → parse → match → rank → notify in under 5 seconds.</span>
+          </li>
+          <li>
+            <span class="li-icon">✨</span>
+            <span>Detailed match breakdown returned: skill_score, exp_score, location_score, missing_skills listed.</span>
+          </li>
+          <li>
+            <span class="li-icon">✨</span>
+            <span>AI Interview Sandbox generates personalized MCQ and coding challenges based on job requirements.</span>
+          </li>
+          <li>
+            <span class="li-icon">✨</span>
+            <span>RotateLLMClient pools multiple Gemini/Groq keys with auto-failover and retry backoff.</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ── OBJECTIVES ── -->
+    <div class="section-title">Project Objectives</div>
+    <ul class="obj-list">
+      <li>
+        <div class="obj-num">01</div>
+        <div class="obj-text">
+          <strong>Automate Resume Intelligence</strong>
+          <span>Parse any PDF/DOCX resume format (single-column, two-column, graphic) into structured JSON without manual preprocessing.</span>
+        </div>
+      </li>
+      <li>
+        <div class="obj-num">02</div>
+        <div class="obj-text">
+          <strong>Multi-Dimensional Candidate Matching</strong>
+          <span>Compute weighted rubric scores across skills, experience years, location preference, and salary range against job criteria.</span>
+        </div>
+      </li>
+      <li>
+        <div class="obj-num">03</div>
+        <div class="obj-text">
+          <strong>AI-Powered Interview Pipeline</strong>
+          <span>Automatically generate role-specific screening questions (MCQ, coding, behavioural) and score candidate responses in real-time.</span>
+        </div>
+      </li>
+      <li>
+        <div class="obj-num">04</div>
+        <div class="obj-text">
+          <strong>Dual-Portal Architecture</strong>
+          <span>Provide a dedicated recruiter dashboard for company-side hiring management and a self-service career portal for job seekers.</span>
+        </div>
+      </li>
+      <li>
+        <div class="obj-num">05</div>
+        <div class="obj-text">
+          <strong>LLM Reliability at Scale</strong>
+          <span>Implement RotateLLMClient for round-robin API key rotation across Gemini and Groq backends with exhaustion tracking and retry logic.</span>
+        </div>
+      </li>
+      <li>
+        <div class="obj-num">06</div>
+        <div class="obj-text">
+          <strong>Resume Builder & ATS Optimizer</strong>
+          <span>Allow job seekers to build professionally formatted resumes and receive AI-powered ATS compatibility scores with improvement suggestions.</span>
+        </div>
+      </li>
+    </ul>
+
+    <!-- ── CORE FEATURES ── -->
+    <div class="section-title">Core Features & Modules</div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="f-header">
+          <div class="f-icon" style="background: rgba(99,102,241,0.15);">📄</div>
+          <div class="f-title">Advanced ATS Resume Parser</div>
+          <span class="f-badge badge-ai">AI</span>
+        </div>
+        <p>
+          Three-tier PDF extraction engine using PyMuPDF column detection. Identifies bounding-box vertical
+          split for two-column layouts. Fallback to pdfplumber for font-embedded PDFs. LLM post-processing
+          converts raw text into structured JSON (summary, skills, experience, education, projects).
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <div class="f-header">
+          <div class="f-icon" style="background: rgba(6,182,212,0.15);">🎯</div>
+          <div class="f-title">Semantic Candidate Matching</div>
+          <span class="f-badge badge-smart">ML</span>
+        </div>
+        <p>
+          Uses sentence-transformer embeddings to compute cosine similarity between candidate skills and
+          job requirements. Falls back to TF-IDF char-level n-gram vectorization. Returns skill_score,
+          experience_score, location_score, and a final weighted match_score (0–100).
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <div class="f-header">
+          <div class="f-icon" style="background: rgba(139,92,246,0.15);">🤖</div>
+          <div class="f-title">Skill Inference Agent</div>
+          <span class="f-badge badge-ai">AI</span>
+        </div>
+        <p>
+          Analyzes job descriptions via Gemini 2.5 Flash to infer unstated required skills, seniority
+          level, experience bounds, and salary ranges. Extracts structured criteria JSON for use in
+          candidate evaluation rubrics without any manual recruiter configuration.
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <div class="f-header">
+          <div class="f-icon" style="background: rgba(245,158,11,0.15);">💬</div>
+          <div class="f-title">AI Interview Engine</div>
+          <span class="f-badge badge-ai">AI</span>
+        </div>
+        <p>
+          Generates role-specific MCQ questions, coding challenges, and behavioural interview prompts
+          dynamically per candidate skill gap. Scores answers automatically and progresses candidates
+          through multi-round pipelines (Screening → Technical → HR Round).
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <div class="f-header">
+          <div class="f-icon" style="background: rgba(16,185,129,0.15);">📊</div>
+          <div class="f-title">Recruiter Analytics Dashboard</div>
+          <span class="f-badge badge-core">CORE</span>
+        </div>
+        <p>
+          Companies post hiring sessions, define rubric weight vectors (skills/exp/location),
+          view ranked applicant lists with match scores, advance candidates through interview rounds,
+          and download AI-generated screening reports with one click.
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <div class="f-header">
+          <div class="f-icon" style="background: rgba(244,63,94,0.15);">🔑</div>
+          <div class="f-title">RotateLLMClient (Key Manager)</div>
+          <span class="f-badge badge-ml">INFRA</span>
+        </div>
+        <p>
+          Thread-safe singleton that maintains pools of Gemini API keys and Groq keys. Tracks per-key
+          daily quota exhaustion aligned to Google's Pacific Time reset cycle. Auto-rotates to next
+          available key on 429 errors. Parses retry-after durations from error messages.
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <div class="f-header">
+          <div class="f-icon" style="background: rgba(6,182,212,0.15);">📝</div>
+          <div class="f-title">Resume Builder & PDF Renderer</div>
+          <span class="f-badge badge-portal">PORTAL</span>
+        </div>
+        <p>
+          Job seekers use a live resume editor with 8+ professional templates. Templates rendered to
+          pixel-perfect PDF using ReportLab / WeasyPrint. ATS Compatibility Agent scores the resume
+          against 40+ criteria and suggests concrete improvements.
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <div class="f-header">
+          <div class="f-icon" style="background: rgba(139,92,246,0.15);">🔔</div>
+          <div class="f-title">Notification & Email Pipeline</div>
+          <span class="f-badge badge-core">CORE</span>
+        </div>
+        <p>
+          Automated email triggers for: application confirmation, high-match candidate alert (≥80%),
+          status change notifications, interview invitation, and weekly digest. Delivered via
+          Django email backend through async Celery task workers.
+        </p>
+      </div>
+    </div>
+
+    <!-- ── TECH STACK ── -->
+    <div class="section-title">Technology Stack</div>
+    <div class="tech-stack">
+      <span class="tech-pill">Python 3.11</span>
+      <span class="tech-pill">Django 4.x</span>
+      <span class="tech-pill">Django REST Framework</span>
+      <span class="tech-pill">SQLite (via Django ORM)</span>
+      <span class="tech-pill">Celery</span>
+      <span class="tech-pill">Redis</span>
+      <span class="tech-pill">React 18</span>
+      <span class="tech-pill">Vite</span>
+      <span class="tech-pill">Zustand</span>
+      <span class="tech-pill">Tailwind CSS</span>
+      <span class="tech-pill">Gemini 2.5 Flash / Pro</span>
+      <span class="tech-pill">Groq LLM</span>
+      <span class="tech-pill">PyMuPDF (fitz)</span>
+      <span class="tech-pill">pdfplumber</span>
+      <span class="tech-pill">sentence-transformers</span>
+      <span class="tech-pill">scikit-learn</span>
+      <span class="tech-pill">NumPy / Pandas</span>
+      <span class="tech-pill">JWT Auth</span>
+      <span class="tech-pill">ReportLab</span>
+      <span class="tech-pill">WeasyPrint</span>
+    </div>
+
+    <!-- ── COMPARISON TABLE ── -->
+    <div class="section-title">CareerSphere vs. Traditional ATS</div>
+    <table class="comp-table">
+      <thead>
+        <tr>
+          <th>Capability</th>
+          <th>Traditional ATS (Keyword-Based)</th>
+          <th>CareerSphere (AI-Powered)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="color:#f1f5f9; font-weight:600;">PDF Layout Parsing</td>
+          <td class="td-bad">Linear extraction — mangles two-column layouts</td>
+          <td class="td-good">Geometry-aware bounding-box column splitter</td>
+        </tr>
+        <tr>
+          <td style="color:#f1f5f9; font-weight:600;">Skill Recognition</td>
+          <td class="td-bad">Exact substring match only</td>
+          <td class="td-good">Semantic embeddings + TF-IDF n-gram similarity</td>
+        </tr>
+        <tr>
+          <td style="color:#f1f5f9; font-weight:600;">Score Transparency</td>
+          <td class="td-bad">Single opaque percentage</td>
+          <td class="td-good">Breakdown: skill, experience, location scores</td>
+        </tr>
+        <tr>
+          <td style="color:#f1f5f9; font-weight:600;">Interview Automation</td>
+          <td class="td-bad">Manual email scheduling</td>
+          <td class="td-good">AI-generated MCQ + coding questions, auto-scored</td>
+        </tr>
+        <tr>
+          <td style="color:#f1f5f9; font-weight:600;">LLM Reliability</td>
+          <td class="td-bad">Not applicable</td>
+          <td class="td-good">RotateLLMClient — multi-key pool with failover</td>
+        </tr>
+        <tr>
+          <td style="color:#f1f5f9; font-weight:600;">Hire Probability</td>
+          <td class="td-bad">No ML prediction</td>
+          <td class="td-good">RandomForest trained on historical hired/rejected apps</td>
+        </tr>
+        <tr>
+          <td style="color:#f1f5f9; font-weight:600;">Resume Building</td>
+          <td class="td-bad">Not available</td>
+          <td class="td-good">8+ templates, AI ATS scorer, PDF renderer</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <strong>💡 Key Design Principle</strong>
+      <p>
+        Every component of CareerSphere is asynchronous-first: heavy AI tasks are processed by Celery
+        workers backed by Redis, keeping the React frontend fully responsive with live progress indicators
+        while parse/score operations run concurrently in the background.
+      </p>
+    </div>
+
+  </div><!-- end .page -->
+</body>
+</html>

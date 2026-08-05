@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CareerSphere – 03. Backend Architecture</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', Arial, sans-serif;
+      background: #0a0a0f;
+      color: #e2e8f0;
+      font-size: 11pt;
+      line-height: 1.7;
+    }
+
+    .page { max-width: 900px; margin: 0 auto; padding: 40px 44px; }
+
+    .cover {
+      text-align: center;
+      padding: 48px 0 36px;
+      border-radius: 18px;
+      border: 1px solid rgba(16,185,129,0.2);
+      background: linear-gradient(135deg, rgba(16,185,129,0.07) 0%, rgba(6,182,212,0.04) 100%);
+      margin-bottom: 44px;
+    }
+
+    .cover .logo-text {
+      font-size: 36pt; font-weight: 900; color: #fff; letter-spacing: -1px;
+    }
+
+    .cover .logo-text span {
+      background: linear-gradient(135deg, #10b981, #06b6d4);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+
+    .cover .tagline { font-size: 12pt; color: #94a3b8; margin-top: 8px; }
+    .cover .meta { margin-top: 12px; font-size: 8.5pt; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .section-title {
+      font-size: 15.5pt; font-weight: 800; color: #f1f5f9;
+      border-left: 4px solid #10b981; padding-left: 14px; margin: 40px 0 18px;
+    }
+
+    .intro {
+      color: #94a3b8; font-size: 10.5pt;
+      background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px; padding: 18px 22px; margin-bottom: 24px; line-height: 1.8;
+    }
+
+    .tree-block {
+      background: #06060a; border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px; padding: 20px 24px;
+      font-family: 'Fira Code', monospace; font-size: 9.5pt;
+      color: #a5b4fc; line-height: 1.75; margin-bottom: 28px; overflow-x: auto;
+    }
+
+    .tree-block .dir  { color: #34d399; font-weight: 600; }
+    .tree-block .file { color: #94a3b8; }
+    .tree-block .note { color: #475569; }
+    .tree-block .key  { color: #60a5fa; font-weight: 600; }
+
+    .code-block {
+      background: #06060a; border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px; padding: 20px 24px;
+      font-family: 'Fira Code', monospace; font-size: 9pt;
+      color: #e2e8f0; line-height: 1.7; margin-bottom: 24px; overflow-x: auto;
+      position: relative;
+    }
+
+    .code-lang { position: absolute; top: 8px; right: 12px; font-size: 7.5pt; color: #475569; text-transform: uppercase; }
+    .kw  { color: #f43f5e; }
+    .fn  { color: #60a5fa; }
+    .str { color: #34d399; }
+    .cmt { color: #475569; font-style: italic; }
+    .num { color: #fbbf24; }
+    .dec { color: #a78bfa; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 24px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 24px; }
+
+    .info-card {
+      background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px; padding: 18px 20px; break-inside: avoid;
+    }
+
+    .info-card h4 { font-size: 10.5pt; font-weight: 700; color: #f1f5f9; margin-bottom: 8px; }
+    .info-card p  { font-size: 9pt; color: #94a3b8; line-height: 1.6; }
+    .info-card code {
+      background: rgba(99,102,241,0.1); color: #a5b4fc;
+      padding: 1px 5px; border-radius: 4px; font-family: 'Fira Code', monospace; font-size: 8.5pt;
+    }
+
+    .endpoint-table {
+      width: 100%; border-collapse: separate; border-spacing: 0;
+      border: 1px solid rgba(255,255,255,0.07); border-radius: 14px;
+      overflow: hidden; margin-bottom: 24px;
+    }
+
+    .endpoint-table th {
+      background: rgba(255,255,255,0.04); color: #f1f5f9; font-weight: 700;
+      text-align: left; padding: 12px 14px; font-size: 9pt;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .endpoint-table td {
+      padding: 10px 14px; color: #94a3b8; font-size: 9pt;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      background: rgba(18,19,28,0.5);
+    }
+
+    .endpoint-table tr:last-child td { border-bottom: none; }
+    .endpoint-table tr:hover td { background: rgba(16,185,129,0.04); }
+
+    .method {
+      display: inline-block; padding: 2px 8px; border-radius: 5px;
+      font-family: 'Fira Code', monospace; font-weight: 700; font-size: 8pt;
+    }
+
+    .GET    { background: rgba(16,185,129,0.15); color: #34d399; }
+    .POST   { background: rgba(99,102,241,0.15); color: #818cf8; }
+    .PUT    { background: rgba(245,158,11,0.15); color: #fbbf24; }
+    .DELETE { background: rgba(244,63,94,0.15);  color: #fb7185; }
+
+    .callout {
+      border-left: 4px solid #10b981; padding: 16px 20px;
+      border-radius: 0 12px 12px 0; margin: 20px 0; break-inside: avoid;
+      background: rgba(16,185,129,0.07);
+    }
+
+    .callout strong { color: #34d399; display: block; margin-bottom: 4px; font-size: 10.5pt; }
+    .callout p { color: #94a3b8; font-size: 9.5pt; }
+
+    .flow-step {
+      display: flex; align-items: flex-start; gap: 14px;
+      padding: 14px 18px; background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06); border-radius: 12px;
+      margin-bottom: 10px; break-inside: avoid;
+    }
+
+    .step-num {
+      width: 28px; height: 28px; border-radius: 8px;
+      background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3);
+      color: #34d399; font-weight: 800; font-size: 9pt;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+
+    .step-text strong { color: #f1f5f9; font-size: 10.5pt; display: block; margin-bottom: 3px; }
+    .step-text span   { color: #94a3b8; font-size: 9pt; }
+
+    @media print {
+      body { background: #0a0a0f; color: #e2e8f0; }
+      .page { padding: 20px 28px; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ── COVER ── -->
+  <div class="cover">
+    <div class="logo-text">Career<span>Sphere</span></div>
+    <div class="tagline">03. Backend Architecture — Django REST Framework + Celery</div>
+    <div class="meta">API Design · Views · Middleware · Services · Async Tasks</div>
+  </div>
+
+  <!-- ── OVERVIEW ── -->
+  <div class="section-title">Backend Overview</div>
+  <div class="intro">
+    The CareerSphere backend is a Django 4.x application exposing a fully RESTful JSON API via
+    Django REST Framework (DRF). It uses a function-based view (FBV) architecture with manual
+    JWT authentication decorators (<code>@require_seeker_jwt</code>, <code>@require_recruiter_jwt</code>)
+    instead of class-based DRF views, giving full control over request handling. All heavy AI and
+    email tasks are offloaded to Celery workers backed by a Redis message broker, keeping HTTP
+    response times under 300ms even during LLM inference operations.
+  </div>
+
+  <!-- ── DIRECTORY STRUCTURE ── -->
+  <div class="section-title">Backend Directory Structure</div>
+  <div class="tree-block">
+<span class="dir">backend/</span>
+├── <span class="dir">api/</span>                              <span class="note">← Main Django application</span>
+│   ├── <span class="key">models.py</span>                    <span class="note">← All Django ORM model classes (782 lines)</span>
+│   ├── <span class="key">urls.py</span>                      <span class="note">← URL routing for all endpoints</span>
+│   ├── <span class="dir">views/</span>                       <span class="note">← 25+ view modules (over 450KB of view code)</span>
+│   │   ├── <span class="file">seeker_jobs.py</span>           <span class="note">← Job listing, detail, apply, match-score</span>
+│   │   ├── <span class="file">candidates.py</span>            <span class="note">← Upload, ingest, rank, advance rounds</span>
+│   │   ├── <span class="file">recruiter_auth.py</span>        <span class="note">← Company login/register, JWT, profile</span>
+│   │   ├── <span class="file">seeker_auth.py</span>           <span class="note">← Seeker register/login/verify/refresh</span>
+│   │   ├── <span class="file">seeker_resume.py</span>         <span class="note">← Upload resume, ATS score, parse</span>
+│   │   ├── <span class="file">seeker_resume_builder.py</span> <span class="note">← Resume builder, AI enhance, PDF render</span>
+│   │   ├── <span class="file">round_views.py</span>           <span class="note">← MCQ/coding round generation, scoring</span>
+│   │   ├── <span class="file">sessions.py</span>              <span class="note">← Job session CRUD for recruiters</span>
+│   │   ├── <span class="file">companies.py</span>             <span class="note">← Company profile, public jobs, reviews</span>
+│   │   ├── <span class="file">ingest.py</span>                <span class="note">← Bulk resume ingestion pipeline</span>
+│   │   ├── <span class="file">admin_views.py</span>           <span class="note">← Admin panel endpoints</span>
+│   │   └── <span class="file">verification.py</span>          <span class="note">← OTP email/phone verification flow</span>
+│   └── <span class="dir">management/commands/</span>
+│       └── <span class="key">seed_imported_data.py</span>    <span class="note">← DB seed script for demo companies/jobs</span>
+│
+├── <span class="dir">agents/</span>                          <span class="note">← 21 specialized AI agent modules</span>
+│   ├── <span class="key">llm.py</span>                       <span class="note">← RotateLLMClient (665 lines, key manager)</span>
+│   ├── <span class="key">matching_agent.py</span>            <span class="note">← SemanticMatchingAgent (cosine + TFIDF)</span>
+│   ├── <span class="key">advanced_ats_parsing_agent.py</span><span class="note">← Column-aware PDF parser + LLM</span>
+│   ├── <span class="key">inference_agent.py</span>           <span class="note">← Job description skill inference</span>
+│   ├── <span class="key">interview_agent.py</span>           <span class="note">← Dynamic interview question generator</span>
+│   ├── <span class="key">ats_compatibility_agent.py</span>   <span class="note">← ATS score calculator (50KB)</span>
+│   ├── <span class="key">normalization_agent.py</span>       <span class="note">← Skill taxonomy normalizer (57KB)</span>
+│   └── <span class="file">resume_enhancer_agent.py</span>     <span class="note">← AI resume improvement agent</span>
+│
+├── <span class="dir">workers/</span>
+│   └── <span class="key">celery_worker.py</span>             <span class="note">← Celery app config + task definitions</span>
+│
+└── <span class="dir">careersphere_backend/</span>
+    ├── <span class="key">settings.py</span>                  <span class="note">← Django settings (SQLite, CORS, JWT config)</span>
+    └── <span class="key">urls.py</span>                      <span class="note">← Root URL config</span>
+  </div>
+
+  <!-- ── AUTH SYSTEM ── -->
+  <div class="section-title">JWT Authentication Architecture</div>
+  <div class="intro">
+    CareerSphere implements custom JWT authentication without using Django REST Framework's
+    built-in token auth or third-party libraries like SimpleJWT. Access tokens are generated
+    using PyJWT with HS256 algorithm, carrying claims: user_id, role, email, exp. Two separate
+    auth flows handle job seekers (seeker_auth.py) and recruiters/companies (recruiter_auth.py).
+  </div>
+
+  <div class="grid-2">
+    <div class="info-card">
+      <h4>🔐 Seeker Authentication Flow</h4>
+      <p>
+        <strong>Register:</strong> POST <code>/api/seeker/register/</code> → hashes password with
+        Django's PBKDF2, creates <code>JobSeekerAccount</code>, sends OTP email.<br/><br/>
+        <strong>Login:</strong> POST <code>/api/seeker/login/</code> → verifies hash, returns
+        JWT access (24h) + refresh (30d) tokens.<br/><br/>
+        <strong>Protected routes</strong> use <code>@require_seeker_jwt</code> decorator which
+        decodes the Bearer token and attaches the seeker object to the request.
+      </p>
+    </div>
+    <div class="info-card">
+      <h4>🏢 Recruiter Authentication Flow</h4>
+      <p>
+        <strong>Register:</strong> POST <code>/api/recruiter/register/</code> → creates
+        <code>Company</code> record + default <code>APIKey</code> pair (public + secret key).<br/><br/>
+        <strong>Login:</strong> POST <code>/api/recruiter/login/</code> → same JWT pattern.<br/><br/>
+        <strong>API key auth</strong> also supported: external resume ingestion via
+        <code>X-API-Key</code> header authenticated in <code>apikey_auth.py</code>.
+      </p>
+    </div>
+  </div>
+
+  <!-- ── require_seeker_jwt DECORATOR ── -->
+  <div class="section-title">Auth Decorator Implementation</div>
+  <div class="code-block">
+    <span class="code-lang">Python — seeker_auth.py</span>
+<span class="kw">import</span> functools
+<span class="kw">import</span> jwt
+<span class="kw">from</span> django.http <span class="kw">import</span> JsonResponse
+<span class="kw">from</span> api.models <span class="kw">import</span> JobSeekerAccount
+
+<span class="kw">def</span> <span class="fn">require_seeker_jwt</span>(view_func):
+    <span class="str">"""Decorator: validates seeker JWT and injects seeker object into request."""</span>
+
+    <span class="dec">@functools.wraps</span>(view_func)
+    <span class="kw">def</span> <span class="fn">wrapper</span>(request, *args, **kwargs):
+        auth_header = request.META.get(<span class="str">'HTTP_AUTHORIZATION'</span>, <span class="str">''</span>)
+
+        <span class="kw">if not</span> auth_header.startswith(<span class="str">'Bearer '</span>):
+            <span class="kw">return</span> <span class="fn">JsonResponse</span>({<span class="str">'error'</span>: <span class="str">'Authentication required'</span>}, status=<span class="num">401</span>)
+
+        token = auth_header[<span class="num">7</span>:]   <span class="cmt"># Strip 'Bearer ' prefix</span>
+
+        <span class="kw">try</span>:
+            payload = jwt.<span class="fn">decode</span>(
+                token,
+                settings.SECRET_KEY,
+                algorithms=[<span class="str">'HS256'</span>]
+            )
+            user_id = payload.get(<span class="str">'user_id'</span>)
+
+            <span class="kw">if</span> payload.get(<span class="str">'role'</span>) != <span class="str">'seeker'</span>:
+                <span class="kw">return</span> <span class="fn">JsonResponse</span>({<span class="str">'error'</span>: <span class="str">'Invalid role'</span>}, status=<span class="num">403</span>)
+
+            seeker = JobSeekerAccount.objects.<span class="fn">get</span>(id=user_id, is_active=<span class="kw">True</span>)
+            request.seeker = seeker
+
+        <span class="kw">except</span> jwt.ExpiredSignatureError:
+            <span class="kw">return</span> <span class="fn">JsonResponse</span>({<span class="str">'error'</span>: <span class="str">'Token expired'</span>}, status=<span class="num">401</span>)
+        <span class="kw">except</span> (jwt.InvalidTokenError, JobSeekerAccount.DoesNotExist):
+            <span class="kw">return</span> <span class="fn">JsonResponse</span>({<span class="str">'error'</span>: <span class="str">'Invalid token'</span>}, status=<span class="num">401</span>)
+
+        <span class="kw">return</span> <span class="fn">view_func</span>(request, *args, **kwargs)
+
+    <span class="kw">return</span> wrapper
+  </div>
+
+  <!-- ── API ENDPOINTS ── -->
+  <div class="section-title">Key API Endpoints</div>
+
+  <table class="endpoint-table">
+    <thead>
+      <tr>
+        <th>Method</th>
+        <th>Endpoint</th>
+        <th>Description</th>
+        <th>Auth</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="method POST">POST</span></td>
+        <td style="font-family:'Fira Code',monospace;font-size:8.5pt;">/api/seeker/register/</td>
+        <td>Create seeker account, send OTP</td>
+        <td style="color:#64748b;">Public</td>
+      </tr>
+      <tr>
+        <td><span class="method POST">POST</span></td>
+        <td style="font-family:'Fira Code',monospace;font-size:8.5pt;">/api/seeker/login/</td>
+        <td>Returns JWT access + refresh tokens</td>
+        <td style="color:#64748b;">Public</td>
+      </tr>
+      <tr>
+        <td><span class="method GET">GET</span></td>
+        <td style="font-family:'Fira Code',monospace;font-size:8.5pt;">/api/seeker/jobs/</td>
+        <td>List all active job sessions with salary, location, type</td>
+        <td style="color:#64748b;">Public</td>
+      </tr>
+      <tr>
+        <td><span class="method GET">GET</span></td>
+        <td style="font-family:'Fira Code',monospace;font-size:8.5pt;">/api/seeker/jobs/:id/</td>
+        <td>Full job detail with AI match score if resume exists</td>
+        <td style="color:#34d399;">Seeker JWT</td>
+      </tr>
+      <tr>
+        <td><span class="method POST">POST</span></td>
+        <td style="font-family:'Fira Code',monospace;font-size:8.5pt;">/api/seeker/apply/</td>
+        <td>Submit job application, creates Candidate + JobApplication</td>
+        <td style="color:#34d399;">Seeker JWT</td>
+      </tr>
+      <tr>
+        <td><span class="method POST">POST</span></td>
+        <td style="font-family:'Fira Code',monospace;font-size:8.5pt;">/api/seeker/upload-resume/</td>
+        <td>Upload PDF resume, triggers async parse + ATS score</td>
+        <td style="color:#34d399;">Seeker JWT</td>
+      </tr>
+      <tr>
+        <td><span class="method GET">GET</span></td>
+        <td style="font-family:'Fira Code',monospace;font-size:8.5pt;">/api/seeker/applications/</td>
+        <td>List all seeker applications with status, round info</td>
+        <td style="color:#34d399;">Seeker JWT</td>
+      </tr>
+      <tr>
+        <td><span class="method POST">POST</span></td>
+        <td style="font-family:'Fira Code',monospace;font-size:8.5pt;">/api/recruiter/sessions/</td>
+        <td>Create new hiring session (job posting)</td>
+        <td style="color:#818cf8;">Recruiter JWT</td>
+      </tr>
+      <tr>
+        <td><span class="method GET">GET</span></td>
+        <td style="font-family:'Fira Code',monospace;font-size:8.5pt;">/api/recruiter/sessions/:id/candidates/</td>
+        <td>List candidates ranked by match score</td>
+        <td style="color:#818cf8;">Recruiter JWT</td>
+      </tr>
+      <tr>
+        <td><span class="method POST">POST</span></td>
+        <td style="font-family:'Fira Code',monospace;font-size:8.5pt;">/api/candidates/ingest/</td>
+        <td>Bulk resume upload via API key (external integrations)</td>
+        <td style="color:#fbbf24;">API Key</td>
+      </tr>
+      <tr>
+        <td><span class="method POST">POST</span></td>
+        <td style="font-family:'Fira Code',monospace;font-size:8.5pt;">/api/round/submit/</td>
+        <td>Submit MCQ/coding answers, triggers AI scoring</td>
+        <td style="color:#34d399;">Seeker JWT</td>
+      </tr>
+      <tr>
+        <td><span class="method GET">GET</span></td>
+        <td style="font-family:'Fira Code',monospace;font-size:8.5pt;">/api/companies/:slug/</td>
+        <td>Public company profile, open jobs, ratings</td>
+        <td style="color:#64748b;">Public</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ── REQUEST LIFECYCLE ── -->
+  <div class="section-title">Request-Response Lifecycle (Resume Application)</div>
+
+  <div class="flow-step">
+    <div class="step-num">1</div>
+    <div class="step-text">
+      <strong>HTTP Request arrives at Django</strong>
+      <span>Multipart POST with resume file or JSON application payload hits Django's WSGI server (Gunicorn in production). CORS middleware validates the Origin header against ALLOWED_ORIGINS list.</span>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="step-num">2</div>
+    <div class="step-text">
+      <strong>@require_seeker_jwt decorator runs</strong>
+      <span>JWT decoded from Authorization header. If valid, seeker object fetched from SQLite DB and attached as request.seeker. Invalid/expired tokens return HTTP 401 immediately without entering view logic.</span>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="step-num">3</div>
+    <div class="step-text">
+      <strong>View function executes</strong>
+      <span>seeker_resume.py receives file, saves to media/ directory, creates IngestJob record in DB, then dispatches Celery task: <code>parse_resume_async.delay(ingest_job_id, file_path)</code>.</span>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="step-num">4</div>
+    <div class="step-text">
+      <strong>Immediate HTTP 202 Accepted returned</strong>
+      <span>Frontend receives task_id immediately. Django view has already returned. Heavy processing happens asynchronously in the Celery worker process — completely separate from the web server process.</span>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="step-num">5</div>
+    <div class="step-text">
+      <strong>Celery Worker: AdvancedAtsParsingAgent runs</strong>
+      <span>Worker picks up task from Redis queue. Column-aware PDF extraction runs. LLM (Gemini via RotateLLMClient) converts text to structured JSON. Candidate's resume_data field updated in SQLite.</span>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="step-num">6</div>
+    <div class="step-text">
+      <strong>Frontend polls for completion</strong>
+      <span>React polls <code>/api/seeker/ats-status/?task_id=XYZ</code> every 2 seconds. When status == "completed", the ATS score and parsed resume JSON are fetched and displayed to the user.</span>
+    </div>
+  </div>
+
+  <!-- ── CELERY TASKS ── -->
+  <div class="section-title">Celery Async Task System</div>
+  <div class="code-block">
+    <span class="code-lang">Python — celery_worker.py</span>
+<span class="kw">from</span> celery <span class="kw">import</span> Celery
+
+<span class="cmt"># Configure Celery to use Redis as both broker and result backend</span>
+app = <span class="fn">Celery</span>(<span class="str">'careersphere'</span>)
+app.<span class="fn">config_from_object</span>(<span class="str">'django.conf:settings'</span>, namespace=<span class="str">'CELERY'</span>)
+
+<span class="cmt"># CELERY_BROKER_URL = 'redis://localhost:6379/0'</span>
+<span class="cmt"># CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'</span>
+
+<span class="dec">@app.task</span>(bind=<span class="kw">True</span>, max_retries=<span class="num">3</span>)
+<span class="kw">def</span> <span class="fn">parse_resume_async</span>(self, ingest_job_id, file_path, session_id):
+    <span class="str">"""
+    Async task: Parse a resume PDF and compute match score.
+    Runs in worker process, not in the web server process.
+    """</span>
+    <span class="kw">try</span>:
+        <span class="kw">from</span> agents.advanced_ats_parsing_agent <span class="kw">import</span> AdvancedAtsParsingAgent
+        <span class="kw">from</span> agents.matching_agent <span class="kw">import</span> SemanticMatchingAgent
+
+        agent = <span class="fn">AdvancedAtsParsingAgent</span>()
+        raw_text = agent.<span class="fn">extract_text_column_aware</span>(file_path)
+        parsed_data = agent.<span class="fn">parse_resume</span>(raw_text)
+
+        <span class="cmt"># Compute match score against job session criteria</span>
+        session = Session.objects.<span class="fn">get</span>(id=session_id)
+        matcher = <span class="fn">SemanticMatchingAgent</span>()
+        match_result = matcher.<span class="fn">match</span>(parsed_data, session.criteria)
+
+        <span class="cmt"># Persist results to DB</span>
+        IngestJob.objects.<span class="fn">filter</span>(id=ingest_job_id).<span class="fn">update</span>(
+            status=<span class="str">'completed'</span>,
+            completed_at=timezone.<span class="fn">now</span>()
+        )
+        <span class="kw">return</span> match_result
+
+    <span class="kw">except</span> Exception <span class="kw">as</span> exc:
+        <span class="kw">raise</span> self.<span class="fn">retry</span>(exc=exc, countdown=<span class="num">30</span>)   <span class="cmt"># Retry after 30s</span>
+  </div>
+
+  <div class="callout">
+    <strong>🔧 Production Deployment Note</strong>
+    <p>
+      In production, the Django server (Gunicorn), Celery workers, and Redis broker run as separate
+      processes. The run.bat / install.bat scripts manage starting all three components. Celery workers
+      can be scaled horizontally by launching additional worker processes that connect to the same
+      Redis broker, enabling true parallel resume processing.
+    </p>
+  </div>
+
+</div>
+</body>
+</html>

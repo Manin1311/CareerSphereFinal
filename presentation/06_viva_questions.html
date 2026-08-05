@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CareerSphere – 06. Technical Viva Questions & Answers</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', Arial, sans-serif;
+      background: #0a0a0f;
+      color: #e2e8f0;
+      font-size: 11pt;
+      line-height: 1.7;
+    }
+
+    .page { max-width: 900px; margin: 0 auto; padding: 40px 44px; }
+
+    /* ── Cover ── */
+    .cover {
+      text-align: center;
+      padding: 48px 0 36px;
+      border-radius: 18px;
+      border: 1px solid rgba(236,72,153,0.25);
+      background: linear-gradient(135deg, rgba(236,72,153,0.08) 0%, rgba(139,92,246,0.04) 100%);
+      margin-bottom: 44px;
+    }
+    .cover .logo-text {
+      font-size: 36pt; font-weight: 900; color: #fff; letter-spacing: -1px;
+    }
+    .cover .logo-text span {
+      background: linear-gradient(135deg, #ec4899, #8b5cf6);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .cover .tagline { font-size: 12pt; color: #94a3b8; margin-top: 8px; }
+    .cover .meta { margin-top: 12px; font-size: 8.5pt; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* ── Section Title ── */
+    .section-title {
+      font-size: 15.5pt; font-weight: 800; color: #f1f5f9;
+      border-left: 4px solid #ec4899; padding-left: 14px; margin: 40px 0 18px;
+    }
+
+    .intro {
+      color: #94a3b8; font-size: 10.5pt;
+      background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px; padding: 18px 22px; margin-bottom: 28px; line-height: 1.8;
+    }
+
+    /* ── Q&A Card ── */
+    .qa-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px;
+      padding: 22px 24px;
+      margin-bottom: 20px;
+      break-inside: avoid;
+    }
+
+    .qa-category {
+      font-family: 'Fira Code', monospace;
+      font-size: 8pt;
+      font-weight: 700;
+      color: #ec4899;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    .qa-question {
+      font-size: 11pt;
+      font-weight: 700;
+      color: #f1f5f9;
+      margin-bottom: 12px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .qa-q-badge {
+      background: rgba(236,72,153,0.15);
+      border: 1px solid rgba(236,72,153,0.3);
+      color: #f472b6;
+      padding: 1px 8px;
+      border-radius: 6px;
+      font-size: 8.5pt;
+      font-family: 'Fira Code', monospace;
+      flex-shrink: 0;
+    }
+
+    .qa-answer {
+      font-size: 9.5pt;
+      color: #94a3b8;
+      line-height: 1.7;
+      padding-left: 36px;
+    }
+
+    .qa-answer strong {
+      color: #cbd5e1;
+    }
+
+    .qa-answer ul {
+      margin-top: 8px;
+      margin-left: 18px;
+    }
+
+    .qa-answer li {
+      margin-bottom: 4px;
+    }
+
+    .code-inline {
+      font-family: 'Fira Code', monospace;
+      background: rgba(255,255,255,0.05);
+      color: #a5b4fc;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 8.5pt;
+    }
+
+    .callout {
+      background: rgba(236,72,153,0.07);
+      border-left: 4px solid #ec4899;
+      padding: 16px 20px;
+      border-radius: 0 12px 12px 0;
+      margin: 20px 0; break-inside: avoid;
+    }
+
+    .callout strong { color: #f472b6; display: block; margin-bottom: 4px; font-size: 10.5pt; }
+    .callout p { color: #94a3b8; font-size: 9.5pt; }
+
+    @media print {
+      body { background: #0a0a0f; color: #e2e8f0; }
+      .page { padding: 20px 28px; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ── COVER ── -->
+  <div class="cover">
+    <div class="logo-text">Career<span>Sphere</span></div>
+    <div class="tagline">06. Comprehensive Technical Viva Questions & Answers</div>
+    <div class="meta">Project Defense Preparation · Architecture · Frontend · Backend · DB · AI</div>
+  </div>
+
+  <!-- ── OVERVIEW ── -->
+  <div class="section-title">Viva Preparation Guide</div>
+  <div class="intro">
+    This document contains a curated list of high-frequency technical questions and model answers designed for final-year project viva defenses, external evaluations, and architectural code reviews. Questions span system architecture, frontend design decisions, backend performance, SQLite database rationale, and multi-agent AI engineering.
+  </div>
+
+  <!-- ── SECTION 1: PROJECT OVERVIEW ── -->
+  <div class="section-title">1. System Overview & Architecture</div>
+
+  <div class="qa-card">
+    <div class="qa-category">System Overview</div>
+    <div class="qa-question">
+      <span class="qa-q-badge">Q1</span>
+      What is CareerSphere and what core problem does it solve compared to existing ATS systems?
+    </div>
+    <div class="qa-answer">
+      <strong>CareerSphere</strong> is an autonomous multi-agent recruitment and career intelligence platform. Traditional Applicant Tracking Systems (ATS) rely on basic keyword substring matching and fail on modern multi-column PDF resumes. CareerSphere solves this by using:<br/>
+      1. <strong>Geometry-Aware PDF Parsing:</strong> PyMuPDF bounding-box column splitting to parse multi-column resumes without scrambling text.<br/>
+      2. <strong>Semantic Vector Matching:</strong> Sentence-transformers (384-dimensional embeddings) and cosine similarity to match candidates on conceptual skill similarity, not exact word matches.<br/>
+      3. <strong>Autonomous Multi-Agent AI:</strong> 21 specialized agents handling resume parsing, skill normalization, interview question generation, and historical hiring ML predictions.
+    </div>
+  </div>
+
+  <div class="qa-card">
+    <div class="qa-category">System Architecture</div>
+    <div class="qa-question">
+      <span class="qa-q-badge">Q2</span>
+      Explain the high-level architecture of CareerSphere.
+    </div>
+    <div class="qa-answer">
+      CareerSphere follows a decoupled client-server architecture:<br/>
+      <ul>
+        <li><strong>Frontend:</strong> Single Page Application (SPA) built with React 18, Vite, and Zustand for state management.</li>
+        <li><strong>Backend:</strong> Django 4.x exposing RESTful APIs with custom JWT authentication decorators.</li>
+        <li><strong>Database:</strong> SQLite managed via Django ORM using JSONField for semi-structured AI outputs.</li>
+        <li><strong>Async Worker Queue:</strong> Celery backed by Redis for offloading long-running AI inference tasks.</li>
+        <li><strong>AI Layer:</strong> RotateLLMClient managing pooled Gemini 2.5 Flash and Groq Llama 3.3 70B API keys with automatic failover.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ── SECTION 2: FRONTEND ── -->
+  <div class="section-title">2. Frontend Architecture (React 18 + Vite)</div>
+
+  <div class="qa-card">
+    <div class="qa-category">Frontend & State Management</div>
+    <div class="qa-question">
+      <span class="qa-q-badge">Q3</span>
+      Why did you choose Zustand over Redux or React Context API?
+    </div>
+    <div class="qa-answer">
+      We chose <strong>Zustand</strong> because:<br/>
+      1. <strong>Zero Boilerplate:</strong> Unlike Redux, Zustand does not require action types, reducers, or provider wrapping.<br/>
+      2. <strong>Built-in Persistence:</strong> Provides a lightweight <code class="code-inline">persist</code> middleware that automatically synchronizes state (JWT tokens, user info) with <code class="code-inline">localStorage</code>.<br/>
+      3. <strong>Selective Re-renders:</strong> Components subscribe only to the specific slices of state they use, preventing unnecessary component re-renders across the app.
+    </div>
+  </div>
+
+  <div class="qa-card">
+    <div class="qa-category">Frontend Routing & Performance</div>
+    <div class="qa-question">
+      <span class="qa-q-badge">Q4</span>
+      How is performance optimized in the React frontend?
+    </div>
+    <div class="qa-answer">
+      Performance optimizations include:<br/>
+      <ul>
+        <li><strong>Code Splitting:</strong> Heavy modules like <code class="code-inline">ResumeEditor.jsx</code> (102KB) and <code class="code-inline">MockInterviewPage.jsx</code> (70KB) are lazily loaded using <code class="code-inline">React.lazy()</code> and <code class="code-inline">Suspense</code>.</li>
+        <li><strong>Vite Bundling:</strong> Sub-second HMR during development and optimized Rollup chunking for production.</li>
+        <li><strong>Pure SVG Charts:</strong> Circular match score rings on job detail pages use native SVG stroke-dashoffset math instead of heavy charting libraries.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ── SECTION 3: BACKEND ── -->
+  <div class="section-title">3. Backend Architecture (Django + DRF)</div>
+
+  <div class="qa-card">
+    <div class="qa-category">Backend & Auth</div>
+    <div class="qa-question">
+      <span class="qa-q-badge">Q5</span>
+      Why did you use Function-Based Views (FBVs) with custom decorators instead of DRF Class-Based Views?
+    </div>
+    <div class="qa-answer">
+      Custom FBVs with explicit decorators (<code class="code-inline">@require_seeker_jwt</code>, <code class="code-inline">@require_recruiter_jwt</code>) provide granular control over token validation, error payload customization, and request object injection. It avoids hidden framework magic in DRF class mixins and makes token verification explicit and easily auditable.
+    </div>
+  </div>
+
+  <div class="qa-card">
+    <div class="qa-category">Async Architecture</div>
+    <div class="qa-question">
+      <span class="qa-q-badge">Q6</span>
+      Why do you use Celery and Redis? What happens if a resume parse request is submitted?
+    </div>
+    <div class="qa-answer">
+      AI resume parsing and scoring take 2–5 seconds per file. If done synchronously in the Django request thread, the web server would block, leading to browser timeouts under concurrent load.<br/>
+      <strong>Flow:</strong> When a user uploads a resume, Django saves the file, creates an <code class="code-inline">IngestJob</code> record, dispatches a Celery task via Redis (<code class="code-inline">parse_resume_async.delay()</code>), and immediately returns an HTTP 202 response with a task ID. A background Celery worker picks up the job, runs PyMuPDF layout extraction and LLM parsing, updates SQLite, and the frontend polls for completion.
+    </div>
+  </div>
+
+  <!-- ── SECTION 4: DATABASE ── -->
+  <div class="section-title">4. Database (SQLite via Django ORM)</div>
+
+  <div class="qa-card">
+    <div class="qa-category">Database Choice</div>
+    <div class="qa-question">
+      <span class="qa-q-badge">Q7</span>
+      Why did you choose SQLite for CareerSphere? Isn't PostgreSQL better for production?
+    </div>
+    <div class="qa-answer">
+      SQLite was selected because:<br/>
+      1. <strong>Zero-Configuration & Portability:</strong> Bundled with Python standard library. The entire DB is a single <code class="code-inline">db.sqlite3</code> file, making local installation seamless across environments via <code class="code-inline">install.bat</code>.<br/>
+      2. <strong>Native JSONField Support:</strong> Django 3.1+ supports JSONFields natively in SQLite, allowing us to store parsed resume trees and match details directly.<br/>
+      3. <strong>ORM Layer Abstraction:</strong> All queries use Django ORM. Switching to PostgreSQL for production scaling requires changing only the <code class="code-inline">DATABASES</code> setting in <code class="code-inline">settings.py</code> with zero code modifications.
+    </div>
+  </div>
+
+  <div class="qa-card">
+    <div class="qa-category">Database Schema & JSONField</div>
+    <div class="qa-question">
+      <span class="qa-q-badge">Q8</span>
+      When do you use standard relational fields versus JSONFields in your models?
+    </div>
+    <div class="qa-answer">
+      We use <strong>Relational Fields (ForeignKeys, indexed CharFields)</strong> for entities requiring fast filtering, joins, or strict relational integrity — such as <code class="code-inline">JobApplication.status</code>, <code class="code-inline">Candidate.match_score</code>, and user references.<br/>
+      We use <strong>JSONFields</strong> for dynamic, semi-structured AI data that evolves frequently without needing schema migrations — such as parsed resume sections, skill arrays, interview transcripts, and AI match breakdowns (<code class="code-inline">match_details</code>).
+    </div>
+  </div>
+
+  <!-- ── SECTION 5: AI IMPLEMENTATION ── -->
+  <div class="section-title">5. AI & Machine Learning Implementation</div>
+
+  <div class="qa-card">
+    <div class="qa-category">LLM Reliability</div>
+    <div class="qa-question">
+      <span class="qa-q-badge">Q9</span>
+      How does RotateLLMClient prevent rate limit (429) failures during LLM calls?
+    </div>
+    <div class="qa-answer">
+      <code class="code-inline">RotateLLMClient</code> is a thread-safe singleton manager that maintains pools of Gemini and Groq API keys.<br/>
+      <ul>
+        <li><strong>Quota Tracking:</strong> Tracks daily usage counters per project and performs lazy resets at midnight Pacific Time (matching Google's quota clock).</li>
+        <li><strong>Automatic Failover:</strong> When a key encounters a 429 Rate Limit error, the client parses the retry duration, marks the key as exhausted, and automatically retries the request using the next available active key in the pool.</li>
+        <li><strong>Provider Fallback:</strong> If all Gemini keys are exhausted, requests automatically fall back to Groq (Llama 3.3 70B).</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa-card">
+    <div class="qa-category">Matching & Embeddings</div>
+    <div class="qa-question">
+      <span class="qa-q-badge">Q10</span>
+      How does the candidate-job matching algorithm work mathematically?
+    </div>
+    <div class="qa-answer">
+      The matching algorithm operates in three layers:<br/>
+      1. <strong>Vector Embedding Cosine Similarity:</strong> Skills are converted into 384-dimensional vector encodings using <code class="code-inline">sentence-transformers</code> (all-MiniLM-L6-v2). Cosine similarity is computed between candidate skills and required skills. Skills with similarity &gt; 0.72 are marked as matched.<br/>
+      2. <strong>TF-IDF Fallback:</strong> If vector embeddings fail, a character n-gram (3–5) TF-IDF vectorizer runs with a 0.60 similarity threshold.<br/>
+      3. <strong>Weighted Formula & ML Blend:</strong> <br/>
+      <code class="code-inline">Score = (Skill * 0.5) + (Experience * 0.3) + (Location * 0.2)</code><br/>
+      If ≥10 historical applications exist, a <code class="code-inline">RandomForestClassifier</code> trained on past hiring outcomes predicts hire probability, blending 20% ML prediction into the final score.
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>🎯 Final Defense Tip</strong>
+    <p>
+      During your project viva, emphasize that CareerSphere is built on an **Asynchronous-First, Resilient Multi-Agent Architecture**. Even if external LLM APIs experience rate limits, the system's local mathematical algorithms (TF-IDF, cosine similarity, RandomForest) and LLM key-rotation pools guarantee 100% platform availability.
+    </p>
+  </div>
+
+</div>
+</body>
+</html>

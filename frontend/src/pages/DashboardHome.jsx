@@ -138,12 +138,12 @@ export default function DashboardHome() {
       <section>
         <h2 className="font-display text-lg text-charcoal mb-3">Quick actions</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <QuickAction
+          {/* <QuickAction
             to="/dashboard/smart-analyzer"
             icon={Sparkles}
             title="Smart Analyzer"
             desc="Rank resumes against a job description with AI."
-          />
+          /> */}
           <QuickAction
             to="/dashboard/sessions"
             icon={Layers}

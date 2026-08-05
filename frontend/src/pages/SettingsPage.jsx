@@ -344,9 +344,9 @@ export default function SettingsPage() {
 
   const tabItems = [
     { id: 'profile', label: 'Company profile', icon: Building },
-    { id: 'api-keys', label: 'API keys', icon: Key },
+    // { id: 'api-keys', label: 'API keys', icon: Key },
     { id: 'billing', label: 'Billing & Plan', icon: CreditCard },
-    { id: 'notifications', label: 'Notifications', icon: Bell },
+    // { id: 'notifications', label: 'Notifications', icon: Bell },
     { id: 'account', label: 'Account', icon: User },
   ];
 
@@ -530,9 +530,9 @@ export default function SettingsPage() {
             </div>
           )}
 
+          {/* API keys — Temporarily Commented Out
           {activeTab === 'api-keys' && (
             <div className="bg-white rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.03)] border border-gray-100 p-8 space-y-6">
-              {/* Header */}
               <div className="flex justify-between items-center pb-4 border-b border-gray-100">
                 <h2 className="text-md font-bold text-charcoal flex items-center gap-2">
                   <Key className="w-5 h-5 text-accent" /> API keys
@@ -545,7 +545,6 @@ export default function SettingsPage() {
                 </button>
               </div>
 
-              {/* Keys List */}
               {keys.length > 0 ? (
                 <div className="divide-y divide-gray-100 border border-gray-100 rounded-2xl overflow-hidden shadow-inner">
                   {keys.map((key, i) => (
@@ -610,7 +609,9 @@ export default function SettingsPage() {
               )}
             </div>
           )}
+          */}
 
+          {/* Notifications — Temporarily Commented Out
           {activeTab === 'notifications' && (
             <div className="bg-white rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.03)] border border-gray-100 p-8 space-y-6">
               <h2 className="text-md font-bold text-charcoal flex items-center gap-2 pb-4 border-b border-gray-100">
@@ -640,6 +641,7 @@ export default function SettingsPage() {
               </div>
             </div>
           )}
+          */}
 
           {activeTab === 'account' && (
             <div className="bg-white rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.03)] border border-gray-100 p-8 space-y-6">
