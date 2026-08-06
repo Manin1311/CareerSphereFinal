@@ -78,59 +78,77 @@ def _get_pacific_date():
 
 def _seed_from_env():
     """
-    Auto-seed GeminiProject + GeminiApiKey and GroqApiKey from env vars
-    if the DB tables are empty (first-time server start).
-    Also seeds AgentModelConfig with default agent assignments.
+    Sync GeminiProject + GeminiApiKey and GroqApiKey from env vars on EVERY server startup.
+    Uses upsert — new keys from env are always added, existing keys are untouched.
+    This ensures new Render env vars are picked up after redeploy without manual DB edits.
+    Also seeds AgentModelConfig with default agent assignments if table is empty.
     """
     from api.models import GeminiProject, GeminiApiKey, AgentModelConfig, GroqApiKey
     from api.utils.security import encrypt_api_key
 
-    # --- Seed Gemini keys from .env if DB is empty ---
-    if GeminiProject.objects.count() == 0:
-        keys_str = os.getenv("GEMINI_API_KEYS", "")
-        keys = [k.strip() for k in keys_str.split(",") if k.strip()]
-        if not keys:
-            single = os.getenv("GEMINI_API_KEY", "")
-            if single.strip():
-                keys.append(single.strip())
+    # --- Always sync Gemini keys from env (upsert — never deletes existing) ---
+    keys_str = os.getenv("GEMINI_API_KEYS", "")
+    keys = [k.strip() for k in keys_str.split(",") if k.strip()]
+    if not keys:
+        single = os.getenv("GEMINI_API_KEY", "")
+        if single.strip():
+            keys.append(single.strip())
 
-        for i, key in enumerate(keys, 1):
-            project_name = f"Gemini-Project-{i}"
-            project, _ = GeminiProject.objects.get_or_create(
-                name=project_name,
-                defaults={"daily_limit": 20, "daily_usage": 0, "rpm_limit": 5}
-            )
-            GeminiApiKey.objects.get_or_create(
-                key=key,
-                defaults={"project": project, "label": f"Key-{i}", "is_active": True}
-            )
-        if keys:
-            print(f"[LLM SEED] Auto-imported {len(keys)} Gemini keys from .env into DB.", flush=True)
+    new_gemini_count = 0
+    # Get existing key values already in DB to avoid duplicates
+    existing_key_values = set(GeminiApiKey.objects.values_list("key", flat=True))
+    existing_project_count = GeminiProject.objects.count()
 
-    # --- Seed Groq keys from .env if DB is empty ---
-    if GroqApiKey.objects.count() == 0:
-        raw_keys_list = [
-            os.getenv("GROQ_API_KEYS", ""),
-            os.getenv("GROK_API_KEYS", ""),
-            os.getenv("GROQ_API_KEY", ""),
-            os.getenv("GROK_API_KEY", ""),
-        ]
-        gkeys = []
-        for raw in raw_keys_list:
-            if raw:
-                for k in raw.split(","):
-                    k_str = k.strip()
-                    if k_str and k_str not in gkeys:
-                        gkeys.append(k_str)
-        for i, gk in enumerate(gkeys, 1):
-            enc = encrypt_api_key(gk)
-            if enc:
-                GroqApiKey.objects.get_or_create(
-                    encrypted_key=enc,
-                    defaults={"label": f"Groq-Key-{i}", "is_active": True}
-                )
-        if gkeys:
-            print(f"[LLM SEED] Auto-imported {len(gkeys)} Groq keys from .env into encrypted DB.", flush=True)
+    for i, key in enumerate(keys, 1):
+        if key in existing_key_values:
+            continue  # Already in DB, skip
+        project_name = f"Gemini-Project-{existing_project_count + new_gemini_count + 1}"
+        project, _ = GeminiProject.objects.get_or_create(
+            name=project_name,
+            defaults={"daily_limit": 20, "daily_usage": 0, "rpm_limit": 5}
+        )
+        GeminiApiKey.objects.get_or_create(
+            key=key,
+            defaults={"project": project, "label": f"Key-{i}", "is_active": True}
+        )
+        new_gemini_count += 1
+    if new_gemini_count > 0:
+        print(f"[LLM SEED] Synced {new_gemini_count} new Gemini keys from env into DB.", flush=True)
+    else:
+        total = GeminiProject.objects.count()
+        print(f"[LLM SEED] Gemini keys up-to-date ({total} projects in DB).", flush=True)
+
+    # --- Always sync Groq keys from env (upsert) ---
+    raw_keys_list = [
+        os.getenv("GROQ_API_KEYS", ""),
+        os.getenv("GROK_API_KEYS", ""),
+        os.getenv("GROQ_API_KEY", ""),
+        os.getenv("GROK_API_KEY", ""),
+    ]
+    gkeys = []
+    for raw in raw_keys_list:
+        if raw:
+            for k in raw.split(","):
+                k_str = k.strip()
+                if k_str and k_str not in gkeys:
+                    gkeys.append(k_str)
+
+    new_groq_count = 0
+    existing_groq_count = GroqApiKey.objects.count()
+    for i, gk in enumerate(gkeys, 1):
+        enc = encrypt_api_key(gk)
+        if enc:
+            _, created = GroqApiKey.objects.get_or_create(
+                encrypted_key=enc,
+                defaults={"label": f"Groq-Key-{existing_groq_count + new_groq_count + 1}", "is_active": True}
+            )
+            if created:
+                new_groq_count += 1
+    if new_groq_count > 0:
+        print(f"[LLM SEED] Synced {new_groq_count} new Groq keys from env into encrypted DB.", flush=True)
+    else:
+        total = GroqApiKey.objects.count()
+        print(f"[LLM SEED] Groq keys up-to-date ({total} keys in DB).", flush=True)
 
 
     # --- Seed AgentModelConfig if DB is empty ---
