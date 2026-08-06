@@ -1245,8 +1245,8 @@ export default function SessionWorkspacePage() {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
                 <div className="bg-white rounded-2xl p-7 border border-gray-100 shadow-[0_2px_8px_rgba(0,0,0,0.04)] h-[360px] flex flex-col">
                   <h3 className="font-black text-charcoal text-lg mb-6 flex items-center gap-2"><div className="w-2 h-6 bg-accent rounded-full"></div>Score Distribution</h3>
-                  <div className="flex-1 -ml-4">
-                    <ResponsiveContainer width="100%" height="100%">
+                  <div className="flex-1 -ml-4 min-h-[220px] min-w-0">
+                    <ResponsiveContainer width="100%" height="100%" minHeight={200} minWidth={100}>
                       <BarChart data={[
                         {name:"0-20", count: allCandidatesList.filter(c=>c.match_score<=20).length}, 
                         {name:"20-40", count: allCandidatesList.filter(c=>c.match_score>20 && c.match_score<=40).length}, 
@@ -1266,8 +1266,8 @@ export default function SessionWorkspacePage() {
                 <div className="bg-white rounded-2xl p-7 border border-gray-100 shadow-[0_2px_8px_rgba(0,0,0,0.04)] h-[360px] flex flex-col">
                   <h3 className="font-black text-charcoal text-lg mb-4 flex items-center gap-2"><div className="w-2 h-6 bg-blue-500 rounded-full"></div>Status Breakdown</h3>
                   <div className="flex-1 flex justify-center items-center relative">
-                    <div className="w-[240px] h-[240px]">
-                      <ResponsiveContainer width="100%" height="100%">
+                    <div className="w-[240px] h-[240px] min-w-0">
+                      <ResponsiveContainer width="100%" height="100%" minHeight={200} minWidth={100}>
                         <PieChart>
                           <Pie 
                             data={[

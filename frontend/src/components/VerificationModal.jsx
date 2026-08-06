@@ -12,7 +12,7 @@ const getApiBase = () => {
     if (host.includes("localhost") || host.includes("127.0.0.1")) {
       return "http://127.0.0.1:8000";
     }
-    return host;
+    return "https://careerspherefinal2-0.onrender.com";
   }
   return "http://127.0.0.1:8000";
 };

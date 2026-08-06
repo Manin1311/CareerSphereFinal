@@ -122,7 +122,7 @@ export default function DeveloperDashboard() {
             <h3 className="font-bold text-lg text-charcoal mb-6">API Calls — Last 30 Days</h3>
             <div className="w-full h-[260px]">
                {timeline ? (
-                 <ResponsiveContainer width="100%" height="100%">
+                 <ResponsiveContainer width="100%" height="100%" minHeight={200} minWidth={100}>
                     <LineChart data={timeline} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
                        <XAxis dataKey="date" tick={{fontSize: 12, fill: '#858585'}} tickLine={false} axisLine={false} dy={10} minTickGap={30} />
                        <RechartsTooltip content={<CustomTooltip />} cursor={{ stroke: '#e6dfcd', strokeWidth: 1, strokeDasharray: '4 4' }} />
@@ -148,7 +148,7 @@ export default function DeveloperDashboard() {
                      <span className="text-3xl font-black text-charcoal">{totalCalls}</span>
                      <span className="text-[10px] font-black text-gray-800 uppercase tracking-widest">Total</span>
                    </div>
-                   <ResponsiveContainer width="100%" height="100%">
+                   <ResponsiveContainer width="100%" height="100%" minHeight={200} minWidth={100}>
                       <PieChart>
                          <Pie
                            data={pieData}

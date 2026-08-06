@@ -16,7 +16,7 @@ export const getApiBase = () => {
     if (host.includes("localhost") || host.includes("127.0.0.1")) {
       return "http://127.0.0.1:8000/api/v1";
     }
-    return `${host}/api/v1`;
+    return "https://careerspherefinal2-0.onrender.com/api/v1";
   }
   return "http://127.0.0.1:8000/api/v1";
 };
