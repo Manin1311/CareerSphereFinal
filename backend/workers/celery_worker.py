@@ -79,8 +79,25 @@ def _parse_resume_sync(file_path: str, skip_llm: bool = False, file_bytes: bytes
     os.makedirs(photo_dir, exist_ok=True)
 
     ext = Path(file_path).suffix.lower()
-    text = ""
-    photo_path = None
+    if not file_bytes and not os.path.exists(file_path):
+        logging.info("File path '%s' not present on local container disk. Returning fallback.", file_path)
+        name = Path(file_path).stem
+        return {
+            "parsed": {
+                "name": name,
+                "email": None,
+                "phone": None,
+                "location": "Unknown",
+                "total_experience_years": 0.0,
+                "skills": [],
+                "experience": [],
+                "education": []
+            },
+            "photo_path": None,
+            "raw_text_length": 0,
+            "parsing_method": "none",
+            "confidence": 0.1
+        }
 
     try:
         if ext == ".pdf":

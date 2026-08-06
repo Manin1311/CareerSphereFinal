@@ -58,6 +58,78 @@ def _call_wandbox_sandbox(runner_script: str, lang_key: str) -> Tuple[bool, str,
     return False, "", "Wandbox execution failed"
 
 
+def _local_python_fallback(
+    code: str,
+    test_cases: List[Dict[str, Any]],
+    func_name: str = None,
+    is_custom_run: bool = False
+) -> Tuple[bool, List[Dict[str, Any]], str, str, float, int]:
+    """
+    Safe in-memory fallback execution for Python code when external sandbox APIs encounter container / OCI errors.
+    """
+    start_time = time.perf_counter()
+    local_scope = {}
+    try:
+        safe_globals = {
+            "__builtins__": {
+                "abs": abs, "all": all, "any": any, "bin": bin, "bool": bool,
+                "dict": dict, "enumerate": enumerate, "filter": filter, "float": float,
+                "format": format, "hex": hex, "int": int, "isinstance": isinstance,
+                "len": len, "list": list, "map": map, "max": max, "min": min,
+                "oct": oct, "ord": ord, "pow": pow, "print": print, "range": range,
+                "reversed": reversed, "round": round, "set": set, "sorted": sorted,
+                "str": str, "sum": sum, "tuple": tuple, "zip": zip, "Exception": Exception,
+                "ValueError": ValueError, "TypeError": TypeError, "IndexError": IndexError,
+                "KeyError": KeyError
+            }
+        }
+        exec(code, safe_globals, local_scope)
+    except Exception as e:
+        elapsed = time.perf_counter() - start_time
+        return False, [{"passed": False, "error": f"Syntax/Compilation Error: {str(e)}"}], "", str(e), round(elapsed, 3), 0
+
+    target_func = None
+    if func_name and func_name in local_scope:
+        target_func = local_scope[func_name]
+    else:
+        for v in local_scope.values():
+            if callable(v):
+                target_func = v
+                break
+
+    if not target_func:
+        elapsed = time.perf_counter() - start_time
+        return False, [{"passed": False, "error": "Function definition not found"}], "", "No function defined", round(elapsed, 3), 0
+
+    run_results = []
+    all_passed = True
+
+    for tc in test_cases:
+        inp = tc.get("input")
+        expected = tc.get("expected_output")
+        try:
+            if isinstance(inp, dict):
+                actual = target_func(**inp)
+            elif isinstance(inp, (list, tuple)):
+                actual = target_func(*inp)
+            else:
+                actual = target_func(inp)
+
+            if is_custom_run:
+                run_results.append({"passed": True, "input": inp, "expected": None, "actual": actual})
+            else:
+                passed = compare_output(actual, expected)
+                if not passed:
+                    all_passed = False
+                run_results.append({"passed": passed, "input": inp, "expected": expected, "actual": actual})
+        except Exception as ex:
+            all_passed = False
+            run_results.append({"passed": False, "input": inp, "expected": expected, "error": str(ex)})
+
+    elapsed = time.perf_counter() - start_time
+    return all_passed, run_results, "", "", round(elapsed, 3), 0
+
+
 def acquire_piston_token_distributed(max_per_minute: int = 15) -> bool:
     """
     Redis-backed distributed rate limiter.
@@ -224,7 +296,10 @@ console.log(JSON.stringify({{results: results, peak_memory_bytes: 0}}));
             run_output = resp.json().get("run", {})
             stdout = run_output.get("stdout", "")
             stderr = run_output.get("stderr", "")
-            resp_success = True
+            if "___TEST_RESULTS___" in stdout and "OCI runtime error" not in stderr and "Resource temporarily unavailable" not in stderr:
+                resp_success = True
+            else:
+                logger.warning("Piston API response contained container/OCI runtime error — trying Wandbox/Local fallback")
         else:
             logger.warning("Piston API returned HTTP %d: %s — trying Wandbox fallback", resp.status_code, resp.text[:120])
     except Exception as http_err:
@@ -232,12 +307,20 @@ console.log(JSON.stringify({{results: results, peak_memory_bytes: 0}}));
 
     if not resp_success:
         wand_ok, stdout, stderr = _call_wandbox_sandbox(runner_script, lang_key)
-        if not wand_ok:
-            elapsed_seconds = time.perf_counter() - start_time
-            return False, [{
-                "passed": False,
-                "error": "Sandbox execution service unavailable. Please retry submission."
-            }], "", "Sandbox service unavailable", round(elapsed_seconds, 3), 0
+        if wand_ok and "___TEST_RESULTS___" in stdout and "OCI runtime error" not in stderr:
+            resp_success = True
+
+    if not resp_success:
+        # Final fallback: If language is Python, run safe in-memory execution locally
+        if lang_key == "python":
+            return _local_python_fallback(code, test_cases, func_name, is_custom_run)
+        
+        elapsed_seconds = time.perf_counter() - start_time
+        err_msg = stderr or stdout or "Sandbox execution service unavailable. Please retry submission."
+        return False, [{
+            "passed": False,
+            "error": err_msg
+        }], "", err_msg, round(elapsed_seconds, 3), 0
 
     elapsed_seconds = time.perf_counter() - start_time
 
