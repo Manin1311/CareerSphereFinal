@@ -752,26 +752,14 @@ def my_applications(request):
             seeker_status = "applied"
 
             if cand_status == "rejected":
-                if cand_round <= max_declared_order:
-                    seeker_status = "rejected"
-                    visible_round_index = cand_round
-                else:
-                    visible_round_index = min(max_declared_order + 1, len(sorted_rounds))
-                    seeker_status = "shortlisted" if visible_round_index > 1 else "applied"
+                visible_round_index = cand_round
+                seeker_status = "rejected"
             elif cand_status == "hired":
                 final_round_order = sorted_rounds[-1].get("order", 1) if sorted_rounds else 1
-                if final_round_order <= max_declared_order:
-                    seeker_status = "hired"
-                    visible_round_index = final_round_order
-                else:
-                    visible_round_index = final_round_order
-                    seeker_status = "shortlisted" if visible_round_index > 1 else "applied"
+                visible_round_index = final_round_order
+                seeker_status = "hired"
             else:
-                highest_cleared_declared = min(max(cand_round - 1, 0), max_declared_order)
-                if cand_round > (len(sorted_rounds) if sorted_rounds else 0):
-                    visible_round_index = cand_round
-                else:
-                    visible_round_index = min(highest_cleared_declared + 1, len(sorted_rounds) if sorted_rounds else 1)
+                visible_round_index = min(cand_round, len(sorted_rounds) if sorted_rounds else 1)
                 seeker_status = "shortlisted" if visible_round_index > 1 else "applied"
 
             # Match score fallback
@@ -785,13 +773,24 @@ def my_applications(request):
                 r_order = int(r.get("order", 1))
                 r_score = None
                 r_status = None
+                sr_obj = None
                 if candidate:
                     sr_obj = SessionRound.objects.filter(session=session, round_number=r_order).first()
                     if sr_obj:
                         att = ApplicantRoundAttempt.objects.filter(candidate=candidate, round=sr_obj).first()
                         if att:
-                            r_score = att.overall_score if att.overall_score is not None else (att.mcq_score or att.coding_score or att.interview_score)
                             r_status = att.status
+                            raw_score = att.overall_score if att.overall_score is not None else (att.mcq_score or att.coding_score or att.interview_score)
+                            
+                            # Trigger auto progression if score is present and candidate hasn't progressed yet
+                            if att.status in ["completed", "submitted", "evaluated"] and r_order == candidate.current_round_index and raw_score is not None:
+                                passing_thresh = sr_obj.passing_score if sr_obj else 50
+                                if raw_score >= passing_thresh:
+                                    from api.views.round_views import auto_progress_candidate
+                                    auto_progress_candidate(candidate, session, raw_score, attempt=att)
+
+                            r_score = raw_score
+
                 ui_rounds.append({
                     "name": r.get("name"),
                     "interviewer": r.get("interviewer"),
@@ -823,8 +822,18 @@ def my_applications(request):
                     visible_round_obj = r
                     break
 
+            # Check if candidate has completed an attempt for this round
+            has_completed_attempt = False
+            if candidate:
+                ex_attempt = ApplicantRoundAttempt.objects.filter(
+                    candidate=candidate,
+                    round__round_number=visible_round_index
+                ).first()
+                if ex_attempt and ex_attempt.status == "completed":
+                    has_completed_attempt = True
+
             is_awaiting_results = False
-            if visible_round_obj and visible_round_obj.get("result_announcement_date"):
+            if has_completed_attempt and visible_round_obj and visible_round_obj.get("result_announcement_date"):
                 try:
                     dt = parse_datetime(visible_round_obj.get("result_announcement_date"))
                     if dt:
@@ -835,7 +844,7 @@ def my_applications(request):
                 except Exception:
                     pass
 
-            if candidate and not is_awaiting_results and seeker_status not in ["rejected", "hired"]:
+            if candidate and seeker_status not in ["rejected", "hired"]:
                 active_attempt = ApplicantRoundAttempt.objects.filter(
                     candidate=candidate,
                     round__round_number=visible_round_index,

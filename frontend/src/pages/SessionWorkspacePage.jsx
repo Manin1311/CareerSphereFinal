@@ -156,17 +156,15 @@ export default function SessionWorkspacePage() {
         return;
       }
       
-      const isPastDeclared = r.result_announcement_date && new Date(r.result_announcement_date) < now;
-      if (!isPastDeclared) {
-        if (!r.result_announcement_date) {
-          toast.error(`Result declaration date & time is compulsory for round: ${r.name}`);
-          return;
-        }
-        const announcementDate = new Date(r.result_announcement_date);
-        if (announcementDate < now) {
-          toast.error(`Result declaration date & time for round "${r.name}" cannot be in the past`);
-          return;
-        }
+      if (!r.result_announcement_date) {
+        toast.error(`Result declaration date & time is compulsory for round: ${r.name || `Round ${i + 1}`}`);
+        return;
+      }
+      const announcementDate = new Date(r.result_announcement_date);
+      // Allow 1-minute buffer for date picking, reject any past date
+      if (announcementDate < new Date(Date.now() - 60000)) {
+        toast.error(`Result declaration date & time for round "${r.name || `Round ${i + 1}`}" cannot be in the past!`);
+        return;
       }
     }
 

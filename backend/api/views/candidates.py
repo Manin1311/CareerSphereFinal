@@ -106,6 +106,38 @@ def _serialize_candidate_summary(c):
         except:
             resume_url = None
 
+    # Determine if candidate has cleared their current round assessment
+    current_round_cleared = True  # default: allow forward for non-proctored rounds
+    current_round_status = None   # "not_started", "in_progress", "completed_passed", "completed_failed"
+    try:
+        from api.models import SessionRound, ApplicantRoundAttempt
+        current_sr = SessionRound.objects.filter(
+            session_id=c.session_id,
+            round_number=c.current_round_index
+        ).first()
+        if current_sr and current_sr.round_type in ("mcq", "coding", "interview"):
+            attempt = ApplicantRoundAttempt.objects.filter(
+                candidate=c,
+                round=current_sr
+            ).first()
+            if not attempt:
+                current_round_cleared = False
+                current_round_status = "not_started"
+            elif attempt.status != "completed":
+                current_round_cleared = False
+                current_round_status = "in_progress"
+            else:
+                score = attempt.overall_score
+                if score is None:
+                    score = attempt.mcq_score or attempt.coding_score or attempt.interview_score
+                if score is not None and score < current_sr.passing_score:
+                    current_round_cleared = False
+                    current_round_status = "completed_failed"
+                else:
+                    current_round_status = "completed_passed"
+    except Exception:
+        pass
+
     return {
         "id": str(c.id),
         "name": clean_candidate_name(c.name),
@@ -135,6 +167,8 @@ def _serialize_candidate_summary(c):
         "raw_resume_data": parsed,
         "status": c.status,
         "source": c.source,
+        "current_round_cleared": current_round_cleared,
+        "current_round_status": current_round_status,
         "created_at": c.created_at.isoformat() if c.created_at else None
     }
 
@@ -338,8 +372,12 @@ def candidate_action(request, session_id, cand_id):
         if action == "forward":
             if candidate.current_round_index >= max_round:
                 return JsonResponse(error_response("Already at last round"), status=400)
+
             candidate.current_round_index += 1
             candidate.status = "forwarded"
+
+            # Sync JobApplication status to shortlisted
+            JobApplication.objects.filter(candidate=candidate).update(status="shortlisted")
 
             # Pre-generate next round attempt proactively so they receive their test_link immediately
             from api.models import SessionRound, ApplicantRoundAttempt
@@ -416,109 +454,78 @@ def candidate_action(request, session_id, cand_id):
                 }
                 notify_status = status_map.get(action)
                 if notify_status:
-                    # Determine if result declaration date is in the future
-                    from django.utils.dateparse import parse_datetime
-                    from django.utils.timezone import is_aware, make_aware
-                    
-                    announcement_time = None
-                    # Find completed round (order == prior_round_order)
-                    for r in rounds:
-                        try:
-                            if int(r.get("order")) == int(prior_round_order):
-                                ann_date = r.get("result_announcement_date")
-                                if ann_date:
-                                    dt = parse_datetime(ann_date)
-                                    if dt:
-                                        if not is_aware(dt):
-                                            dt = make_aware(dt)
-                                        announcement_time = dt
-                                break
-                        except (ValueError, TypeError):
-                            continue
+                    # Release status immediately when recruiter takes explicit action
+                    app.status = notify_status
+                    app.save(update_fields=['status'])
 
-                    if announcement_time and announcement_time > timezone.now():
-                        # Schedule delayed release via Celery
-                        try:
-                            from workers.celery_worker import release_round_results
-                            release_round_results.apply_async(
-                                args=[str(app.id), notify_status],
-                                eta=announcement_time
-                            )
-                        except Exception as cel_err:
-                            logger.warning('Celery scheduling failed: %s', cel_err)
+                    # Compute rich details for notification and email
+                    prior_sr = SessionRound.objects.filter(session=session, round_number=prior_round_order).first()
+                    prior_round_name = prior_sr.name if prior_sr else f"Round {prior_round_order}"
+
+                    current_sr = SessionRound.objects.filter(session=session, round_number=candidate.current_round_index).first()
+                    current_round_name = current_sr.name if current_sr else f"Round {candidate.current_round_index}"
+
+                    test_link = None
+                    active_attempt = ApplicantRoundAttempt.objects.filter(
+                        candidate=candidate,
+                        round__round_number=candidate.current_round_index
+                    ).first()
+                    if active_attempt and active_attempt.access_token:
+                        test_link = f"/test/entry?token={active_attempt.access_token}"
+
+                    notif_link = test_link if test_link else f"/jobs/applications?app_id={app.id}"
+
+                    if action == 'forward':
+                        notif_title = f"Shortlisted for {current_round_name} — {session.job_title}"
+                        notif_msg = f"Congratulations! Your application for {session.job_title} at {company_name} [{match_score_str} Match] has been shortlisted on {prior_round_name}. You have advanced to the next round: {current_round_name}."
                     else:
-                        # Release immediately
-                        app.status = notify_status
-                        app.save(update_fields=['status'])
+                        notif_title = f"{notify_status.title()}: {session.job_title} at {company_name}"
+                        round_note = f" ({current_round_name})" if current_round_name else ""
+                        notif_msg = f"Your application for {session.job_title} at {company_name} [{match_score_str} Match] has been updated to {notify_status.title()}{round_note}. Click to view details and proceed."
 
-                        # Compute rich details for notification and email
-                        prior_sr = SessionRound.objects.filter(session=session, round_number=prior_round_order).first()
-                        prior_round_name = prior_sr.name if prior_sr else f"Round {prior_round_order}"
+                    # Create rich in-app notification
+                    Notification.objects.create(
+                        seeker=seeker,
+                        type='status_updated',
+                        title=notif_title,
+                        message=notif_msg,
+                        link=notif_link,
+                    )
 
-                        current_sr = SessionRound.objects.filter(session=session, round_number=candidate.current_round_index).first()
-                        current_round_name = current_sr.name if current_sr else f"Round {candidate.current_round_index}"
+                    # S1: Send round-unlocked email when forwarding to next round
+                    if action == 'forward' and next_sr:
+                        try:
+                            result_date_str = None
+                            for r in rounds:
+                                try:
+                                    if int(r.get('order', 0)) == candidate.current_round_index:
+                                        result_date_str = r.get('result_announcement_date')
+                                        break
+                                except (ValueError, TypeError):
+                                    continue
+                            send_round_unlocked_to_seeker(
+                                seeker_email=seeker.email,
+                                seeker_name=seeker.full_name,
+                                job_title=session.job_title,
+                                company_name=company_name,
+                                round_name=next_sr.name,
+                                round_type=next_sr.round_type or 'assessment',
+                                test_link=test_link,
+                                result_date=result_date_str,
+                            )
+                        except Exception as s1_err:
+                            logger.warning('S1 round-unlocked email failed: %s', s1_err)
 
-                        test_link = None
-                        active_attempt = ApplicantRoundAttempt.objects.filter(
-                            candidate=candidate,
-                            round__round_number=candidate.current_round_index
-                        ).first()
-                        if active_attempt and active_attempt.access_token:
-                            test_link = f"/test/entry?token={active_attempt.access_token}"
-
-                        notif_link = test_link if test_link else f"/jobs/applications?app_id={app.id}"
-
-                        if action == 'forward':
-                            notif_title = f"Shortlisted for {current_round_name} — {session.job_title}"
-                            notif_msg = f"Congratulations! Your application for {session.job_title} at {company_name} [{match_score_str} Match] has been shortlisted on {prior_round_name}. You have advanced to the next round: {current_round_name}."
-                        else:
-                            notif_title = f"{notify_status.title()}: {session.job_title} at {company_name}"
-                            round_note = f" ({current_round_name})" if current_round_name else ""
-                            notif_msg = f"Your application for {session.job_title} at {company_name} [{match_score_str} Match] has been updated to {notify_status.title()}{round_note}. Click to view details and proceed."
-
-                        # Create rich in-app notification
-                        Notification.objects.create(
-                            seeker=seeker,
-                            type='status_updated',
-                            title=notif_title,
-                            message=notif_msg,
-                            link=notif_link,
-                        )
-
-                        # S1: Send round-unlocked email when forwarding to next round
-                        if action == 'forward' and next_sr:
-                            try:
-                                result_date_str = None
-                                for r in rounds:
-                                    try:
-                                        if int(r.get('order', 0)) == candidate.current_round_index:
-                                            result_date_str = r.get('result_announcement_date')
-                                            break
-                                    except (ValueError, TypeError):
-                                        continue
-                                send_round_unlocked_to_seeker(
-                                    seeker_email=seeker.email,
-                                    seeker_name=seeker.full_name,
-                                    job_title=session.job_title,
-                                    company_name=company_name,
-                                    round_name=next_sr.name,
-                                    round_type=next_sr.round_type or 'assessment',
-                                    test_link=test_link,
-                                    result_date=result_date_str,
-                                )
-                            except Exception as s1_err:
-                                logger.warning('S1 round-unlocked email failed: %s', s1_err)
-
-                        # Send rich email with full details
-                        send_status_update_to_seeker(
-                            seeker_email=seeker.email,
-                            seeker_name=seeker.full_name,
-                            job_title=session.job_title,
-                            company_name=company_name,
-                            new_status=notify_status,
-                            match_score=match_val,
-                            current_round_name=current_round_name,
-                            previous_round_name=prior_round_name if action == 'forward' else None,
+                    # Send rich email with full details
+                    send_status_update_to_seeker(
+                        seeker_email=seeker.email,
+                        seeker_name=seeker.full_name,
+                        job_title=session.job_title,
+                        company_name=company_name,
+                        new_status=notify_status,
+                        match_score=match_val,
+                        current_round_name=current_round_name,
+                        previous_round_name=prior_round_name if action == 'forward' else None,
                             location=(session.criteria.get("location") if (isinstance(session.criteria, dict) and session.criteria.get("location")) else None),
                             test_link=test_link,
                         )

@@ -466,9 +466,12 @@ export default function UserApplications() {
                               } else if (app.status === "hired") {
                                 roundStatus = "Hired";
                                 statusColor = "text-emerald-600 dark:text-emerald-400 font-semibold";
-                              } else if (isScheduled) {
-                                roundStatus = "Awaiting Results";
+                              } else if (round.score !== undefined && round.score !== null) {
+                                roundStatus = isScheduled ? "Awaiting Results" : "Evaluating";
                                 statusColor = "text-blue-600 dark:text-blue-400 font-semibold";
+                              } else if (app.test_link) {
+                                roundStatus = "Assessment Ready";
+                                statusColor = "text-emerald-600 dark:text-emerald-400 font-semibold";
                               } else {
                                 roundStatus = "Evaluating";
                                 statusColor = "text-amber-600 dark:text-amber-400 font-semibold";
@@ -521,7 +524,7 @@ export default function UserApplications() {
                                         </span>
                                       )}
                                     </p>
-                                    {isActive && !isScheduled && app.test_link && (
+                                    {isActive && app.test_link && (
                                       <div className="mt-2.5 flex flex-wrap gap-2 items-center">
                                         <a
                                           href={SHOW_MOCK_TESTING_CONTROLS 

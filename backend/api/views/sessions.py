@@ -250,8 +250,8 @@ def session_detail(request, session_id):
                 # Recreate rounds matching the updated JSONField payload
                 created_rounds = []
                 for idx, r in enumerate(rounds_data):
-                    name = r.get("name")
-                    name_lower = name.lower()
+                    name = r.get("name") or f"Round {idx+1}"
+                    name_lower = str(name).lower()
                     
                     rtype = r.get("round_type")
                     if not rtype:

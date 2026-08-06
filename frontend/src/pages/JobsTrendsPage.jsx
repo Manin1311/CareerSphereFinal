@@ -92,7 +92,7 @@ export default function JobsTrendsPage() {
           </div>
 
           <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-2 min-h-[120px] flex flex-col justify-between">
-            <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Top Remote Hub</div>
+            <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Top Hub</div>
             {loading ? (
               <>
                 <LoadingSkeleton width="120px" height="28px" />
@@ -101,7 +101,7 @@ export default function JobsTrendsPage() {
             ) : (
               <>
                 <div className="text-3xl font-black text-[#2563eb] dark:text-blue-400">{trends?.top_remote_hub}</div>
-                <div className="text-xs text-muted-foreground font-medium">{trends?.top_remote_hub_percentage}% of all remote uploads</div>
+                <div className="text-xs text-muted-foreground font-medium">{trends?.top_remote_hub_percentage}% of all  uploads</div>
               </>
             )}
           </div>

@@ -283,6 +283,7 @@ def auto_progress_candidate(candidate, session, round_score, attempt=None):
         return
 
     current_sr = SessionRound.objects.filter(session=session, round_number=current_round_idx).first()
+    
     passing_threshold = current_sr.passing_score if current_sr else 50
     
     app = JobApplication.objects.filter(candidate=candidate).first()
@@ -366,104 +367,108 @@ def create_session_rounds(request, session_id):
     except Exception as e:
         return JsonResponse(error_response(f"Invalid JSON: {str(e)}"), status=400)
 
-    # Clear old rounds and attempts for this session to rebuild config
-    # To be safe, we mark is_active=False or delete. Since it is a session setup phase:
-    SessionRound.objects.filter(session=session).delete()
+    try:
+        # Clear old rounds and attempts for this session to rebuild config
+        SessionRound.objects.filter(session=session).delete()
 
-    created_rounds = []
-    for idx, r in enumerate(rounds_list):
-        round_type = r.get("round_type")
-        name = r.get("name", f"Round {idx+1}")
-        if not round_type:
-            name_lower = name.lower()
-            if "mcq" in name_lower or "aptitude" in name_lower:
-                round_type = "mcq"
-            elif "coding" in name_lower or "programming" in name_lower:
-                round_type = "coding"
-            else:
-                round_type = "interview"
-        time_limit = int(r.get("time_limit_minutes", 30))
+        created_rounds = []
+        for idx, r in enumerate(rounds_list):
+            round_type = r.get("round_type")
+            name = r.get("name") or f"Round {idx+1}"
+            if not round_type:
+                name_lower = str(name).lower()
+                if "mcq" in name_lower or "aptitude" in name_lower:
+                    round_type = "mcq"
+                elif "coding" in name_lower or "programming" in name_lower:
+                    round_type = "coding"
+                else:
+                    round_type = "interview"
+            time_limit = int(r.get("time_limit_minutes", 30))
 
-        custom_question_ids = r.get("custom_question_ids", [])
-        if custom_question_ids and round_type == 'mcq':
-            from api.models import MCQQuestion
-            for qid in custom_question_ids:
-                mq = MCQQuestion.objects.filter(id=qid).first()
-                if mq:
-                    if not isinstance(mq.tags, list):
-                        mq.tags = []
-                    if session_id not in mq.tags:
-                        mq.tags.append(session_id)
-                        mq.save(update_fields=['tags'])
+            custom_question_ids = r.get("custom_question_ids", [])
+            if custom_question_ids and round_type == 'mcq':
+                from api.models import MCQQuestion
+                for qid in custom_question_ids:
+                    mq = MCQQuestion.objects.filter(id=qid).first()
+                    if mq:
+                        if not isinstance(mq.tags, list):
+                            mq.tags = []
+                        if session_id not in mq.tags:
+                            mq.tags.append(session_id)
+                            mq.save(update_fields=['tags'])
 
-        custom_slugs = r.get("custom_slugs", [])
-        if custom_slugs and round_type == 'coding':
-            from api.models import CodingProblem
-            for slug in custom_slugs:
-                cp = CodingProblem.objects.filter(slug=slug).first()
-                if cp:
-                    if not isinstance(cp.tags, list):
-                        cp.tags = []
-                    if session_id not in cp.tags:
-                        cp.tags.append(session_id)
-                        cp.save(update_fields=['tags'])
+            custom_slugs = r.get("custom_slugs", [])
+            if custom_slugs and round_type == 'coding':
+                from api.models import CodingProblem
+                for slug in custom_slugs:
+                    cp = CodingProblem.objects.filter(slug=slug).first()
+                    if cp:
+                        if not isinstance(cp.tags, list):
+                            cp.tags = []
+                        if session_id not in cp.tags:
+                            cp.tags.append(session_id)
+                            cp.save(update_fields=['tags'])
 
-        coding_problems = r.get("coding_problems", []) if round_type == 'coding' else []
-        if round_type == 'coding':
-            if custom_slugs:
-                coding_problems = [{"slug": slug, "difficulty": "medium"} for slug in custom_slugs]
-            elif not coding_problems or len(coding_problems) <= 2:
-                try:
-                    custom_probs = generate_coding_problems_for_job(session.job_title, session.job_description)
-                    if custom_probs:
-                        coding_problems = custom_probs
-                except Exception as e:
-                    logger.error("Failed to generate custom coding problems: %s", e)
+            coding_problems = r.get("coding_problems", []) if round_type == 'coding' else []
+            if round_type == 'coding':
+                if custom_slugs:
+                    coding_problems = [{"slug": slug, "difficulty": "medium"} for slug in custom_slugs]
+                elif not coding_problems or len(coding_problems) == 0:
+                    try:
+                        custom_probs = generate_coding_problems_for_job(session.job_title, session.job_description)
+                        if custom_probs:
+                            coding_problems = custom_probs
+                    except Exception as e:
+                        logger.error("Failed to generate custom coding problems: %s", e)
+                        coding_problems = _fallback_coding_problems(session.job_title)
+
+                if not coding_problems:
                     coding_problems = _fallback_coding_problems(session.job_title)
 
-            if not coding_problems:
-                coding_problems = _fallback_coding_problems(session.job_title)
+            clean_coding = []
+            if isinstance(coding_problems, list):
+                for item in coding_problems:
+                    if isinstance(item, dict):
+                        clean_coding.append(item)
+                    elif hasattr(item, 'slug'):
+                        clean_coding.append({"slug": getattr(item, 'slug'), "difficulty": getattr(item, 'difficulty', 'medium')})
+                    elif isinstance(item, str):
+                        clean_coding.append({"slug": item, "difficulty": "medium"})
 
-        clean_coding = []
-        if isinstance(coding_problems, list):
-            for item in coding_problems:
-                if isinstance(item, dict):
-                    clean_coding.append(item)
-                elif hasattr(item, 'slug'):
-                    clean_coding.append({"slug": getattr(item, 'slug'), "difficulty": getattr(item, 'difficulty', 'medium')})
-                elif isinstance(item, str):
-                    clean_coding.append({"slug": item, "difficulty": "medium"})
+            round_num = int(r.get("order")) if r.get("order") is not None else (idx + 1)
 
-        sr = SessionRound.objects.create(
-            session=session,
-            round_type=round_type,
-            round_number=round_num,
-            name=name,
-            time_limit_minutes=time_limit,
-            mcq_question_count=int(r.get("mcq_question_count", 30)) if round_type == 'mcq' else 0,
-            coding_problems=clean_coding,
-            interview_questions=r.get("interview_questions", []) if round_type == 'interview' else [],
-            passing_score=int(r.get("passing_score", 50))
-        )
-        created_rounds.append(sr)
-
-    # Generate attempts for all existing candidates of this session
-    candidates = Candidate.objects.filter(session=session, deleted_at__isnull=True)
-    for candidate in candidates:
-        for sr in created_rounds:
-            # Generate unique token
-            token = secrets.token_urlsafe(32)
-            ApplicantRoundAttempt.objects.get_or_create(
-                candidate=candidate,
-                round=sr,
-                defaults={
-                    "access_token": token,
-                    "token_expires_at": timezone.now() + timedelta(days=7),
-                    "status": "pending"
-                }
+            sr = SessionRound.objects.create(
+                session=session,
+                round_type=round_type,
+                round_number=round_num,
+                name=name,
+                time_limit_minutes=time_limit,
+                mcq_question_count=int(r.get("mcq_question_count", 30)) if round_type == 'mcq' else 0,
+                coding_problems=clean_coding,
+                interview_questions=r.get("interview_questions", []) if round_type == 'interview' else [],
+                passing_score=int(r.get("passing_score", 50))
             )
+            created_rounds.append(sr)
 
-    return JsonResponse(success_response({"message": "Rounds saved successfully"}))
+        # Generate attempts for all existing candidates of this session
+        candidates = Candidate.objects.filter(session=session, deleted_at__isnull=True)
+        for candidate in candidates:
+            for sr in created_rounds:
+                token = secrets.token_urlsafe(32)
+                ApplicantRoundAttempt.objects.get_or_create(
+                    candidate=candidate,
+                    round=sr,
+                    defaults={
+                        "access_token": token,
+                        "token_expires_at": timezone.now() + timedelta(days=7),
+                        "status": "pending"
+                    }
+                )
+
+        return JsonResponse(success_response({"message": "Rounds saved successfully"}))
+    except Exception as err:
+        logger.error("Error in create_session_rounds: %s", err, exc_info=True)
+        return JsonResponse(error_response(f"Failed to save rounds: {str(err)}"), status=500)
 
 
 @csrf_exempt
@@ -713,10 +718,22 @@ def validate_test_token(request):
     if not attempt:
         return JsonResponse(error_response("Invalid test access token"), status=401)
 
-    if attempt.token_expires_at < timezone.now():
-        return JsonResponse(error_response("This test link has expired"), status=401)
-
     session = attempt.round.session
+
+    # Check if candidate cleared all preceding rounds or was forwarded to this round
+    current_round_num = attempt.round.round_number if attempt.round else 1
+    if current_round_num > 1 and attempt.candidate.current_round_index < current_round_num:
+        prev_attempts = ApplicantRoundAttempt.objects.filter(
+            candidate=attempt.candidate,
+            round__round_number__lt=current_round_num
+        ).select_related("round")
+        for pa in prev_attempts:
+            if pa.status not in ["completed", "submitted", "evaluated"]:
+                return JsonResponse(error_response("You must complete and clear previous rounds before accessing this round."), status=403)
+            score = pa.overall_score if pa.overall_score is not None else (pa.mcq_score or pa.coding_score or pa.interview_score)
+            passing = pa.round.passing_score if pa.round else 50
+            if score is not None and score < passing:
+                return JsonResponse(error_response("You did not clear the previous assessment round."), status=403)
 
     # Fetch next/previous rounds for this candidate to show tab progress
     sibling_attempts = ApplicantRoundAttempt.objects.filter(candidate=attempt.candidate).order_by("round__round_number")

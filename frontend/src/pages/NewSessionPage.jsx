@@ -114,6 +114,16 @@ export default function NewSessionPage() {
   const [recommending, setRecommending] = useState(false);
 
   const toggleRoundInList = (roundType, enabled) => {
+    const typeKeyMap = {
+      "Aptitude Assessment Round": "mcq",
+      "mcq": "mcq",
+      "Technical Coding Round": "coding",
+      "coding": "coding",
+      "AI Interview Round": "interview",
+      "interview": "interview"
+    };
+
+    const type = typeKeyMap[roundType] || roundType;
     const defaultNameMap = {
       mcq: "Aptitude Assessment Round",
       coding: "Technical Coding Round",
@@ -121,18 +131,19 @@ export default function NewSessionPage() {
     };
     
     setFormData(prev => {
-      let currentRounds = prev.rounds.filter(r => r.round_type !== roundType && r.name !== defaultNameMap[roundType]);
+      let currentRounds = (prev.rounds || []).filter(r => r.round_type !== type && r.name !== defaultNameMap[type]);
       if (enabled) {
         currentRounds.push({
-          id: currentRounds.length + 1,
-          name: defaultNameMap[roundType],
-          round_type: roundType,
+          id: Date.now() + Math.random(),
+          name: defaultNameMap[type],
+          round_type: type,
           interviewer: "",
           order: currentRounds.length + 1,
           result_announcement_date: ""
         });
       }
-      // Re-index order
+      const rank = { mcq: 1, coding: 2, interview: 3 };
+      currentRounds.sort((a, b) => (rank[a.round_type] || 99) - (rank[b.round_type] || 99));
       currentRounds = currentRounds.map((r, i) => ({
         ...r,
         order: i + 1
@@ -142,6 +153,10 @@ export default function NewSessionPage() {
   };
 
   useEffect(() => {
+    setMcqEnabled(true);
+    setCodingEnabled(true);
+    setInterviewEnabled(true);
+
     if (step === 3 && formData.job_title && formData.job_description) {
       setRecommending(true);
       roundsAPI.recommendRounds("new", {
@@ -149,32 +164,18 @@ export default function NewSessionPage() {
         job_description: formData.job_description
       })
         .then((res) => {
-          if (res && res.recommended_rounds) {
-            const types = res.recommended_rounds.map((r) => r.type);
-            const hasMcq = types.includes("mcq");
-            const hasCoding = types.includes("coding");
-            const hasInterview = types.includes("interview") || true;
-
-            setMcqEnabled(hasMcq);
-            setCodingEnabled(hasCoding);
-            setInterviewEnabled(hasInterview);
-
-            // Rebuild rounds list to ONLY contain the enabled distinct rounds
-            setFormData(prev => {
-              const newRounds = [];
-              let orderCount = 1;
-              if (hasMcq) {
-                newRounds.push({ id: 1, name: "Aptitude Assessment Round", round_type: "mcq", order: orderCount++ });
-              }
-              if (hasCoding) {
-                newRounds.push({ id: 2, name: "Technical Coding Round", round_type: "coding", order: orderCount++ });
-              }
-              if (hasInterview) {
-                newRounds.push({ id: 3, name: "AI Interview Round", round_type: "interview", order: orderCount++ });
-              }
-              return { ...prev, rounds: newRounds };
-            });
-          }
+          setFormData(prev => {
+            const defaultRounds = [
+              { id: 1, name: "Aptitude Assessment Round", round_type: "mcq", order: 1 },
+              { id: 2, name: "Technical Coding Round", round_type: "coding", order: 2 },
+              { id: 3, name: "AI Interview Round", round_type: "interview", order: 3 }
+            ];
+            // Preserve custom attributes if rounds already existed
+            if (prev.rounds && prev.rounds.length > 0) {
+              return prev;
+            }
+            return { ...prev, rounds: defaultRounds };
+          });
         })
         .catch(console.error)
         .finally(() => setRecommending(false));
@@ -380,7 +381,8 @@ export default function NewSessionPage() {
     // Validate that all rounds have a name
     for (let i = 0; i < formData.rounds.length; i++) {
       const r = formData.rounds[i];
-      if (!r.name.trim()) {
+      const rName = (r?.name || "").trim();
+      if (!rName) {
         toast.error(`Please provide a name for Round ${i + 1}`);
         return;
       }
@@ -391,12 +393,12 @@ export default function NewSessionPage() {
     for (let i = 0; i < formData.rounds.length; i++) {
       const r = formData.rounds[i];
       if (!r.result_announcement_date) {
-        toast.error(`Result declaration time is compulsory for Round ${i + 1} ("${r.name || `Round ${i + 1}`}")`);
+        toast.error(`Result declaration time is compulsory for Round ${i + 1} ("${r?.name || `Round ${i + 1}`}")`);
         return;
       }
       const declaredDate = new Date(r.result_announcement_date);
       if (declaredDate < now) {
-        toast.error(`Result declaration time for Round ${i + 1} ("${r.name || `Round ${i + 1}`}") cannot be in the past`);
+        toast.error(`Result declaration time for Round ${i + 1} ("${r?.name || `Round ${i + 1}`}") cannot be in the past`);
         return;
       }
     }
@@ -847,7 +849,7 @@ export default function NewSessionPage() {
               {formData.rounds.map((round, idx) => {
                 const isLast = idx === formData.rounds.length - 1;
                 return (
-                  <div key={round.id} className={`flex flex-col gap-3 p-4 bg-white border ${isLast ? 'border-[#2563EB] shadow-sm' : 'border-gray-200'} rounded-xl relative transition-all`}>
+                  <div key={round.id ? `round-${round.id}-${round.round_type || idx}-${idx}` : `round-${idx}`} className={`flex flex-col gap-3 p-4 bg-white border ${isLast ? 'border-[#2563EB] shadow-sm' : 'border-gray-200'} rounded-xl relative transition-all`}>
                     <div className="flex items-center gap-3">
                       <div className="text-gray-400 cursor-move"><GripVertical size={18} /></div>
                       

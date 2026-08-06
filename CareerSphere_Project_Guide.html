@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CareerSphere - Complete Project Guide & Viva Prep</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090D16;
+      --card-bg: #111827;
+      --card-border: #1F2937;
+      --primary: #3B82F6;
+      --primary-glow: rgba(59, 130, 246, 0.25);
+      --accent: #10B981;
+      --accent-glow: rgba(16, 185, 129, 0.2);
+      --warning: #F59E0B;
+      --text: #F3F4F6;
+      --text-muted: #9CA3AF;
+      --code-bg: #030712;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 3rem;
+      padding: 2.5rem;
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    header::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, var(--primary-glow) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    h1 {
+      font-size: 2.75rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      background: linear-gradient(to right, #60A5FA, #34D399);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.75rem;
+    }
+
+    .subtitle {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .nav-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      justify-content: center;
+      margin-bottom: 2.5rem;
+      position: sticky;
+      top: 1rem;
+      z-index: 50;
+      background: rgba(9, 13, 22, 0.85);
+      backdrop-filter: blur(12px);
+      padding: 0.75rem;
+      border-radius: 16px;
+      border: 1px solid var(--card-border);
+    }
+
+    .nav-btn {
+      background: var(--card-bg);
+      color: var(--text-muted);
+      border: 1px solid var(--card-border);
+      padding: 0.6rem 1.25rem;
+      border-radius: 12px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+
+    .nav-btn:hover, .nav-btn.active {
+      color: #FFF;
+      background: var(--primary);
+      border-color: var(--primary);
+      box-shadow: 0 0 15px var(--primary-glow);
+    }
+
+    section {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 2rem;
+      margin-bottom: 2.5rem;
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+    }
+
+    h2 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #FFFFFF;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    h2::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 24px;
+      background: var(--primary);
+      border-radius: 3px;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #60A5FA;
+      margin: 1.5rem 0 0.75rem 0;
+    }
+
+    p {
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+      font-size: 0.975rem;
+    }
+
+    ul, ol {
+      margin-left: 1.5rem;
+      margin-bottom: 1.25rem;
+      color: var(--text-muted);
+    }
+
+    li {
+      margin-bottom: 0.5rem;
+    }
+
+    li strong {
+      color: var(--text);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1rem;
+    }
+
+    .card-box {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 14px;
+      padding: 1.25rem;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.65rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-right: 0.5rem;
+    }
+
+    .badge-blue { background: rgba(59, 130, 246, 0.15); color: #60A5FA; border: 1px solid rgba(59, 130, 246, 0.3); }
+    .badge-green { background: rgba(16, 185, 129, 0.15); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-purple { background: rgba(139, 92, 246, 0.15); color: #A78BFA; border: 1px solid rgba(139, 92, 246, 0.3); }
+    .badge-amber { background: rgba(245, 158, 11, 0.15); color: #FBBF24; border: 1px solid rgba(245, 158, 11, 0.3); }
+
+    .step-list {
+      position: relative;
+      padding-left: 2rem;
+      border-left: 2px dashed var(--card-border);
+      margin: 1.5rem 0;
+    }
+
+    .step-item {
+      position: relative;
+      margin-bottom: 2rem;
+    }
+
+    .step-item::before {
+      content: attr(data-step);
+      position: absolute;
+      left: -2.65rem;
+      top: 0;
+      width: 24px;
+      height: 24px;
+      background: var(--primary);
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 800;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .step-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.35rem;
+    }
+
+    .viva-card {
+      background: #0D1117;
+      border: 1px solid #21262D;
+      border-radius: 14px;
+      padding: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .viva-q {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #F0F6FC;
+      margin-bottom: 0.5rem;
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .viva-q span {
+      color: var(--primary);
+    }
+
+    .viva-a {
+      font-size: 0.95rem;
+      color: #C9D1D9;
+      line-height: 1.6;
+      background: rgba(59, 130, 246, 0.05);
+      padding: 1rem;
+      border-radius: 8px;
+      border-left: 3px solid var(--primary);
+    }
+
+    .keyword-pill {
+      display: inline-block;
+      background: #1F2937;
+      color: #E5E7EB;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.8rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      margin: 0.2rem;
+      border: 1px solid #374151;
+    }
+
+    code {
+      font-family: 'Fira Code', monospace;
+      background: var(--code-bg);
+      color: #34D399;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>CareerSphere Multi-Agent AI Recruitment Platform</h1>
+    <div class="subtitle">Complete Technical Architecture, End-to-End Workflow & Comprehensive Viva Interview Preparation Guide</div>
+  </header>
+
+  <div class="nav-tabs">
+    <a href="#overview" class="nav-btn">1. Executive Overview</a>
+    <a href="#workflow" class="nav-btn">2. End-to-End Workflow</a>
+    <a href="#agents" class="nav-btn">3. Multi-Agent System</a>
+    <a href="#techstack" class="nav-btn">4. Tech Stack & Features</a>
+    <a href="#buzzwords" class="nav-btn">5. Key Technical Concepts</a>
+    <a href="#viva" class="nav-btn">6. Expected Viva Q&A</a>
+  </div>
+
+  <!-- SECTION 1: OVERVIEW -->
+  <section id="overview">
+    <h2>1. Executive Project Overview</h2>
+    <p><strong>CareerSphere</strong> is an Autonomous Multi-Agent AI Recruitment & Smart Proctoring Ecosystem designed to streamline candidate sourcing, automated screening, dynamic multi-stage assessment (MCQ, Live Coding, and Voice AI Interviews), and instant offer issuance.</p>
+    
+    <div class="grid-2">
+      <div class="card-box">
+        <span class="badge badge-blue">Core Objective</span>
+        <h3>Why CareerSphere Was Built</h3>
+        <p>Traditional ATS (Applicant Tracking Systems) rely on rigid keyword matching and manual recruiter shortlisting. CareerSphere solves this by introducing <strong>autonomous LLM agents</strong> that analyze resumes contextually, generate tailored assessment rounds, conduct voice interviews, and proctor tests in real-time.</p>
+      </div>
+
+      <div class="card-box">
+        <span class="badge badge-green">Key USP</span>
+        <h3>What Makes It Unique</h3>
+        <ul>
+          <li><strong>Autonomous AI Voice Interviewer:</strong> Real-time Speech-to-Text (Groq Whisper) and voice conversational evaluation.</li>
+          <li><strong>Proactive Token Ticket Engine:</strong> Secure pre-generated attempt tokens for frictionless test access.</li>
+          <li><strong>Multi-Agent Parity:</strong> Ingestion, Skill Matching, Proctoring, and Evaluation agents operating in sync.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 2: WORKFLOW -->
+  <section id="workflow">
+    <h2>2. End-to-End System Workflow</h2>
+    <p>Here is the exact step-by-step lifecycle of how a job session and candidate application move through CareerSphere:</p>
+
+    <div class="step-list">
+      <div class="step-item" data-step="1">
+        <div class="step-title">Recruiter Creates Job Session</div>
+        <p>The recruiter creates a new Job Session specifying the position, experience, location, and required skills. They configure custom <strong>SessionRounds</strong>: <code>MCQ</code>, <code>Coding</code>, and <code>AI Voice Interview</code> with custom passing score thresholds (e.g. 50%).</p>
+      </div>
+
+      <div class="step-item" data-step="2">
+        <div class="step-title">Candidate Applies & Resume Ingestion Agent Runs</div>
+        <p>The job seeker uploads their PDF/Docx resume. The <code>Ingestion & Parsing Agent</code> parses contact info, education, work experience, and normalized skills. The <code>Match Agent</code> calculates a hybrid Match Score % against recruiter parameters.</p>
+      </div>
+
+      <div class="step-item" data-step="3">
+        <div class="step-title">Proactive Token Ticket Generation</div>
+        <p>As soon as a candidate applies or advances to a proctored assessment round, the system proactively generates a secure 32-character <code>ApplicantRoundAttempt</code> ticket with a valid <code>access_token</code>.</p>
+      </div>
+
+      <div class="step-item" data-step="4">
+        <div class="step-title">Diagnostic Waiting Room & Assessment Portal</div>
+        <p>The candidate enters <code>/test/entry?token=...</code>. They undergo hardware diagnostics (webcam preview and live microphone volume level test). Once verified, they launch the test.</p>
+      </div>
+
+      <div class="step-item" data-step="5">
+        <div class="step-title">Multi-Round Assessment Execution</div>
+        <ul>
+          <li><strong>Round 1 (MCQ):</strong> Shuffled questions, timer, auto-submit on expiry, proctoring tab-switch detector.</li>
+          <li><strong>Round 2 (Coding):</strong> Live code editor, instant test case execution.</li>
+          <li><strong>Round 3 (AI Voice Interview):</strong> Interactive voice host, Groq Whisper transcription, live voice wave visualizer, real-time response evaluation.</li>
+        </ul>
+      </div>
+
+      <div class="step-item" data-step="6">
+        <div class="step-title">Automated Evaluation & Auto-Progression</div>
+        <p>When an assessment is completed, the <code>auto_progress_candidate</code> pipeline evaluates candidate score against <code>passing_score</code>. If <code>score >= passing_score</code>, candidate status updates to <code>shortlisted</code>, auto-advances <code>current_round_index</code>, and notifies candidate in-app.</p>
+      </div>
+
+      <div class="step-item" data-step="7">
+        <div class="step-title">Recruiter Review, Forward & Offer Issuance</div>
+        <p>Recruiters can manually forward candidates at any time. In the final round, recruiter clicks <strong>"Hire Candidate"</strong>, uploads the official Offer Letter (PDF/DOCX), and the candidate accepts in their dashboard.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 3: MULTI-AGENT SYSTEM -->
+  <section id="agents">
+    <h2>3. Multi-Agent AI System Architecture</h2>
+    <p>CareerSphere breaks down complex recruitment responsibilities into 4 specialized AI Agents:</p>
+
+    <div class="grid-2">
+      <div class="card-box">
+        <span class="badge badge-purple">Agent 1</span>
+        <h3>Resume Ingestion & Parsing Agent</h3>
+        <p><strong>Responsibility:</strong> Extracts structured JSON data from raw binary resume files (PDF/Docx). Normalizes skills into canonical tags (e.g. "ReactJS" -> "React").</p>
+        <p><strong>Tools:</strong> PyPDF2, python-docx, Regex heuristics, Gemini/OpenAI Schema Extractor.</p>
+      </div>
+
+      <div class="card-box">
+        <span class="badge badge-purple">Agent 2</span>
+        <h3>Candidate Skill Matching Agent</h3>
+        <p><strong>Responsibility:</strong> Computes candidate-to-job compatibility score (0-100%). Weighs matched skills, experience delta, and location proximity.</p>
+        <p><strong>Output:</strong> <code>match_score</code>, <code>matched_skills</code>, <code>missing_skills</code>, and AI qualitative recommendation.</p>
+      </div>
+
+      <div class="card-box">
+        <span class="badge badge-purple">Agent 3</span>
+        <h3>Proctoring & Assessment Agent</h3>
+        <p><strong>Responsibility:</strong> Monitors candidate behavior during online rounds. Detects tab switches, lost focus, and audio anomalies during assessments.</p>
+        <p><strong>Features:</strong> <code>ProctoringFlag</code> model, tab switch counter, audio waveform telemetry.</p>
+      </div>
+
+      <div class="card-box">
+        <span class="badge badge-purple">Agent 4</span>
+        <h3>AI Voice Interviewer Agent</h3>
+        <p><strong>Responsibility:</strong> Conducts conversational voice interviews. Uses Groq Whisper (<code>whisper-large-v3-turbo</code>) for audio transcription and LLMs to grade technical accuracy, depth, and communication confidence.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 4: TECH STACK -->
+  <section id="techstack">
+    <h2>4. Technology Stack & Key Features</h2>
+    
+    <div class="grid-2">
+      <div class="card-box">
+        <h3>Frontend Framework</h3>
+        <ul>
+          <li><strong>Framework:</strong> React.js (Vite)</li>
+          <li><strong>Styling:</strong> Vanilla CSS + TailwindCSS (Glassmorphism design)</li>
+          <li><strong>Icons:</strong> Lucide React</li>
+          <li><strong>Animations:</strong> Framer Motion</li>
+          <li><strong>Voice Speech:</strong> Browser WebSpeech API (TTS) & WebRTC getUserMedia</li>
+        </ul>
+      </div>
+
+      <div class="card-box">
+        <h3>Backend Architecture</h3>
+        <ul>
+          <li><strong>Framework:</strong> Python Django (RESTful API architecture)</li>
+          <li><strong>Database:</strong> SQLite / PostgreSQL</li>
+          <li><strong>Transcription API:</strong> Groq Whisper API (High-speed voice transcription)</li>
+          <li><strong>LLM Models:</strong> OpenAI GPT-4o / Groq Llama-3 / Gemini APIs</li>
+          <li><strong>Authentication:</strong> Custom JWT Tokens + Session API Keys</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 5: KEY TECHNICAL TERMS -->
+  <section id="buzzwords">
+    <h2>5. Key Technical Terms & Buzzwords (For Presentation)</h2>
+    <p>Use these exact high-impact technical terms during your viva presentation to impress the evaluator:</p>
+
+    <div style="margin-top: 1rem;">
+      <span class="keyword-pill">Proactive Token Ticket Engine</span>
+      <span class="keyword-pill">Groq Whisper Audio Transcription</span>
+      <span class="keyword-pill">Voice Activity Detection (VAD)</span>
+      <span class="keyword-pill">Idempotency Guard</span>
+      <span class="keyword-pill">Deterministic Skill Normalization</span>
+      <span class="keyword-pill">Dynamic Visible Round Index</span>
+      <span class="keyword-pill">Proctoring Telemetry Logging</span>
+      <span class="keyword-pill">Microphone Gain Level Diagnostic</span>
+      <span class="keyword-pill">Recruiter Manual Override</span>
+      <span class="keyword-pill">Auto-Progression Pipeline</span>
+    </div>
+
+    <div class="grid-2" style="margin-top: 1.5rem;">
+      <div class="card-box">
+        <h3>1. Proactive Token Ticket System</h3>
+        <p>Instead of generating test URLs lazily when a seeker clicks a button, the system proactively generates 32-character secure random tokens in <code>ApplicantRoundAttempt</code> upon round promotion, eliminating 401/403 race conditions.</p>
+      </div>
+
+      <div class="card-box">
+        <h3>2. Voice Activity Detection (VAD) & Live Transcript</h3>
+        <p>In the AI Interview, real-time WebSpeech Speech-to-Text updates a <code>Live Mic Transcript</code> box on screen so the candidate sees their words live, while Groq Whisper transcribes the raw WebM audio upon candidate submission.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 6: VIVA PREPARATION Q&A -->
+  <section id="viva">
+    <h2>6. Expected Viva Questions & High-Score Answers</h2>
+    <p>Prepare these top 8 viva questions to answer any technical or architectural question confidently:</p>
+
+    <div class="viva-card">
+      <div class="viva-q"><span>Q1.</span> What is CareerSphere, and what problem does it solve?</div>
+      <div class="viva-a">
+        <strong>Answer:</strong> CareerSphere is an autonomous multi-agent recruitment platform. Traditional hiring processes suffer from manual resume screening delays and un-proctored static tests. CareerSphere automates candidate matching using multi-agent LLM parsing, conducts proctored technical & coding rounds, and hosts an interactive AI Voice Interviewer that grades candidates on technical accuracy, communication skills, and confidence in real-time.
+      </div>
+    </div>
+
+    <div class="viva-card">
+      <div class="viva-q"><span>Q2.</span> How does the AI Voice Interview work under the hood?</div>
+      <div class="viva-a">
+        <strong>Answer:</strong> The AI Voice Interview combines WebRTC <code>getUserMedia</code> for audio stream capture, browser WebSpeech API for live on-screen transcript rendering, and <strong>Groq Whisper API (<code>whisper-large-v3-turbo</code>)</strong> for high-fidelity audio transcription upon answer completion. The transcribed text is sent to the <code>InterviewAgent</code> LLM, which evaluates technical accuracy, communication quality, and confidence score, returning instant feedback and TTS speech.
+      </div>
+    </div>
+
+    <div class="viva-card">
+      <div class="viva-q"><span>Q3.</span> How do you prevent candidates from skipping rounds or cheating?</div>
+      <div class="viva-a">
+        <strong>Answer:</strong> We enforce security at three levels:
+        1) <strong>Token Ticket Authorization:</strong> Test URLs use 32-character random secure tokens.
+        2) <strong>Round Order Validation:</strong> In <code>validate_test_token</code>, the backend checks if the candidate has cleared all preceding rounds before granting entry.
+        3) <strong>Proctoring Telemetry:</strong> We log tab switches, window blur events, and microphone volume anomalies into <code>ProctoringFlag</code> records.
+      </div>
+    </div>
+
+    <div class="viva-card">
+      <div class="viva-q"><span>Q4.</span> How does the system calculate the Resume Match Score?</div>
+      <div class="viva-a">
+        <strong>Answer:</strong> The <code>Skill Match Agent</code> extracts normalized skills from the candidate resume and compares them against the job session's inferred skills. It computes a weighted percentage score based on matched core skills, experience level, and location compatibility, producing detailed breakdowns of <code>matched_skills</code>, <code>missing_skills</code>, and qualitative fit recommendations.
+      </div>
+    </div>
+
+    <div class="viva-card">
+      <div class="viva-q"><span>Q5.</span> What happens when a candidate passes an assessment round?</div>
+      <div class="viva-a">
+        <strong>Answer:</strong> When a candidate completes a test, <code>auto_progress_candidate</code> checks their score against the round's <code>passing_score</code>. If <code>score >= passing_score</code>, the system updates candidate status to <code>shortlisted</code>, increments <code>current_round_index</code>, generates the next round's token ticket, and sends an in-app notification to the seeker.
+      </div>
+    </div>
+
+    <div class="viva-card">
+      <div class="viva-q"><span>Q6.</span> Can a recruiter manually override round results?</div>
+      <div class="viva-a">
+        <strong>Answer:</strong> Yes! The recruiter acts as the administrator. In the recruiter workspace (`CandidateCard.jsx`), recruiters can manually click <strong>"Forward &rarr;"</strong> to advance any candidate to the next round at any time, or click <strong>"Hire Candidate"</strong> to issue an official offer letter PDF.
+      </div>
+    </div>
+
+    <div class="viva-card">
+      <div class="viva-q"><span>Q7.</span> How is the frontend and backend integrated?</div>
+      <div class="viva-a">
+        <strong>Answer:</strong> The frontend is built with React.js (Vite) and communicates with a Django REST API using clean Axios HTTP endpoints. State management handles candidate cards, stage filters, waiting room diagnostics, live video streams, and proctored assessment timers seamlessly.
+      </div>
+    </div>
+
+    <div class="viva-card">
+      <div class="viva-q"><span>Q8.</span> What database models power CareerSphere?</div>
+      <div class="viva-a">
+        <strong>Answer:</strong> Key models include:
+        <code>Company</code> (recruiter entity), <code>Session</code> (job listing), <code>SessionRound</code> (round parameters & passing score), <code>Candidate</code> (applicant details & match score), <code>JobApplication</code> (seeker application status), and <code>ApplicantRoundAttempt</code> (proctored attempt data, token, scores, and interview transcripts).
+      </div>
+    </div>
+  </section>
+
+</div>
+
+</body>
+</html>

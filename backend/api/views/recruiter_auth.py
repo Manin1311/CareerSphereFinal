@@ -670,7 +670,7 @@ def cross_portal_login(request):
                         email=email,
                         defaults={
                             "name": email.split("@")[0].capitalize(),
-                            "password_hash": pwd_context.hash(secrets.token_urlsafe(16)),
+                            "password_hash": hash_password(secrets.token_urlsafe(16)),
                             "tier": "free"
                         }
                     )
@@ -725,7 +725,7 @@ def cross_portal_login(request):
                         email=email,
                         defaults={
                             "company_name": email.split("@")[0].capitalize() + " Dev",
-                            "password_hash": pwd_context.hash(secrets.token_urlsafe(16)),
+                            "password_hash": hash_password(secrets.token_urlsafe(16)),
                             "tier": "free",
                             "is_verified": True
                         }
@@ -799,7 +799,7 @@ def cross_portal_login(request):
                         email=email,
                         defaults={
                             "full_name": email.split("@")[0].capitalize(),
-                            "password_hash": pwd_context.hash(secrets.token_urlsafe(16)),
+                            "password_hash": hash_password(secrets.token_urlsafe(16)),
                             "tier": "free"
                         }
                     )

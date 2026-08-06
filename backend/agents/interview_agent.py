@@ -182,14 +182,14 @@ Return ONLY valid JSON (no markdown block):
         Called in real-time after each answer is transcribed.
         Returns structured scores for storage in interview_transcript.
         """
-        if not answer_text or len(answer_text.strip()) < 10:
+        if not answer_text or len(answer_text.strip()) == 0:
             return {
                 "relevance_score": 0,
                 "depth_score": 0,
                 "accuracy_score": 0.0,
                 "keywords_hit": [],
                 "keywords_missed": expected_keywords,
-                "feedback": "No answer provided or answer is too short.",
+                "feedback": "Thank you for your response.",
                 "sample_good_answer": ""
             }
 
