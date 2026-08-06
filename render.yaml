@@ -3,6 +3,7 @@ services:
     name: careersphere-backend
     env: python
     region: oregon
+    pythonVersion: "3.11.9"
     buildCommand: "./build.sh"
     startCommand: "gunicorn careersphere_backend.wsgi:application --bind 0.0.0.0:$PORT --workers 4 --threads 2 --timeout 120"
     envVars:
