@@ -44,6 +44,22 @@ def _get_effective_company_tier(company):
 
     return (company.tier or "free").lower()
 
+def _validate_result_announcement_dates(rounds_data):
+    from django.utils.dateparse import parse_datetime
+    from datetime import timedelta
+    now = timezone.now()
+    for idx, r in enumerate(rounds_data):
+        ann_date_str = r.get("result_announcement_date")
+        if ann_date_str:
+            parsed_dt = parse_datetime(str(ann_date_str))
+            if parsed_dt:
+                if timezone.is_naive(parsed_dt):
+                    parsed_dt = timezone.make_aware(parsed_dt, timezone.get_current_timezone())
+                if parsed_dt < (now - timedelta(minutes=2)):
+                    r_name = r.get("name") or f"Round {idx+1}"
+                    return f"Result declaration time for '{r_name}' cannot be in the past."
+    return None
+
 @csrf_exempt
 @require_api_key
 def session_root(request):
@@ -70,6 +86,10 @@ def session_root(request):
                     "interview_mode": r.get("interview_mode"),
                     "passing_score": r.get("passing_score", 50)
                 })
+
+            date_err = _validate_result_announcement_dates(rounds_data)
+            if date_err:
+                return JsonResponse(error_response(date_err), status=400)
 
             requested_status = data.get("status", "active")
             status_val = "analysis" if job_title == "Smart Analyzer Session" else (requested_status if requested_status in ["active", "draft"] else "active")
@@ -237,6 +257,9 @@ def session_detail(request, session_id):
                         "interview_mode": r.get("interview_mode"),
                         "passing_score": r.get("passing_score", 50)
                     })
+                date_err = _validate_result_announcement_dates(rounds_data)
+                if date_err:
+                    return JsonResponse(error_response(date_err), status=400)
                 session.rounds = rounds_data
 
                 # Synchronize SessionRound database table to match updated rounds

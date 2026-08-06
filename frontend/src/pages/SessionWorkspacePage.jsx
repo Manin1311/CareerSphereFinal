@@ -1611,9 +1611,26 @@ export default function SessionWorkspacePage() {
                             return (new Date(Date.now() - tzoffset)).toISOString().slice(0, 16);
                           })()}
                           onChange={e => {
+                            const val = e.target.value;
+                            if (val && new Date(val) < new Date()) {
+                              toast.error(`Result declaration time for "${round.name || `Round ${idx + 1}`}" cannot be in the past`);
+                              const updated = [...editRounds];
+                              updated[idx].result_announcement_date = "";
+                              setEditRounds(updated);
+                              return;
+                            }
                             const updated = [...editRounds];
-                            updated[idx].result_announcement_date = e.target.value;
+                            updated[idx].result_announcement_date = val;
                             setEditRounds(updated);
+                          }}
+                          onBlur={e => {
+                            const val = e.target.value;
+                            if (val && new Date(val) < new Date()) {
+                              toast.error(`Result declaration time for "${round.name || `Round ${idx + 1}`}" cannot be in the past`);
+                              const updated = [...editRounds];
+                              updated[idx].result_announcement_date = "";
+                              setEditRounds(updated);
+                            }
                           }}
                           className={`text-xs p-2 border border-border dark:border-zinc-700 bg-background text-foreground dark:text-gray-100 rounded-lg focus:border-accent focus:outline-none font-bold flex-1 ${isDeclared ? 'opacity-60 cursor-not-allowed' : ''}`}
                           required

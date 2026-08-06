@@ -929,9 +929,26 @@ export default function NewSessionPage() {
                           })()}
                           value={round.result_announcement_date || ""}
                           onChange={(e) => {
+                            const val = e.target.value;
+                            if (val && new Date(val) < new Date()) {
+                              toast.error(`Result declaration time for Round ${idx + 1} ("${round.name || `Round ${idx + 1}`}") cannot be in the past`);
+                              const newRounds = [...formData.rounds];
+                              newRounds[idx].result_announcement_date = "";
+                              setFormData({...formData, rounds: newRounds});
+                              return;
+                            }
                             const newRounds = [...formData.rounds];
-                            newRounds[idx].result_announcement_date = e.target.value;
+                            newRounds[idx].result_announcement_date = val;
                             setFormData({...formData, rounds: newRounds});
+                          }}
+                          onBlur={(e) => {
+                            const val = e.target.value;
+                            if (val && new Date(val) < new Date()) {
+                              toast.error(`Result declaration time for Round ${idx + 1} ("${round.name || `Round ${idx + 1}`}") cannot be in the past`);
+                              const newRounds = [...formData.rounds];
+                              newRounds[idx].result_announcement_date = "";
+                              setFormData({...formData, rounds: newRounds});
+                            }
                           }}
                           className="p-1.5 border border-gray-200 rounded-lg text-xs text-charcoal focus:border-[#2563EB] focus:outline-none w-full"
                         />
