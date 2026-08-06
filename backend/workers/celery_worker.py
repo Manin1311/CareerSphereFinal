@@ -69,8 +69,11 @@ def safe_dispatch_task(task_func, *args, **kwargs):
         logging.warning(f"Celery/Redis broker offline ({e}). Executing task '{getattr(task_func, '__name__', str(task_func))}' synchronously...")
         return task_func(*args, **kwargs)
 
-def _parse_resume_sync(file_path: str, skip_llm: bool = False) -> dict:
-    """Synchronously extract text and parse a resume file using AI logic."""
+def _parse_resume_sync(file_path: str, skip_llm: bool = False, file_bytes: bytes = None) -> dict:
+    """Synchronously extract text and parse a resume file using AI logic.
+    If file_bytes is provided, uses them directly (for Render multi-service deployments
+    where Celery worker has no access to backend's uploaded files on disk).
+    """
     upload_dir = os.getenv("UPLOAD_DIR", "uploads")
     photo_dir = os.getenv("PHOTO_DIR", "photos")
     os.makedirs(photo_dir, exist_ok=True)
@@ -81,8 +84,12 @@ def _parse_resume_sync(file_path: str, skip_llm: bool = False) -> dict:
 
     try:
         if ext == ".pdf":
-            # Using PyMuPDF (fitz) instead of pdfplumber for blazing fast C++ extraction that avoids GIL lock
-            doc = fitz.open(file_path)
+            # Use provided bytes OR fall back to reading from disk
+            if file_bytes:
+                pdf_source = io.BytesIO(file_bytes)
+                doc = fitz.open(stream=pdf_source, filetype="pdf")
+            else:
+                doc = fitz.open(file_path)
             text_pages = []
             for page in doc:
                 text_pages.append(page.get_text())
@@ -95,18 +102,21 @@ def _parse_resume_sync(file_path: str, skip_llm: bool = False) -> dict:
                     try:
                         import google.generativeai as genai
                         from PIL import Image
-                        import io
+                        import io as _io
                         
                         genai.configure(api_key=gemini_key)
                         model = genai.GenerativeModel('gemini-1.5-flash')
                         
-                        doc = fitz.open(file_path)
+                        if file_bytes:
+                            doc = fitz.open(stream=io.BytesIO(file_bytes), filetype="pdf")
+                        else:
+                            doc = fitz.open(file_path)
                         ocr_text = []
                         for i in range(min(len(doc), 1)): # Only first page for speed (<10s budget)
                             page = doc[i]
                             pix = page.get_pixmap(matrix=fitz.Matrix(2, 2))
                             img_data = pix.tobytes("png")
-                            img = Image.open(io.BytesIO(img_data))
+                            img = Image.open(_io.BytesIO(img_data))
                             
                             response = model.generate_content([
                                 "Extract all standard text from this resume image exactly as written. Do not add markdown or conversational wrappers.", 
@@ -119,7 +129,10 @@ def _parse_resume_sync(file_path: str, skip_llm: bool = False) -> dict:
                     except Exception as e:
                         print("Gemini OCR Failed:", str(e))
             try:
-                doc = fitz.open(file_path)
+                if file_bytes:
+                    doc = fitz.open(stream=io.BytesIO(file_bytes), filetype="pdf")
+                else:
+                    doc = fitz.open(file_path)
                 for page in doc:
                     for img_info in page.get_images():
                         xref = img_info[0]
@@ -143,12 +156,18 @@ def _parse_resume_sync(file_path: str, skip_llm: bool = False) -> dict:
             except Exception:
                 photo_path = None
         elif ext in [".docx", ".doc"]:
-            doc = Document(file_path)
+            if file_bytes:
+                doc = Document(io.BytesIO(file_bytes))
+            else:
+                doc = Document(file_path)
             parts = [para.text for para in doc.paragraphs if para.text.strip()]
             text = "\n".join(parts)
         else:
-            with open(file_path, "r", errors="ignore") as f:
-                text = f.read()
+            if file_bytes:
+                text = file_bytes.decode("utf-8", errors="ignore")
+            else:
+                with open(file_path, "r", errors="ignore") as f:
+                    text = f.read()
 
         # ── FAST REGEX EXTRACTION (always runs, <0.5s) ──────────────────
         email_re = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
@@ -310,10 +329,13 @@ def _normalize_skills_sync(raw_skills: list, db=None) -> list:
     return fast_normalize(raw_skills, db)
 
 @celery_app.task(bind=True, max_retries=2, name="process_resume_batch")
-def process_resume_batch(self, job_id: str, file_paths: list, session_id: str, source: str = "upload", use_llm: bool = True):
+def process_resume_batch(self, job_id: str, file_paths: list, session_id: str, source: str = "upload", use_llm: bool = True, file_payloads: list = None):
     """Process resume files. Two-phase approach for speed:
        Phase 1: Fast regex-only parsing (all files, <0.3s each)
        Phase 2: Background LLM enrichment (if use_llm=True, staggered)
+       
+       file_payloads: Optional list of {"path": str, "bytes_b64": str} dicts.
+       Used on Render where Celery worker is a separate service with no shared disk.
     """
     if not file_paths:
         try:
@@ -332,6 +354,19 @@ def process_resume_batch(self, job_id: str, file_paths: list, session_id: str, s
         return
 
     try:
+        # Build a lookup: path -> raw bytes (decoded from base64)
+        import base64 as _b64
+        bytes_by_path = {}
+        if file_payloads:
+            for payload in file_payloads:
+                p = payload.get("path")
+                b64 = payload.get("bytes_b64")
+                if p and b64:
+                    try:
+                        bytes_by_path[p] = _b64.b64decode(b64)
+                    except Exception:
+                        pass
+
         is_bulk = len(file_paths) > 10
 
         job.status = "processing"
@@ -342,7 +377,8 @@ def process_resume_batch(self, job_id: str, file_paths: list, session_id: str, s
         do_llm_inline = (not is_bulk) and use_llm
 
         def _process_one(path):
-            return path, _parse_resume_sync(path, skip_llm=(not do_llm_inline))
+            raw_bytes = bytes_by_path.get(path)
+            return path, _parse_resume_sync(path, skip_llm=(not do_llm_inline), file_bytes=raw_bytes)
 
         candidate_ids_for_enrichment = []
 

@@ -99,7 +99,18 @@ def upload_resumes(request):
             failed_files=0
         )
 
-        process_resume_batch.delay(str(job.id), saved_paths, session_id, "upload", use_llm)
+        # Read file bytes for Celery (Render has no shared filesystem between services)
+        import base64
+        file_payloads = []
+        for path in saved_paths:
+            try:
+                with open(path, "rb") as f:
+                    file_bytes_b64 = base64.b64encode(f.read()).decode("utf-8")
+                file_payloads.append({"path": path, "bytes_b64": file_bytes_b64})
+            except Exception:
+                file_payloads.append({"path": path, "bytes_b64": None})
+
+        process_resume_batch.delay(str(job.id), saved_paths, session_id, "upload", use_llm, file_payloads)
 
         return JsonResponse(success_response({
             "job_id": str(job.id),
