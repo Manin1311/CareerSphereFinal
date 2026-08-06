@@ -122,7 +122,12 @@ ASGI_APPLICATION = 'careersphere_backend.asgi.application'
 DATABASE_URL = os.getenv("DATABASE_URL", "")
 if DATABASE_URL:
     SYNC_DATABASE_URL = DATABASE_URL.replace("postgresql+asyncpg://", "postgresql://")
-    conn_max_age = int(os.getenv("CONN_MAX_AGE", "0"))
+
+    # CONN_MAX_AGE=0 is REQUIRED for:
+    #  1. Gunicorn --preload: prevents forked/corrupted connections in child workers
+    #  2. Neon serverless: idle connections get SSL-killed; 0 means fresh conn per request
+    conn_max_age = 0
+
     db_config = dj_database_url.parse(
         SYNC_DATABASE_URL,
         conn_max_age=conn_max_age,
@@ -131,13 +136,19 @@ if DATABASE_URL:
     if "postgresql" in SYNC_DATABASE_URL:
         db_config['ENGINE'] = 'django.db.backends.postgresql'
         db_config['DISABLE_SERVER_SIDE_CURSORS'] = True
-    
-    if 'sslmode' not in SYNC_DATABASE_URL:
-        db_config.setdefault('OPTIONS', {})
-        if 'sslmode' not in db_config['OPTIONS']:
-            db_sslmode = os.getenv("DB_SSLMODE", "require" if not DEBUG else "")
-            if db_sslmode:
-                db_config['OPTIONS']['sslmode'] = db_sslmode
+
+    db_config.setdefault('OPTIONS', {})
+    if 'sslmode' not in SYNC_DATABASE_URL and 'sslmode' not in db_config['OPTIONS']:
+        db_sslmode = os.getenv("DB_SSLMODE", "require" if not DEBUG else "")
+        if db_sslmode:
+            db_config['OPTIONS']['sslmode'] = db_sslmode
+
+    # TCP keepalive to detect dead Neon connections fast (avoids SSL EOF 500s)
+    db_config['OPTIONS'].setdefault('connect_timeout', 10)
+    db_config['OPTIONS'].setdefault('keepalives', 1)
+    db_config['OPTIONS'].setdefault('keepalives_idle', 30)
+    db_config['OPTIONS'].setdefault('keepalives_interval', 10)
+    db_config['OPTIONS'].setdefault('keepalives_count', 3)
 else:
     db_config = {
         'ENGINE': 'django.db.backends.sqlite3',
