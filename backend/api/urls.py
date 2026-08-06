@@ -83,6 +83,7 @@ urlpatterns = [
     # session_root handles both GET (list) and POST (create)
     path('api/v1/sessions', sessions.session_root, name='sessions-root'),
     path('api/v1/sessions/generate-jd', sessions.generate_jd, name='sessions-generate-jd'),
+    path('api/v1/sessions/upload-question-paper', round_views.upload_question_paper, name='sessions-upload-question-paper'),
     # session_detail handles GET (retrieve), PATCH (update), DELETE (archive)
     path('api/v1/sessions/<str:session_id>', sessions.session_detail, name='sessions-detail'),
     path('api/v1/sessions/<str:session_id>/criteria', sessions.set_criteria, name='sessions-criteria'),
@@ -319,7 +320,6 @@ urlpatterns = [
     path('api/v1/sessions/<str:session_id>/applicant-results', round_views.get_applicant_results),
     path('api/v1/sessions/<str:session_id>/rounds/<str:round_id>/generate-questions', round_views.generate_interview_questions),
     path('api/v1/sessions/<str:session_id>/generate-test-links', round_views.generate_test_links),
-    path('api/v1/sessions/upload-question-paper', round_views.upload_question_paper),
 
     # Candidate side
     path('api/v1/test/validate-token', round_views.validate_test_token),
