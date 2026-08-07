@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Phone, MapPin, Link2, Eye, X, CheckCircle, XCircle, Briefcase, GraduationCap, Award, Clock, ChevronDown, ChevronUp, ExternalLink, Sparkles, FileText } from 'lucide-react';
+import { Mail, Phone, MapPin, Link2, Eye, X, CheckCircle, XCircle, Briefcase, GraduationCap, Award, Clock, ChevronDown, ChevronUp, ExternalLink, Sparkles, FileText, Copy } from 'lucide-react';
 
 // Inline SVG icons for Github and Linkedin (not available in this lucide-react version)
 const Github = ({ size = 16, className = '' }) => (
@@ -27,6 +27,8 @@ const formatExternalUrl = (url) => {
 
 export default function CandidateCard({ candidate, sessionId, rounds = [], onAction, isHighlighted, forceOpenDetails, onCloseDetails }) {
   const [showDetail, setShowDetail] = useState(false);
+  const [showResumeModal, setShowResumeModal] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [animatingOut, setAnimatingOut] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [detailedCandidate, setDetailedCandidate] = useState(null);
@@ -189,6 +191,7 @@ export default function CandidateCard({ candidate, sessionId, rounds = [], onAct
   const rawPhoto = activeCandidate?.photo_url || activeCandidate?.avatar_path || activeCandidate?.avatar_url || candidate?.photo_url || candidate?.avatar_path || candidate?.avatar_url;
   const photoUrl = rawPhoto ? (rawPhoto.startsWith('http') || rawPhoto.startsWith('data:') ? rawPhoto : `${apiBase}${rawPhoto.startsWith('/') ? '' : '/'}${rawPhoto}`) : null;
   const resumeUrl = activeCandidate?.resume_url ? (activeCandidate.resume_url.startsWith('http') ? activeCandidate.resume_url : `${apiBase}${activeCandidate.resume_url}`) : null;
+  const rawResumeText = activeCandidate?.raw_resume_text || activeCandidate?.raw_resume_data?.raw_text || activeCandidate?.raw_resume_data?.text || activeCandidate?.raw_resume_data?.full_text || rawData?.raw_text || rawData?.text || rawData?.full_text || candidate?.raw_resume_text || "";
 
   // Key Highlights logic
   const topMatched = activeCandidate?.matched_skills?.slice(0, 3) || [];
@@ -370,9 +373,9 @@ export default function CandidateCard({ candidate, sessionId, rounds = [], onAct
           </button>
 
           <button 
-            onClick={() => setShowDetail(true)}
+            onClick={() => setShowResumeModal(true)}
             className="px-3 border border-border dark:border-zinc-700 bg-background text-foreground dark:text-gray-100 hover:bg-muted dark:hover:bg-zinc-800 py-1.5 rounded-lg text-[13px] font-bold transition-colors flex justify-center items-center gap-1.5"
-            title="View Formatted Resume & AI Insights"
+            title="View Original Raw Resume Text"
           >
              <FileText size={14} /> Resume
           </button>
@@ -911,6 +914,68 @@ export default function CandidateCard({ candidate, sessionId, rounds = [], onAct
 
               {/* File drop zone */}
               <OfferLetterUploadZone onSubmit={submitHire} onCancel={() => setShowOfferModal(false)} />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* RAW RESUME TEXT MODAL */}
+      <AnimatePresence>
+        {showResumeModal && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setShowResumeModal(false)}
+              className="fixed inset-0 bg-[#2A2A2A]/40 backdrop-blur-sm z-50"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              transition={{ type: "spring", damping: 25, stiffness: 220 }}
+              className="fixed inset-4 md:inset-10 lg:inset-16 max-w-4xl mx-auto bg-card dark:bg-[#121217] text-foreground shadow-2xl z-50 flex flex-col rounded-2xl border border-border dark:border-zinc-800 overflow-hidden"
+            >
+              <div className="p-4 md:p-5 border-b border-border dark:border-zinc-800 flex justify-between items-center bg-card dark:bg-[#121217]">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 bg-sky-100 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 rounded-xl">
+                    <FileText size={20} />
+                  </div>
+                  <div>
+                    <h2 className="font-bold text-base md:text-lg text-foreground dark:text-zinc-100">{activeCandidate?.name || 'Candidate'} — Original Resume Text</h2>
+                    <p className="text-xs text-muted-foreground">Raw parsed resume document contents</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  {rawResumeText && (
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(rawResumeText);
+                        setCopied(true);
+                        toast.success("Resume text copied to clipboard!");
+                        setTimeout(() => setCopied(false), 2000);
+                      }}
+                      className="px-3 py-1.5 bg-muted dark:bg-zinc-800 hover:bg-muted/80 text-foreground dark:text-gray-200 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors border border-border dark:border-zinc-700"
+                    >
+                      {copied ? <CheckCircle size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                      {copied ? "Copied!" : "Copy Text"}
+                    </button>
+                  )}
+                  <button onClick={() => setShowResumeModal(false)} className="p-2 bg-muted dark:bg-zinc-800 hover:bg-muted/80 rounded-full text-foreground dark:text-gray-200 transition-colors">
+                    <X size={18} />
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-5 md:p-7 bg-muted/20 dark:bg-zinc-950/70 custom-scrollbar font-mono text-xs md:text-sm leading-relaxed whitespace-pre-wrap text-foreground dark:text-zinc-200 select-text">
+                {rawResumeText ? (
+                  rawResumeText
+                ) : (
+                  <div className="text-center py-16 text-muted-foreground italic font-sans space-y-2">
+                    <p className="text-sm font-semibold">Raw text preview not available for this candidate.</p>
+                    <p className="text-xs">Click the <span className="font-bold text-sky-500">Profile</span> button to view structured experience, skills & AI insights.</p>
+                  </div>
+                )}
+              </div>
             </motion.div>
           </>
         )}

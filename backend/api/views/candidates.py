@@ -138,6 +138,14 @@ def _serialize_candidate_summary(c):
     except Exception:
         pass
 
+    raw_text = parsed.get("raw_text") or parsed.get("text") or parsed.get("full_text") or parsed.get("raw_resume_text")
+    if not raw_text and c.resume_file_path and os.path.exists(c.resume_file_path):
+        try:
+            with open(c.resume_file_path, "r", encoding="utf-8", errors="ignore") as f:
+                raw_text = f.read()
+        except Exception:
+            raw_text = None
+
     return {
         "id": str(c.id),
         "name": clean_candidate_name(c.name),
@@ -165,6 +173,7 @@ def _serialize_candidate_summary(c):
         "current_round_index": c.current_round_index,
         "round_index": c.current_round_index,
         "raw_resume_data": parsed,
+        "raw_resume_text": raw_text,
         "status": c.status,
         "source": c.source,
         "current_round_cleared": current_round_cleared,
@@ -304,6 +313,14 @@ def get_candidate(request, session_id, cand_id):
                 except:
                     resume_url = None
 
+            detail_raw_text = inner_parsed.get("raw_text") or inner_parsed.get("text") or inner_parsed.get("full_text") or inner_parsed.get("raw_resume_text")
+            if not detail_raw_text and candidate.resume_file_path and os.path.exists(candidate.resume_file_path):
+                try:
+                    with open(candidate.resume_file_path, "r", encoding="utf-8", errors="ignore") as f:
+                        detail_raw_text = f.read()
+                except Exception:
+                    detail_raw_text = None
+
             return JsonResponse(success_response({
                 "id": str(candidate.id),
                 "name": candidate.name,
@@ -318,6 +335,7 @@ def get_candidate(request, session_id, cand_id):
                 "total_experience_years": candidate.total_experience_years,
                 "normalized_skills": candidate.normalized_skills,
                 "raw_resume_data": inner_parsed,
+                "raw_resume_text": detail_raw_text,
                 "resume_file_path": candidate.resume_file_path,
                 "current_round_index": candidate.current_round_index,
                 "status": candidate.status,
