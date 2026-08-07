@@ -79,6 +79,8 @@ def _parse_resume_sync(file_path: str, skip_llm: bool = False, file_bytes: bytes
     os.makedirs(photo_dir, exist_ok=True)
 
     ext = Path(file_path).suffix.lower()
+    photo_path = None  # Always initialize — may stay None for docx/txt or PDFs with no photo
+
     if not file_bytes and not os.path.exists(file_path):
         logging.info("File path '%s' not present on local container disk. Returning fallback.", file_path)
         name = Path(file_path).stem
