@@ -24,5 +24,17 @@ class ApiConfig(AppConfig):
                 except Exception:
                     pass
 
+        # Auto-ensure default superuser for /django-admin/
+        def _ensure_superuser():
+            try:
+                from django.contrib.auth.models import User
+                if not User.objects.filter(username="admin").exists():
+                    User.objects.create_superuser("admin", "admin@careersphere.com", "Admin@007")
+            except Exception:
+                pass
+
+        t_su = threading.Thread(target=_ensure_superuser, daemon=True)
+        t_su.start()
+
         t = threading.Thread(target=_neon_keepalive_loop, daemon=True)
         t.start()
