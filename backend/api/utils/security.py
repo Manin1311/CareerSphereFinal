@@ -20,8 +20,8 @@ logger = logging.getLogger(__name__)
 # In dev, a deterministic fallback is used so keys survive restarts.
 _FERNET_KEY = os.getenv("FERNET_SECRET_KEY", "").strip()
 
-# Deterministic dev-only fallback (NOT secure for production)
-_DEV_FALLBACK_KEY = "ZmVybmV0LWRldi1rZXktbm90LWZvci1wcm9kdWN0aW9uMQ=="
+# Deterministic dev-only fallback (32-byte base64 encoded string)
+_DEV_FALLBACK_KEY = "Q2FyZWVyc3BoZXJlRGV2RmFsbGJhY2tLZXkxMjM0NTY="
 
 
 def _get_fernet() -> Fernet:
