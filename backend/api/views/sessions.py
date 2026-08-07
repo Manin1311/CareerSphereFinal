@@ -148,6 +148,22 @@ def session_root(request):
             offset = (page - 1) * per_page
             sessions = qs[offset:offset+per_page]
 
+            # Auto-sync any hired JobApplication candidates across these sessions
+            try:
+                from api.models import JobApplication
+                hired_apps = JobApplication.objects.filter(session_id__in=session_ids, status="hired").select_related("candidate", "seeker")
+                for happ in hired_apps:
+                    if happ.candidate and happ.candidate.status != "hired":
+                        happ.candidate.status = "hired"
+                        happ.candidate.save(update_fields=["status"])
+                    elif happ.seeker:
+                        cand = Candidate.objects.filter(session_id=happ.session_id, email=happ.seeker.email).first()
+                        if cand and cand.status != "hired":
+                            cand.status = "hired"
+                            cand.save(update_fields=["status"])
+            except Exception:
+                pass
+
             # Optimize candidate count N+1 query:
             session_ids = [s.id for s in sessions]
             candidate_counts_qs = Candidate.objects.filter(session_id__in=session_ids) \

@@ -242,6 +242,22 @@ def list_candidates(request, session_id):
         offset = (page - 1) * per_page
         candidates = query[offset:offset+per_page]
 
+        # Auto-sync any hired JobApplication candidates
+        try:
+            from api.models import JobApplication
+            hired_apps = JobApplication.objects.filter(session_id=session_id, status="hired").select_related("candidate", "seeker")
+            for happ in hired_apps:
+                if happ.candidate and happ.candidate.status != "hired":
+                    happ.candidate.status = "hired"
+                    happ.candidate.save(update_fields=["status"])
+                elif happ.seeker:
+                    cand = Candidate.objects.filter(session_id=session_id, email=happ.seeker.email).first()
+                    if cand and cand.status != "hired":
+                        cand.status = "hired"
+                        cand.save(update_fields=["status"])
+        except Exception:
+            pass
+
         total_hired = Candidate.objects.filter(session_id=session_id, status="hired").count()
         total_rejected = Candidate.objects.filter(session_id=session_id, status="rejected").count()
 

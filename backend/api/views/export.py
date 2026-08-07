@@ -17,6 +17,22 @@ def export_candidates(request, session_id):
         status = request.GET.get("status", "all")
         export_format = request.GET.get("format", "csv").lower()
         
+        # Auto-sync any hired JobApplication candidates for session
+        try:
+            from api.models import JobApplication
+            hired_apps = JobApplication.objects.filter(session_id=session_id, status="hired").select_related("candidate", "seeker")
+            for happ in hired_apps:
+                if happ.candidate and happ.candidate.status != "hired":
+                    happ.candidate.status = "hired"
+                    happ.candidate.save(update_fields=["status"])
+                elif happ.seeker:
+                    cand = Candidate.objects.filter(session_id=session_id, email=happ.seeker.email).first()
+                    if cand and cand.status != "hired":
+                        cand.status = "hired"
+                        cand.save(update_fields=["status"])
+        except Exception:
+            pass
+
         query = Candidate.objects.filter(session_id=session_id)
         if status != "all":
             query = query.filter(status=status)

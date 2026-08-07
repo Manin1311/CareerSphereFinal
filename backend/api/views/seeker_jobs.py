@@ -939,6 +939,17 @@ def accept_offer(request, app_id):
         app.accepted_terms = True
         app.save(update_fields=["accepted_terms"])
 
+        # Sync Candidate record to 'hired'
+        if app.candidate:
+            app.candidate.status = "hired"
+            app.candidate.save(update_fields=["status"])
+        else:
+            from api.models import Candidate
+            cand = Candidate.objects.filter(session=app.session, email=app.seeker.email).first()
+            if cand:
+                cand.status = "hired"
+                cand.save(update_fields=["status"])
+
         # Automatically mark the session as completed
         session = app.session
         session.status = "completed"
