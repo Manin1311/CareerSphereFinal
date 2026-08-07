@@ -114,9 +114,16 @@ def _seed_from_env():
         new_gemini_count += 1
     if new_gemini_count > 0:
         print(f"[LLM SEED] Synced {new_gemini_count} new Gemini keys from env into DB.", flush=True)
-    else:
-        total = GeminiProject.objects.count()
-        print(f"[LLM SEED] Gemini keys up-to-date ({total} projects in DB).", flush=True)
+    # Reset daily_usage for any projects whose last_reset is before today (Pacific date)
+    today_pt = _get_pacific_date()
+    outdated_projects = GeminiProject.objects.filter(last_reset__lt=today_pt)
+    if outdated_projects.exists():
+        reset_cnt = outdated_projects.update(daily_usage=0, last_reset=today_pt)
+        print(f"[LLM SEED] Reset daily_usage=0 for {reset_cnt} Gemini projects.", flush=True)
+
+    # Re-activate all Gemini & Groq keys in case they were marked inactive by temporary errors
+    GeminiApiKey.objects.filter(is_active=False).update(is_active=True)
+    GroqApiKey.objects.filter(is_active=False).update(is_active=True)
 
     # --- Always sync Groq keys from env (upsert) ---
     raw_keys_list = [
