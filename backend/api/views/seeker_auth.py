@@ -187,16 +187,16 @@ def register(request):
         if not isinstance(skills, list):
             skills = [s.strip() for s in str(skills).split(",") if s.strip()]
 
-        resume_file_path = data.get("resume_file_path", "").strip() or None
+        resume_file_path = (data.get("resume_file_path") or "").strip() or None
         resume_data = data.get("resume_data") or {}
 
         seeker = JobSeekerAccount.objects.create(
             full_name=full_name,
             email=email,
             password_hash=hash_password(password),
-            phone=data.get("phone", "").strip() or None,
-            location=data.get("location", "").strip() or None,
-            headline=data.get("headline", "").strip() or None,
+            phone=(data.get("phone") or "").strip() or None,
+            location=(data.get("location") or "").strip() or None,
+            headline=(data.get("headline") or "").strip() or None,
             skills=skills,
             resume_file_path=resume_file_path,
             resume_data=resume_data,
