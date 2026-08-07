@@ -1,4 +1,6 @@
-import pdfplumber, fitz, os, json, uuid
+import pdfplumber
+import pymupdf as fitz
+import os, json, uuid
 from docx import Document
 from agents.llm import RotateLLMClient
 from pathlib import Path

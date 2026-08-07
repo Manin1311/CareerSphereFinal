@@ -30,7 +30,7 @@ class AdvancedAtsParsingAgent:
           2. PyMuPDF get_text("text") — simple full-page plain text
           3. pdfplumber — handles complex font-embedded PDFs
         """
-        import fitz
+        import pymupdf as fitz
         from pathlib import Path
 
         ext = Path(file_path).suffix.lower()

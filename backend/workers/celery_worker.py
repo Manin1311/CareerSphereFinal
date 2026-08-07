@@ -25,7 +25,7 @@ from pathlib import Path
 import json
 from datetime import datetime, timezone, timedelta
 import concurrent.futures
-import fitz  # PyMuPDF
+import pymupdf as fitz  # PyMuPDF
 from docx import Document
 import re
 import uuid
