@@ -69,21 +69,24 @@ def safe_dispatch_task(task_func, *args, **kwargs):
         logging.warning(f"Celery/Redis broker offline ({e}). Executing task '{getattr(task_func, '__name__', str(task_func))}' synchronously...")
         return task_func(*args, **kwargs)
 
-def _parse_resume_sync(file_path: str, skip_llm: bool = False, file_bytes: bytes = None) -> dict:
+def _parse_resume_sync(file_path: str, skip_llm: bool = False, file_bytes: bytes = None, raw_text: str = None) -> dict:
     """Synchronously extract text and parse a resume file using AI logic.
-    If file_bytes is provided, uses them directly (for Render multi-service deployments
+    If file_bytes or raw_text is provided, uses them directly (for Render multi-service deployments
     where Celery worker has no access to backend's uploaded files on disk).
     """
     upload_dir = os.getenv("UPLOAD_DIR", "uploads")
     photo_dir = os.getenv("PHOTO_DIR", "photos")
     os.makedirs(photo_dir, exist_ok=True)
 
-    ext = Path(file_path).suffix.lower()
+    ext = Path(file_path).suffix.lower() if file_path else ".pdf"
     photo_path = None  # Always initialize — may stay None for docx/txt or PDFs with no photo
+    text = ""
 
-    if not file_bytes and not os.path.exists(file_path):
+    if raw_text:
+        text = raw_text
+    elif not file_bytes and not os.path.exists(file_path):
         logging.info("File path '%s' not present on local container disk. Returning fallback.", file_path)
-        name = Path(file_path).stem
+        name = Path(file_path).stem if file_path else "Candidate"
         return {
             "parsed": {
                 "name": name,
@@ -102,7 +105,8 @@ def _parse_resume_sync(file_path: str, skip_llm: bool = False, file_bytes: bytes
         }
 
     try:
-        if ext == ".pdf":
+        if not text:
+            if ext == ".pdf":
             # Use provided bytes OR fall back to reading from disk
             if file_bytes:
                 pdf_source = io.BytesIO(file_bytes)
@@ -253,6 +257,7 @@ def _parse_resume_sync(file_path: str, skip_llm: bool = False, file_bytes: bytes
             return {
                 "parsed": regex_parsed,
                 "photo_path": photo_path,
+                "raw_text": text[:15000],
                 "raw_text_length": len(text),
                 "parsing_method": "regex",
                 "confidence": 0.7
@@ -316,6 +321,7 @@ def _parse_resume_sync(file_path: str, skip_llm: bool = False, file_bytes: bytes
                 return {
                     "parsed": parsed,
                     "photo_path": photo_path,
+                    "raw_text": text[:15000],
                     "raw_text_length": len(text),
                     "parsing_method": "llm",
                     "confidence": 0.9
@@ -327,6 +333,7 @@ def _parse_resume_sync(file_path: str, skip_llm: bool = False, file_bytes: bytes
         return {
             "parsed": regex_parsed,
             "photo_path": photo_path,
+            "raw_text": text[:15000],
             "raw_text_length": len(text),
             "parsing_method": "regex",
             "confidence": 0.7
@@ -335,9 +342,10 @@ def _parse_resume_sync(file_path: str, skip_llm: bool = False, file_bytes: bytes
     except Exception as e:
         traceback.print_exc()
         return {
-            "parsed": {"name": Path(file_path).stem, "email": None, "phone": None, "location": "Unknown",
+            "parsed": {"name": Path(file_path).stem if file_path else "Candidate", "email": None, "phone": None, "location": "Unknown",
                        "skills": [], "experience": [], "education": [], "total_experience_years": 0.0, "current_role": None},
             "photo_path": photo_path,
+            "raw_text": text[:15000] if text else "",
             "parsing_method": "error_fallback",
             "confidence": 0.1
         }
@@ -601,8 +609,9 @@ def enrich_candidates_llm(candidate_ids: list):
             if raw.get("parsing_method") == "llm":
                 continue
 
-            # Re-parse with LLM
-            enriched = _parse_resume_sync(cand.resume_file_path, skip_llm=False)
+            # Re-parse with LLM using stored raw text
+            stored_text = raw.get("raw_text")
+            enriched = _parse_resume_sync(cand.resume_file_path, skip_llm=False, raw_text=stored_text)
             if enriched.get("parsing_method") != "llm":
                 continue  # LLM failed, keep regex data
 
