@@ -8,6 +8,7 @@ from django.http import JsonResponse
 from django.utils import timezone
 from jose import jwt, JWTError
 
+from django.db import close_old_connections, OperationalError
 from api.models import Company, APIKey, DeveloperAccount, DeveloperAPIKey
 
 logger = logging.getLogger(__name__)
@@ -39,7 +40,8 @@ def verify_api_key_helper(request):
     Stashes the validated company on request.company.
     Stashes the resolved api_key object on request.company._api_key_obj for rate limits.
     """
-    try:
+    close_old_connections()
+    def _do_verify():
         # 1. API Key from header or query param
         x_api_key = (
             request.headers.get("X-API-Key") or
@@ -137,10 +139,20 @@ def verify_api_key_helper(request):
             except JWTError:
                 pass
 
+        return False
+
+    try:
+        return _do_verify()
+    except OperationalError:
+        close_old_connections()
+        try:
+            return _do_verify()
+        except Exception as e:
+            logger.error("Error in verify_api_key_helper retry: %s", e, exc_info=True)
+            return False
     except Exception as e:
         logger.error("Error in verify_api_key_helper: %s", e, exc_info=True)
-
-    return False
+        return False
 
 
 def require_api_key(view_func):
@@ -164,17 +176,15 @@ def require_recruiter_jwt(view_func):
         token = ""
         auth_header = request.headers.get("Authorization", "")
         if auth_header and auth_header.startswith("Bearer "):
-            token = auth_header.split(" ")[1]
+            token = auth_header.split(" ", 1)[1]
         else:
-            token = request.GET.get("token", "")
-            if not token:
-                token = request.GET.get("jwt", "")
-                
+            token = request.GET.get("token") or request.GET.get("jwt", "")
+
         if not token or token == "undefined" or token == "null":
             return JsonResponse({
                 "success": False,
                 "data": None,
-                "error": "Invalid token format"
+                "error": "Authentication token missing"
             }, status=401)
             
         try:
@@ -182,7 +192,7 @@ def require_recruiter_jwt(view_func):
                 return JsonResponse({
                     "success": False,
                     "data": None,
-                    "error": "Token has been blacklisted (logged out)"
+                    "error": "Token has been revoked"
                 }, status=401)
         except Exception:
             pass
@@ -216,7 +226,13 @@ def require_recruiter_jwt(view_func):
         except Exception:
             ban_cached = None
 
-        company = Company.objects.filter(id=company_id, is_active=True).first()
+        close_old_connections()
+        try:
+            company = Company.objects.filter(id=company_id, is_active=True).first()
+        except OperationalError:
+            close_old_connections()
+            company = Company.objects.filter(id=company_id, is_active=True).first()
+            
         if not company:
             return JsonResponse({
                 "success": False,
