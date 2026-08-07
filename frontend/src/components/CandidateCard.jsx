@@ -369,16 +369,13 @@ export default function CandidateCard({ candidate, sessionId, rounds = [], onAct
             <Eye size={16}/> Profile
           </button>
 
-          {resumeUrl && (
-            <a 
-              href={resumeUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-3 border border-border dark:border-zinc-700 bg-background text-foreground dark:text-gray-100 hover:bg-muted dark:hover:bg-zinc-800 py-1.5 rounded-lg text-[13px] font-bold transition-colors flex justify-center items-center gap-1.5"
-            >
-               <FileText size={14} /> Resume
-            </a>
-          )}
+          <button 
+            onClick={() => setShowDetail(true)}
+            className="px-3 border border-border dark:border-zinc-700 bg-background text-foreground dark:text-gray-100 hover:bg-muted dark:hover:bg-zinc-800 py-1.5 rounded-lg text-[13px] font-bold transition-colors flex justify-center items-center gap-1.5"
+            title="View Formatted Resume & AI Insights"
+          >
+             <FileText size={14} /> Resume
+          </button>
           
           {!isHiredOrRejected && (
             <>
