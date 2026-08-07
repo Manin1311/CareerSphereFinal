@@ -107,90 +107,90 @@ def _parse_resume_sync(file_path: str, skip_llm: bool = False, file_bytes: bytes
     try:
         if not text:
             if ext == ".pdf":
-            # Use provided bytes OR fall back to reading from disk
-            if file_bytes:
-                pdf_source = io.BytesIO(file_bytes)
-                doc = fitz.open(stream=pdf_source, filetype="pdf")
-            else:
-                doc = fitz.open(file_path)
-            text_pages = []
-            for page in doc:
-                text_pages.append(page.get_text())
-            text = "\n".join(text_pages)
-                
-            # --- GEMINI OCR FALLBACK FOR IMAGE-BASED PDFS ---
-            if len(text.strip()) < 50:
-                gemini_key = os.getenv("GEMINI_API_KEY")
-                if gemini_key:
-                    try:
-                        import google.generativeai as genai
-                        from PIL import Image
-                        import io as _io
-                        
-                        genai.configure(api_key=gemini_key)
-                        model = genai.GenerativeModel('gemini-1.5-flash')
-                        
-                        if file_bytes:
-                            doc = fitz.open(stream=io.BytesIO(file_bytes), filetype="pdf")
-                        else:
-                            doc = fitz.open(file_path)
-                        ocr_text = []
-                        for i in range(min(len(doc), 1)): # Only first page for speed (<10s budget)
-                            page = doc[i]
-                            pix = page.get_pixmap(matrix=fitz.Matrix(2, 2))
-                            img_data = pix.tobytes("png")
-                            img = Image.open(_io.BytesIO(img_data))
-                            
-                            response = model.generate_content([
-                                "Extract all standard text from this resume image exactly as written. Do not add markdown or conversational wrappers.", 
-                                img
-                            ])
-                            ocr_text.append(response.text)
-                        
-                        if ocr_text:
-                            text = "\n".join(ocr_text)
-                    except Exception as e:
-                        print("Gemini OCR Failed:", str(e))
-            try:
+                # Use provided bytes OR fall back to reading from disk
                 if file_bytes:
-                    doc = fitz.open(stream=io.BytesIO(file_bytes), filetype="pdf")
+                    pdf_source = io.BytesIO(file_bytes)
+                    doc = fitz.open(stream=pdf_source, filetype="pdf")
                 else:
                     doc = fitz.open(file_path)
+                text_pages = []
                 for page in doc:
-                    for img_info in page.get_images():
-                        xref = img_info[0]
-                        base = doc.extract_image(xref)
-                        img_bytes = base.get("image")
-                        if not img_bytes:
-                            continue
+                    text_pages.append(page.get_text())
+                text = "\n".join(text_pages)
+                    
+                # --- GEMINI OCR FALLBACK FOR IMAGE-BASED PDFS ---
+                if len(text.strip()) < 50:
+                    gemini_key = os.getenv("GEMINI_API_KEY")
+                    if gemini_key:
                         try:
-                            im = Image.open(io.BytesIO(img_bytes))
-                            w, h = im.size
-                            # Profile photo must be at least 80x80 and roughly square/portrait
-                            if w >= 80 and h >= 80 and 0.4 <= (w / h) <= 2.2:
-                                photo_path = f"{photo_dir}/{uuid.uuid4()}.jpg"
-                                with open(photo_path, "wb") as f:
-                                    f.write(img_bytes)
-                                break
-                        except Exception:
-                            continue
-                    if photo_path:
-                        break
-            except Exception:
-                photo_path = None
-        elif ext in [".docx", ".doc"]:
-            if file_bytes:
-                doc = Document(io.BytesIO(file_bytes))
+                            import google.generativeai as genai
+                            from PIL import Image
+                            import io as _io
+                            
+                            genai.configure(api_key=gemini_key)
+                            model = genai.GenerativeModel('gemini-1.5-flash')
+                            
+                            if file_bytes:
+                                doc = fitz.open(stream=io.BytesIO(file_bytes), filetype="pdf")
+                            else:
+                                doc = fitz.open(file_path)
+                            ocr_text = []
+                            for i in range(min(len(doc), 1)): # Only first page for speed (<10s budget)
+                                page = doc[i]
+                                pix = page.get_pixmap(matrix=fitz.Matrix(2, 2))
+                                img_data = pix.tobytes("png")
+                                img = Image.open(_io.BytesIO(img_data))
+                                
+                                response = model.generate_content([
+                                    "Extract all standard text from this resume image exactly as written. Do not add markdown or conversational wrappers.", 
+                                    img
+                                ])
+                                ocr_text.append(response.text)
+                            
+                            if ocr_text:
+                                text = "\n".join(ocr_text)
+                        except Exception as e:
+                            print("Gemini OCR Failed:", str(e))
+                try:
+                    if file_bytes:
+                        doc = fitz.open(stream=io.BytesIO(file_bytes), filetype="pdf")
+                    else:
+                        doc = fitz.open(file_path)
+                    for page in doc:
+                        for img_info in page.get_images():
+                            xref = img_info[0]
+                            base = doc.extract_image(xref)
+                            img_bytes = base.get("image")
+                            if not img_bytes:
+                                continue
+                            try:
+                                im = Image.open(io.BytesIO(img_bytes))
+                                w, h = im.size
+                                # Profile photo must be at least 80x80 and roughly square/portrait
+                                if w >= 80 and h >= 80 and 0.4 <= (w / h) <= 2.2:
+                                    photo_path = f"{photo_dir}/{uuid.uuid4()}.jpg"
+                                    with open(photo_path, "wb") as f:
+                                        f.write(img_bytes)
+                                    break
+                            except Exception:
+                                continue
+                        if photo_path:
+                            break
+                except Exception:
+                    photo_path = None
+            elif ext in [".docx", ".doc"]:
+                if file_bytes:
+                    doc = Document(io.BytesIO(file_bytes))
+                else:
+                    doc = Document(file_path)
+                parts = [para.text for para in doc.paragraphs if para.text.strip()]
+                text = "\n".join(parts)
             else:
-                doc = Document(file_path)
-            parts = [para.text for para in doc.paragraphs if para.text.strip()]
-            text = "\n".join(parts)
-        else:
-            if file_bytes:
-                text = file_bytes.decode("utf-8", errors="ignore")
-            else:
-                with open(file_path, "r", errors="ignore") as f:
-                    text = f.read()
+                if file_bytes:
+                    text = file_bytes.decode("utf-8", errors="ignore")
+                else:
+                    with open(file_path, "r", errors="ignore") as f:
+                        text = f.read()
 
         # ── FAST REGEX EXTRACTION (always runs, <0.5s) ──────────────────
         email_re = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
