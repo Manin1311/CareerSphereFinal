@@ -19,6 +19,12 @@ const Linkedin = ({ size = 16, className = '' }) => (
 import { toast } from 'react-hot-toast';
 import { candidatesAPI, API_HOST } from '../lib/api';
 
+const formatExternalUrl = (url) => {
+  if (!url) return '';
+  const trimmed = String(url).trim();
+  return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+};
+
 export default function CandidateCard({ candidate, sessionId, rounds = [], onAction, isHighlighted, forceOpenDetails, onCloseDetails }) {
   const [showDetail, setShowDetail] = useState(false);
   const [animatingOut, setAnimatingOut] = useState(false);
@@ -276,12 +282,12 @@ export default function CandidateCard({ candidate, sessionId, rounds = [], onAct
             </span>
           )}
           {candidate?.linkedin_url && (
-            <a href={candidate.linkedin_url} target="_blank" rel="noopener" className="flex items-center gap-1 text-sky-600 dark:text-sky-400 hover:underline">
+            <a href={formatExternalUrl(candidate.linkedin_url)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-sky-600 dark:text-sky-400 hover:underline">
               <Linkedin size={10}/> LinkedIn
             </a>
           )}
           {candidate?.github_url && (
-            <a href={candidate.github_url} target="_blank" rel="noopener" className="flex items-center gap-1 text-foreground dark:text-gray-200 hover:underline">
+            <a href={formatExternalUrl(candidate.github_url)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-foreground dark:text-gray-200 hover:underline">
               <Github size={10}/> GitHub
             </a>
           )}
@@ -520,7 +526,7 @@ export default function CandidateCard({ candidate, sessionId, rounds = [], onAct
                     {activeCandidate?.linkedin_url && (
                       <div className="flex items-center gap-3 text-sm font-medium">
                         <Linkedin size={16} className="text-sky-500"/>
-                        <a href={activeCandidate.linkedin_url} target="_blank" rel="noopener" className="text-sky-600 dark:text-sky-400 hover:underline flex items-center gap-1">
+                        <a href={formatExternalUrl(activeCandidate.linkedin_url)} target="_blank" rel="noopener noreferrer" className="text-sky-600 dark:text-sky-400 hover:underline flex items-center gap-1">
                           LinkedIn Profile <ExternalLink size={12}/>
                         </a>
                       </div>
@@ -528,7 +534,7 @@ export default function CandidateCard({ candidate, sessionId, rounds = [], onAct
                     {activeCandidate?.github_url && (
                       <div className="flex items-center gap-3 text-sm font-medium">
                         <Github size={16} className="text-foreground dark:text-gray-200"/>
-                        <a href={activeCandidate.github_url} target="_blank" rel="noopener" className="text-sky-600 dark:text-sky-400 hover:underline flex items-center gap-1">
+                        <a href={formatExternalUrl(activeCandidate.github_url)} target="_blank" rel="noopener noreferrer" className="text-sky-600 dark:text-sky-400 hover:underline flex items-center gap-1">
                           GitHub Profile <ExternalLink size={12}/>
                         </a>
                       </div>
