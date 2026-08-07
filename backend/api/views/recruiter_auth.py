@@ -1057,9 +1057,9 @@ def dynamic_data(request):
             { "lang": "Go", "pkg": "go-careersphere", "icon": "🐹", "install": "go get careersphere.indevs.in/go-careersphere" }
         ],
         "templates": {
-            "match_request": "curl -X POST \"http://localhost:8000/api/v1/match\" \\\n  -H \"X-API-Key: YOUR_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n    \"job_title\": \"Senior React Developer\",\n    \"job_description\": \"5+ years React, TypeScript...\",\n    \"top_k\": 5\n  }'",
+            "match_request": "curl -X POST \"https://api.careersphere.indevs.in/api/v1/match\" \\\n  -H \"X-API-Key: YOUR_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n    \"job_title\": \"Senior React Developer\",\n    \"job_description\": \"5+ years React, TypeScript...\",\n    \"top_k\": 5\n  }'",
             "match_response": "{\n  \"success\": true,\n  \"data\": {\n    \"matches\": [\n      {\n        \"candidate_id\": \"cnd_12345\",\n        \"name\": \"Jane Doe\",\n        \"match_score\": 94.2,\n        \"matched_skills\": [\"React\",\"TypeScript\"]\n      }\n    ]\n  }\n}",
-            "chat_request": "curl -X POST \"http://localhost:8000/api/v1/chat\" \\\n  -H \"X-API-Key: YOUR_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n    \"message\": \"Find React devs with 3+ years experience\",\n    \"session_id\": \"ses_abc123\"\n  }'",
+            "chat_request": "curl -X POST \"https://api.careersphere.indevs.in/api/v1/chat\" \\\n  -H \"X-API-Key: YOUR_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n    \"message\": \"Find React devs with 3+ years experience\",\n    \"session_id\": \"ses_abc123\"\n  }'",
             "chat_response": "{\n  \"success\": true,\n  \"data\": {\n    \"answer\": \"Found 3 matching candidates.\",\n    \"candidates\": [\n      {\"candidate_id\": \"cnd_12345\", \"name\": \"Jane Doe\"}\n    ],\n    \"tokens_used\": 180\n  }\n}"
         }
     }

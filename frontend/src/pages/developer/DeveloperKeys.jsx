@@ -443,7 +443,7 @@ export default function DeveloperKeys({ defaultTab }) {
 
   const tabs = {
     cURL: `# Pretty Print JSON Output in Terminal via python -m json.tool
-curl -s -X POST "http://localhost:8000/api/v1/parse" \\
+curl -s -X POST "https://api.careersphere.indevs.in/api/v1/parse" \\
   -H "X-API-Key: YOUR_API_KEY" \\
   -F "file=@resume.pdf" | python -m json.tool`,
 
@@ -452,7 +452,7 @@ import json
 import requests
 
 def parse_resume(file_path, api_key):
-    url = "http://localhost:8000/api/v1/parse"
+    url = "https://api.careersphere.indevs.in/api/v1/parse"
     headers = {"X-API-Key": api_key}
 
     if not os.path.exists(file_path):
@@ -480,7 +480,7 @@ async function parseResume(filePath, apiKey) {
     formData.append('file', fs.createReadStream(filePath));
 
     const response = await axios.post(
-      'http://localhost:8000/api/v1/parse',
+      'https://api.careersphere.indevs.in/api/v1/parse',
       formData,
       {
         headers: {

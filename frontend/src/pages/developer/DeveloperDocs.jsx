@@ -40,9 +40,9 @@ export default function DeveloperDocs() {
     { lang: "Go", pkg: "go-careersphere", icon: "🐹", install: "go get careersphere.indevs.in/go-careersphere" }
   ]);
   const [templates, setTemplates] = useState({
-    match_request: `curl -X POST "http://localhost:8000/api/v1/match" \\\n  -H "X-API-Key: YOUR_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "job_title": "Senior React Developer",\n    "job_description": "5+ years React, TypeScript...",\n    "top_k": 5\n  }'`,
+    match_request: `curl -X POST "https://api.careersphere.indevs.in/api/v1/match" \\\n  -H "X-API-Key: YOUR_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "job_title": "Senior React Developer",\n    "job_description": "5+ years React, TypeScript...",\n    "top_k": 5\n  }'`,
     match_response: `{\n  "success": true,\n  "data": {\n    "matches": [\n      {\n        "candidate_id": "cnd_12345",\n        "name": "Jane Doe",\n        "match_score": 94.2,\n        "matched_skills": ["React","TypeScript"]\n      }\n    ]\n  }\n}`,
-    chat_request: `curl -X POST "http://localhost:8000/api/v1/chat" \\\n  -H "X-API-Key: YOUR_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "message": "Find React devs with 3+ years experience",\n    "session_id": "ses_abc123"\n  }'`,
+    chat_request: `curl -X POST "https://api.careersphere.indevs.in/api/v1/chat" \\\n  -H "X-API-Key: YOUR_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "message": "Find React devs with 3+ years experience",\n    "session_id": "ses_abc123"\n  }'`,
     chat_response: `{\n  "success": true,\n  "data": {\n    "answer": "Found 3 matching candidates.",\n    "candidates": [\n      {"candidate_id": "cnd_12345", "name": "Jane Doe"}\n    ],\n    "tokens_used": 180\n  }\n}`
   });
 
@@ -171,12 +171,12 @@ export default function DeveloperDocs() {
 
     try {
       const viteApiUrl = import.meta.env?.VITE_API_URL;
-      let rawBase = viteApiUrl || "http://127.0.0.1:8000/api/v1";
+      let rawBase = viteApiUrl || "https://api.careersphere.indevs.in/api/v1";
       if (!viteApiUrl && typeof window !== "undefined") {
         const host = window.location.origin;
         if (!host.includes("localhost") && !host.includes("127.0.0.1")) {
           if (host.includes("careersphere.indevs.in")) {
-            rawBase = "http://localhost:8000/api/v1";
+            rawBase = "https://api.careersphere.indevs.in/api/v1";
           } else {
             rawBase = `${host}/api/v1`;
           }
@@ -317,7 +317,7 @@ export default function DeveloperDocs() {
               Test keys have the prefix <code>cs_test_</code> and do not incur billing charges, but are tightly rate-limited. Production keys use <code>cs_live_</code>.
             </div>
             <SyntaxHighlighter language="bash" style={vs2015} customStyle={{ borderRadius: "12px", padding: "16px", fontSize: "13px" }}>
-              {`curl -X GET "http://localhost:8000/api/v1/sessions" \\
+              {`curl -X GET "https://api.careersphere.indevs.in/api/v1/sessions" \\
   -H "X-API-Key: cs_live_xxxxxxxx"`}
             </SyntaxHighlighter>
           </section>
@@ -335,7 +335,7 @@ export default function DeveloperDocs() {
             </div>
             <p className="text-gray-600 font-medium text-sm mb-4">List all active sessions for your account.</p>
             <SyntaxHighlighter language="bash" style={vs2015} customStyle={{ borderRadius: "12px", padding: "16px", fontSize: "12px", marginBottom: "24px" }}>
-              {`curl -X GET "http://localhost:8000/api/v1/sessions" \
+              {`curl -X GET "https://api.careersphere.indevs.in/api/v1/sessions" \
   -H "X-API-Key: YOUR_KEY"`}
             </SyntaxHighlighter>
             <div className="flex items-center gap-3 mb-4">
@@ -348,7 +348,7 @@ export default function DeveloperDocs() {
               <div>
                 <span className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 pl-1 block">Request</span>
                 <SyntaxHighlighter language="bash" style={vs2015} customStyle={{ borderRadius: "12px", padding: "16px", fontSize: "12px" }}>
-                  {`curl -X POST "http://localhost:8000/api/v1/sessions" \
+                  {`curl -X POST "https://api.careersphere.indevs.in/api/v1/sessions" \
   -H "X-API-Key: YOUR_KEY" \
   -H "Content-Type: application/json" \
   -d '{"name": "Q3 Engineering Hire"}'`}
@@ -406,7 +406,7 @@ export default function DeveloperDocs() {
                 <div className="flex flex-col">
                   <span className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 pl-1">Request</span>
                   <SyntaxHighlighter language="bash" style={vs2015} customStyle={{ borderRadius: "12px", padding: "16px", fontSize: "12px", flex: 1, margin: 0 }}>
-                    {`curl -X POST "http://localhost:8000/api/v1/parse" \\
+                    {`curl -X POST "https://api.careersphere.indevs.in/api/v1/parse" \\
   -H "X-API-Key: YOUR_KEY" \\
   -F "file=@resume.pdf"`}
                   </SyntaxHighlighter>
@@ -438,9 +438,9 @@ export default function DeveloperDocs() {
             </div>
             <p className="text-gray-600 font-medium text-sm mb-4">Sync resumes directly from a Gmail inbox using OAuth credentials.</p>
             <SyntaxHighlighter language="bash" style={vs2015} customStyle={{ borderRadius: "12px", padding: "16px", fontSize: "12px" }}>
-              {`curl -X POST "http://localhost:8000/api/v1/ingest/gmail" \
-  -H "X-API-Key: YOUR_KEY" \
-  -H "Content-Type: application/json" \
+              {`curl -X POST "https://api.careersphere.indevs.in/api/v1/ingest/gmail" \\
+  -H "X-API-Key: YOUR_KEY" \\
+  -H "Content-Type: application/json" \\
   -d '{"oauth_token": "ya29.xxx", "label": "HR/Resumes"}'`}
             </SyntaxHighlighter>
           </div>
@@ -453,9 +453,9 @@ export default function DeveloperDocs() {
             </div>
             <p className="text-gray-600 font-medium text-sm mb-4">Ingest resumes from a Google Drive folder. Supports recursive folder scanning and deduplication.</p>
             <SyntaxHighlighter language="bash" style={vs2015} customStyle={{ borderRadius: "12px", padding: "16px", fontSize: "12px" }}>
-              {`curl -X POST "http://localhost:8000/api/v1/ingest/drive" \
-  -H "X-API-Key: YOUR_KEY" \
-  -H "Content-Type: application/json" \
+              {`curl -X POST "https://api.careersphere.indevs.in/api/v1/ingest/drive" \\
+  -H "X-API-Key: YOUR_KEY" \\
+  -H "Content-Type: application/json" \\
   -d '{"oauth_token": "ya29.xxx", "folder_id": "1BxiMVs0XRA...", "recursive": true}'`}
             </SyntaxHighlighter>
           </div>
@@ -468,9 +468,9 @@ export default function DeveloperDocs() {
             </div>
             <p className="text-gray-600 font-medium text-sm mb-4">Import candidates from ATS platforms (Greenhouse, Lever, Workday). Requires ATS credentials configured in developer portal settings.</p>
             <SyntaxHighlighter language="bash" style={vs2015} customStyle={{ borderRadius: "12px", padding: "16px", fontSize: "12px" }}>
-              {`curl -X POST "http://localhost:8000/api/v1/ingest/ats" \
-  -H "X-API-Key: YOUR_KEY" \
-  -H "Content-Type: application/json" \
+              {`curl -X POST "https://api.careersphere.indevs.in/api/v1/ingest/ats" \\
+  -H "X-API-Key: YOUR_KEY" \\
+  -H "Content-Type: application/json" \\
   -d '{"platform": "greenhouse", "job_id": "7291028"}'`}
             </SyntaxHighlighter>
           </div>
@@ -490,7 +490,7 @@ export default function DeveloperDocs() {
               <div>
                 <span className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 pl-1 block">Request</span>
                 <SyntaxHighlighter language="bash" style={vs2015} customStyle={{ borderRadius: "12px", padding: "16px", fontSize: "12px" }}>
-                  {`curl "http://localhost:8000/api/v1/candidates?page=1&limit=20" \
+                  {`curl "https://api.careersphere.indevs.in/api/v1/candidates?page=1&limit=20" \\
   -H "X-API-Key: YOUR_KEY"`}
                 </SyntaxHighlighter>
               </div>
@@ -517,7 +517,7 @@ export default function DeveloperDocs() {
             </div>
             <p className="text-gray-600 font-medium text-sm mb-4">Retrieve a single candidate's full structured profile.</p>
             <SyntaxHighlighter language="bash" style={vs2015} customStyle={{ borderRadius: "12px", padding: "16px", fontSize: "12px" }}>
-              {`curl "http://localhost:8000/api/v1/candidates/cnd_12345" \
+              {`curl "https://api.careersphere.indevs.in/api/v1/candidates/cnd_12345" \\
   -H "X-API-Key: YOUR_KEY"`}
             </SyntaxHighlighter>
           </section>
@@ -537,7 +537,7 @@ export default function DeveloperDocs() {
               <div>
                 <span className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 pl-1 block">Request</span>
                 <SyntaxHighlighter language="bash" style={vs2015} customStyle={{ borderRadius: "12px", padding: "16px", fontSize: "12px" }}>
-                  {`curl "http://localhost:8000/api/v1/sessions/ses_abc123/candidate-clusters" \
+                  {`curl "https://api.careersphere.indevs.in/api/v1/sessions/ses_abc123/candidate-clusters" \\
   -H "X-API-Key: YOUR_KEY"`}
                 </SyntaxHighlighter>
               </div>
