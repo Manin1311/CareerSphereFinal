@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./assets/hero_banner.png" alt="CareerSphere API Banner" width="100%" />
+ 
 
   <h1 align="center">CareerSphere — Multi-Agent Recruitment Intelligence Platform</h1>
 
@@ -180,51 +180,34 @@ The frontend hosts all four portals as a single SPA with path-based routing:
 ### 1. Interactive Recruiter ATS (Applicant Tracking System)
 Complete AI evaluation panels with semantic match scoring, candidate filtering, and multi-round hiring pipelines.
 
-<div align="center">
-  <img src="./assets/ats_dashboard.png" alt="ATS Dashboard" width="100%" />
-</div>
 
 ### 2. Recruiter Recruitment Sessions
 Track and manage all hiring rounds, candidates, and job applications in one visual board.
 
-<div align="center">
-  <img src="./assets/recruiter_sessions.png" alt="Recruitment Sessions" width="100%" />
-</div>
+
 
 ### 3. Interactive AI Resume Builder & Editor
 Build your resume using high-fidelity templates with a real-time side-by-side ATS compatibility score and AI suggestions.
 
-<div align="center">
-  <img src="./assets/resume_builder_editor.png" alt="AI Resume Builder" width="100%" />
-</div>
+
 
 ### 4. Job Seeker Dashboard & ATS Scoring
 Track your applications pipeline and review real-time feedback with a breakdown of keywords, skills, formatting, and experience.
 
-<div align="center">
-  <img src="./assets/seeker_dashboard.png" alt="Job Seeker Dashboard" width="100%" />
-</div>
 
 ### 5. Developer API Portal (SaaS Dashboard)
 Full SaaS portal for third-party integrations with usage analytics, Razorpay subscription billing, and interactive documentation.
 
-<div align="center">
-  <img src="./assets/dev_portal.png" alt="Developer SDK Portal" width="100%" />
-</div>
+
 
 ### 6. Job Seeker Landing & Smart Job Discovery
 City-aware job search, live state-to-city Indian autocomplete suggestions, and domain safety verification.
 
-<div align="center">
-  <img src="./assets/jobs.png" alt="Jobs Portal Landing" width="100%" />
-</div>
 
 ### 7. Market Trends & Salary Insights
 Interactive wage trajectories, hiring velocity index, and region-wise job opening distribution charts.
 
-<div align="center">
-  <img src="./assets/market_trends.png" alt="Market Trends" width="100%" />
-</div>
+
 
 ---
 
